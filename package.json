@@ -41,7 +41,7 @@
       {
         "provider": "github",
         "owner": "Luissandoval90",
-        "repo": "multi-chat-overlay"
+        "repo": "multichat"
       }
     ],
     "asar": true,
