@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multi Chat Overlay Pro</title>
+  <link rel="stylesheet" href="styles/style.css" />
+  <link rel="stylesheet" href="styles/chat.css" />
+  <link rel="stylesheet" href="styles/alerts.css" />
+</head>
+<body>
+  <div id="app">
+    <!-- Contenedor flotante para alertas de seguidores -->
+    <div id="follower-alert-container"></div>
+
+    <!-- Barra de título -->
+    <div id="titlebar">
+      <div class="brand">
+        <span class="dot" id="live-dot"></span>
+        <span>Multi Chat Overlay</span>
+      </div>
+      <div class="controls">
+        <button id="test-alert-btn" title="Probar sonido y animación de seguidor">★</button>
+        <button id="edit-btn" title="Configurar plataformas">⚙</button>
+        <button id="minimize-btn" title="Minimizar">–</button>
+        <button id="close-btn" class="close-btn" title="Cerrar">✕</button>
+      </div>
+    </div>
+
+    <!-- Barra de Estadísticas en Vivo (Espectadores y Likes) -->
+    <div id="stats-bar">
+      <div class="stats-group" id="viewers-group">
+        <div class="stat-item total-viewers" id="stat-total-viewers">
+          <span>👥</span> <span id="total-viewers-count">0</span>
+        </div>
+        <div class="stat-item" id="platform-viewers-container"></div>
+      </div>
+      <div class="stats-group">
+        <div class="stat-item likes-count" id="stat-likes">
+          <span>❤️</span> <span id="likes-count">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de Configuración -->
+    <div id="setup-panel">
+      <!-- TikTok -->
+      <div class="platform-card" id="card-tiktok" style="--card-accent: var(--tiktok);">
+        <div class="platform-main-row">
+          <input type="checkbox" class="check" id="check-tiktok" />
+          <span class="logo" id="logo-tiktok"></span>
+          <input type="text" id="input-tiktok" placeholder="@usuario de TikTok" disabled />
+        </div>
+        <div class="sub-config hidden" id="sub-tiktok">
+          <input type="text" id="input-tiktok-key" placeholder="API key de TikTool (se guarda para siempre)" />
+          <a href="https://tik.tools/login" target="_blank" class="link-hint">Obtener clave gratis en tik.tools (sin tarjeta) ↗</a>
+        </div>
+      </div>
+
+      <!-- Twitch -->
+      <div class="platform-card" id="card-twitch" style="--card-accent: var(--twitch);">
+        <div class="platform-main-row">
+          <input type="checkbox" class="check" id="check-twitch" />
+          <span class="logo" id="logo-twitch"></span>
+          <input type="text" id="input-twitch" placeholder="canal de Twitch" disabled />
+        </div>
+        <div class="sub-config hidden" id="sub-twitch">
+          <input type="text" id="input-twitch-client-id" placeholder="Client ID (opcional para avatares)" />
+          <input type="text" id="input-twitch-client-secret" placeholder="Client Secret (opcional)" />
+          <a href="https://dev.twitch.tv/console/apps/create" target="_blank" class="link-hint">Crear app gratis en Twitch ↗</a>
+        </div>
+      </div>
+
+      <!-- Kick -->
+      <div class="platform-card" id="card-kick" style="--card-accent: var(--kick);">
+        <div class="platform-main-row">
+          <input type="checkbox" class="check" id="check-kick" />
+          <span class="logo" id="logo-kick"></span>
+          <input type="text" id="input-kick" placeholder="canal de Kick" disabled />
+        </div>
+      </div>
+
+      <!-- YouTube -->
+      <div class="platform-card" id="card-youtube" style="--card-accent: var(--youtube);">
+        <div class="platform-main-row">
+          <input type="checkbox" class="check" id="check-youtube" />
+          <span class="logo" id="logo-youtube"></span>
+          <input type="text" id="input-youtube" placeholder="@canal o link de YouTube" disabled />
+        </div>
+      </div>
+
+      <!-- Opciones generales -->
+      <div class="options-grid">
+        <label class="opt-toggle">
+          <input type="checkbox" id="opt-auto-connect" checked />
+          <span>Auto-conectar al abrir</span>
+        </label>
+        <label class="opt-toggle">
+          <input type="checkbox" id="opt-follow-alerts" checked />
+          <span>Alertas de seguidores</span>
+        </label>
+        <label class="opt-toggle">
+          <input type="checkbox" id="opt-sound-alerts" checked />
+          <span>Sonidos de alerta</span>
+        </label>
+        <label class="opt-toggle">
+          <input type="checkbox" id="opt-tts" />
+          <span>Leer chat (Voz TTS)</span>
+        </label>
+        <label class="opt-toggle">
+          <input type="checkbox" id="opt-filter-bots" />
+          <span>Ocultar comandos (!)</span>
+        </label>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="actions-row">
+        <button id="connect-btn" class="btn-primary">Guardar y Conectar</button>
+      </div>
+    </div>
+
+    <!-- Barra de Estado de Conexión -->
+    <div id="status-bar"></div>
+
+    <!-- Flujo de Mensajes del Chat -->
+    <div id="chat-container"></div>
+
+    <!-- Barra de Atajos -->
+    <div id="hint-bar">
+      Ctrl+Alt+T clic-a-través · Ctrl+Alt+↑↓ opacidad · Ctrl+Alt+←→ mover
+    </div>
+  </div>
+
+  <!-- Scripts modulares -->
+  <script src="src/audio.js"></script>
+  <script src="src/storage.js"></script>
+  <script src="src/tts.js"></script>
+  <script src="src/alerts.js"></script>
+  <script src="src/renderer.js"></script>
+</body>
+</html>

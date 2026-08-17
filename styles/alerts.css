@@ -1,0 +1,158 @@
+/* ==========================================================================
+   Contenedor y Animaciones de Alertas de Nuevos Seguidores
+   ========================================================================== */
+#follower-alert-container {
+  position: absolute;
+  top: 45px;
+  left: 10px;
+  right: 10px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.follower-card {
+  width: 100%;
+  max-width: 360px;
+  background: linear-gradient(135deg, rgba(24, 20, 36, 0.96), rgba(35, 20, 48, 0.96));
+  border: 2px solid #a970ff;
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 8px 32px rgba(169, 112, 255, 0.5), 0 0 15px rgba(254, 44, 85, 0.35);
+  backdrop-filter: blur(16px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: white;
+  animation: followAlertIn 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  position: relative;
+  overflow: hidden;
+}
+
+.follower-card.platform-tiktok  { border-color: #fe2c55; box-shadow: 0 8px 28px rgba(254, 44, 85, 0.45); }
+.follower-card.platform-twitch  { border-color: #9146ff; box-shadow: 0 8px 28px rgba(145, 70, 255, 0.45); }
+.follower-card.platform-kick    { border-color: #53fc18; box-shadow: 0 8px 28px rgba(83, 252, 24, 0.45); }
+.follower-card.platform-youtube { border-color: #ff0000; box-shadow: 0 8px 28px rgba(255, 0, 0, 0.45); }
+
+@keyframes followAlertIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-25px) scale(0.85);
+  }
+  70% {
+    transform: translateY(2px) scale(1.03);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.follower-card.alert-out {
+  animation: followAlertOut 0.4s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+}
+
+@keyframes followAlertOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-30px) scale(0.8);
+  }
+}
+
+/* Avatar del seguidor con anillo brillante */
+.follower-avatar-wrapper {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+}
+
+.follower-avatar-wrapper img,
+.follower-avatar-wrapper .avatar-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+  box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 18px;
+}
+
+.follower-avatar-wrapper::after {
+  content: '★';
+  position: absolute;
+  bottom: -3px;
+  right: -3px;
+  background: #fbbf24;
+  color: #78350f;
+  font-size: 11px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  box-shadow: 0 0 6px #fbbf24;
+}
+
+/* Información del seguidor */
+.follower-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.follower-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.follower-label {
+  font-size: 10.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #ffd166;
+  text-shadow: 0 0 8px rgba(255, 209, 102, 0.6);
+}
+
+.follower-name {
+  font-size: 14.5px;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Barra de cuenta regresiva */
+.follower-timer-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  transform-origin: left center;
+  animation: timerProgress 5s linear forwards;
+}
+
+@keyframes timerProgress {
+  0% { transform: scaleX(1); }
+  100% { transform: scaleX(0); }
+}

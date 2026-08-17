@@ -1,0 +1,88 @@
+{
+  "name": "multi-chat-overlay",
+  "version": "2.0.0",
+  "description": "Overlay de chat en vivo con alertas para TikTok, Twitch, Kick y YouTube",
+  "main": "main.js",
+  "author": "Luis Sandoval",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win",
+    "release": "electron-builder --win --publish always"
+  },
+  "keywords": [
+    "multichat",
+    "overlay",
+    "tiktok",
+    "twitch",
+    "kick",
+    "youtube"
+  ],
+  "license": "ISC",
+  "dependencies": {
+    "@tiktool/live": "2.12.1",
+    "electron-updater": "^6.8.9",
+    "tiktok-live-connector": "^2.4.3",
+    "tmi.js": "1.8.5",
+    "ws": "8.21.1",
+    "youtube-chat": "^2.2.0"
+  },
+  "devDependencies": {
+    "@noble/hashes": "1.7.1",
+    "electron": "33.4.11",
+    "electron-builder": "^25.1.8"
+  },
+  "overrides": {
+    "@noble/hashes": "1.7.1"
+  },
+  "build": {
+    "appId": "com.luissandoval.multichatoverlay",
+    "productName": "Multi Chat Overlay",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "Luissandoval90",
+        "repo": "multi-chat-overlay"
+      }
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "node_modules/**/*"
+    ],
+    "files": [
+      "main.js",
+      "preload.js",
+      "overlay.html",
+      "styles/**/*",
+      "src/**/*",
+      "platforms/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "deleteAppDataOnUninstall": false
+    }
+  }
+}

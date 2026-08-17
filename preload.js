@@ -1,0 +1,24 @@
+const { contextBridge, ipcRenderer } = require('electron');
+
+contextBridge.exposeInMainWorld('overlayAPI', {
+  // Conexión y control
+  connect: (requests) => ipcRenderer.send('connect-request', requests),
+  disconnectAll: () => ipcRenderer.send('disconnect-all'),
+  minimize: () => ipcRenderer.send('minimize-window'),
+  close: () => ipcRenderer.send('close-window'),
+
+  // Eventos de red, chat y comunidad
+  onPlatformStatus: (callback) => ipcRenderer.on('platform-status', (_event, data) => callback(data)),
+  onPlatformsSelected: (callback) => ipcRenderer.on('platforms-selected', (_event, data) => callback(data)),
+  onChatMessage: (callback) => ipcRenderer.on('chat-message', (_event, data) => callback(data)),
+  onJoinMessage: (callback) => ipcRenderer.on('join-message', (_event, data) => callback(data)),
+  onGiftMessage: (callback) => ipcRenderer.on('gift-message', (_event, data) => callback(data)),
+  onFollowMessage: (callback) => ipcRenderer.on('follow-message', (_event, data) => callback(data)),
+  onLikeMessage: (callback) => ipcRenderer.on('like-message', (_event, data) => callback(data)),
+  onShareMessage: (callback) => ipcRenderer.on('share-message', (_event, data) => callback(data)),
+  onViewersUpdate: (callback) => ipcRenderer.on('viewers-update', (_event, data) => callback(data)),
+
+  // Atajos globales y ventana
+  onClickThroughChanged: (callback) => ipcRenderer.on('click-through-changed', (_event, data) => callback(data)),
+  onAdjustBgOpacity: (callback) => ipcRenderer.on('adjust-bg-opacity', (_event, delta) => callback(delta)),
+});
