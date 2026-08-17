@@ -15,7 +15,15 @@ const DEFAULT_CONFIG = {
     soundAlerts: true,
     soundVolume: 0.7,
     ttsEnabled: false,
-    ttsVolume: 0.8,
+    ttsVoice: '',
+    ttsVolume: 0.85,
+    ttsRate: 1.05,
+    ttsPlatforms: {
+      tiktok: true,
+      twitch: true,
+      kick: true,
+      youtube: true,
+    },
     filterBotCommands: false,
     bgOpacity: 0.45,
     fontSize: 13.5,
@@ -29,7 +37,14 @@ function loadConfig() {
     const parsed = JSON.parse(raw);
     return {
       platforms: { ...DEFAULT_CONFIG.platforms, ...(parsed.platforms || {}) },
-      options: { ...DEFAULT_CONFIG.options, ...(parsed.options || {}) },
+      options: {
+        ...DEFAULT_CONFIG.options,
+        ...(parsed.options || {}),
+        ttsPlatforms: {
+          ...DEFAULT_CONFIG.options.ttsPlatforms,
+          ...((parsed.options && parsed.options.ttsPlatforms) || {}),
+        },
+      },
     };
   } catch (err) {
     console.error('[Storage] Error cargando configuración:', err);

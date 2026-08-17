@@ -112,6 +112,53 @@
         </label>
       </div>
 
+      <!-- Ajustes Detallados de Voz / TTS (Voz por plataforma y selector de voz) -->
+      <div class="tts-settings-card hidden" id="tts-advanced-card">
+        <div class="tts-settings-title">
+          <span>🔊 Configuración de Voz (TTS)</span>
+        </div>
+        
+        <div class="tts-row">
+          <select class="tts-select" id="tts-voice-select">
+            <option value="">Cargando voces del sistema…</option>
+          </select>
+          <button type="button" class="btn-tts-test" id="btn-test-voice" title="Escuchar muestra">▶ Probar</button>
+        </div>
+
+        <div class="tts-settings-title" style="font-size: 10.5px; margin-top: 2px;">
+          <span>Leer chat de:</span>
+        </div>
+        <div class="tts-platforms-group">
+          <label class="tts-platform-toggle">
+            <input type="checkbox" id="tts-check-tiktok" checked />
+            <span style="color: var(--tiktok);">TikTok</span>
+          </label>
+          <label class="tts-platform-toggle">
+            <input type="checkbox" id="tts-check-twitch" checked />
+            <span style="color: var(--twitch);">Twitch</span>
+          </label>
+          <label class="tts-platform-toggle">
+            <input type="checkbox" id="tts-check-kick" checked />
+            <span style="color: var(--kick);">Kick</span>
+          </label>
+          <label class="tts-platform-toggle">
+            <input type="checkbox" id="tts-check-youtube" checked />
+            <span style="color: var(--youtube);">YouTube</span>
+          </label>
+        </div>
+
+        <div class="tts-sliders-row">
+          <div class="tts-slider-item">
+            <label for="tts-volume-slider">Volumen: <span id="tts-vol-val">85%</span></label>
+            <input type="range" id="tts-volume-slider" min="10" max="100" value="85" />
+          </div>
+          <div class="tts-slider-item">
+            <label for="tts-rate-slider">Velocidad: <span id="tts-rate-val">1.05x</span></label>
+            <input type="range" id="tts-rate-slider" min="70" max="160" value="105" />
+          </div>
+        </div>
+      </div>
+
       <!-- Botones de Acción -->
       <div class="actions-row">
         <button id="connect-btn" class="btn-primary">Guardar y Conectar</button>

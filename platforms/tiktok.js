@@ -64,12 +64,32 @@ function connect(username, callbacks, options = {}) {
         console.log('[TikTok/TikTool] Conectado. Room ID:', client.roomId);
         reconnectAttempt = 0;
         callbacks.onStatus({ connected: true });
+        
+        // Si hay información inicial de sala, emitir espectadores iniciales
+        if (client.roomInfo) {
+          const initialViewers = client.roomInfo.viewerCount || client.roomInfo.userCount || client.roomInfo.totalUser || 0;
+          if (callbacks.onViewers) {
+            callbacks.onViewers({ platform: 'tiktok', viewers: initialViewers });
+          }
+        }
+      });
+
+      client.on('roomInfo', (info) => {
+        if (info) {
+          const count = info.viewerCount || info.userCount || info.totalUser || 0;
+          if (callbacks.onViewers) {
+            callbacks.onViewers({ platform: 'tiktok', viewers: count });
+          }
+        }
       });
 
       client.on('disconnected', (code, reason) => {
         if (stopped) return;
         console.warn('[TikTok/TikTool] Desconectado:', code, reason);
         callbacks.onStatus({ connected: false, error: 'TikTok desconectado, reintentando…' });
+        if (callbacks.onViewers) {
+          callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
+        }
         scheduleReconnect();
       });
 
@@ -80,6 +100,9 @@ function connect(username, callbacks, options = {}) {
           connected: false, 
           error: msg.includes('LIVE has ended') ? 'El usuario no está en vivo en TikTok' : 'TikTok: ' + msg 
         });
+        if (callbacks.onViewers) {
+          callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
+        }
         scheduleReconnect();
       });
 
@@ -123,7 +146,7 @@ function connect(username, callbacks, options = {}) {
         }
       });
 
-      // Espectadores en vivo (Viewer count)
+      // Espectadores en vivo (Viewer count continuo)
       client.on('roomUserSeq', (event) => {
         const count = event.viewerCount || event.totalViewers || 0;
         if (callbacks.onViewers) {
@@ -197,6 +220,9 @@ function connect(username, callbacks, options = {}) {
           connected: false, 
           error: msg.includes('LIVE has ended') ? 'El usuario no está en vivo en TikTok' : 'TikTok: ' + msg 
         });
+        if (callbacks.onViewers) {
+          callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
+        }
         scheduleReconnect();
       });
 

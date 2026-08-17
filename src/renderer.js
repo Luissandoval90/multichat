@@ -35,6 +35,16 @@ const totalViewersEl = document.getElementById('total-viewers-count');
 const platformViewersContainer = document.getElementById('platform-viewers-container');
 const likesCountEl = document.getElementById('likes-count');
 
+// Elementos de TTS
+const ttsOptCheck = document.getElementById('opt-tts');
+const ttsAdvancedCard = document.getElementById('tts-advanced-card');
+const ttsVoiceSelect = document.getElementById('tts-voice-select');
+const btnTestVoice = document.getElementById('btn-test-voice');
+const ttsVolSlider = document.getElementById('tts-volume-slider');
+const ttsRateSlider = document.getElementById('tts-rate-slider');
+const ttsVolVal = document.getElementById('tts-vol-val');
+const ttsRateVal = document.getElementById('tts-rate-val');
+
 const statusLines = {};
 const avatarCacheMap = new Map();
 const viewersMap = new Map(); // platform -> number
@@ -59,7 +69,11 @@ function initUI() {
   currentConfig = window.AppStorage.loadConfig();
   applyConfigToUI(currentConfig);
 
-  // Eventos de Checkbox y subpaneles
+  // Inicializar voces del sistema para TTS
+  window.AppTTS.initVoices(populateVoiceSelect);
+  setTimeout(populateVoiceSelect, 300);
+
+  // Eventos de Checkbox de plataformas
   PLATFORMS.forEach(p => {
     const check = document.getElementById(`check-${p}`);
     const input = document.getElementById(`input-${p}`);
@@ -103,8 +117,42 @@ function initUI() {
   document.getElementById('opt-follow-alerts').addEventListener('change', (e) => {
     window.FollowAlerts.setFollowAlertsEnabled(e.target.checked);
   });
-  document.getElementById('opt-tts').addEventListener('change', (e) => {
-    window.AppTTS.setTtsEnabled(e.target.checked);
+
+  // Control de TTS
+  ttsOptCheck.addEventListener('change', (e) => {
+    const isChecked = e.target.checked;
+    ttsAdvancedCard.classList.toggle('hidden', !isChecked);
+    window.AppTTS.setTtsEnabled(isChecked);
+  });
+
+  ttsVoiceSelect.addEventListener('change', (e) => {
+    window.AppTTS.setVoiceURI(e.target.value);
+  });
+
+  btnTestVoice.addEventListener('click', () => {
+    window.AppTTS.testVoice('Hola, probando la voz seleccionada para el chat.');
+  });
+
+  ttsVolSlider.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    ttsVolVal.textContent = val + '%';
+    window.AppTTS.setTtsVolume(val / 100);
+  });
+
+  ttsRateSlider.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    ttsRateVal.textContent = (val / 100).toFixed(2) + 'x';
+    window.AppTTS.setTtsRate(val / 100);
+  });
+
+  // Eventos de checkboxes individuales de TTS por plataforma
+  PLATFORMS.forEach(p => {
+    const tCheck = document.getElementById(`tts-check-${p}`);
+    if (tCheck) {
+      tCheck.addEventListener('change', (e) => {
+        window.AppTTS.setPlatformTts(p, e.target.checked);
+      });
+    }
   });
 
   // Auto-conectar si está habilitado y hay plataformas configuradas
@@ -114,6 +162,40 @@ function initUI() {
       console.log('[Renderer] Auto-conectando plataformas guardadas...');
       handleConnect(true);
     }
+  }
+}
+
+function populateVoiceSelect() {
+  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  if (!voices || voices.length === 0) return;
+
+  const currentSelected = ttsVoiceSelect.value || (currentConfig && currentConfig.options.ttsVoice) || '';
+  ttsVoiceSelect.innerHTML = '';
+
+  // Ordenar: voces en español primero
+  const sortedVoices = [...voices].sort((a, b) => {
+    const aEs = a.lang.startsWith('es');
+    const bEs = b.lang.startsWith('es');
+    if (aEs && !bEs) return -1;
+    if (!aEs && bEs) return 1;
+    return a.name.localeCompare(b.name);
+  });
+
+  sortedVoices.forEach(v => {
+    const opt = document.createElement('option');
+    opt.value = v.voiceURI || v.name;
+    const isEs = v.lang.startsWith('es') ? '🇪🇸 ' : '';
+    opt.textContent = `${isEs}${v.name} (${v.lang})`;
+    if (currentSelected && (v.voiceURI === currentSelected || v.name === currentSelected)) {
+      opt.selected = true;
+    }
+    ttsVoiceSelect.appendChild(opt);
+  });
+
+  if (!currentSelected && sortedVoices.length > 0) {
+    const defaultEs = sortedVoices.find(v => v.lang.startsWith('es')) || sortedVoices[0];
+    ttsVoiceSelect.value = defaultEs.voiceURI || defaultEs.name;
+    window.AppTTS.setVoiceURI(ttsVoiceSelect.value);
   }
 }
 
@@ -153,13 +235,43 @@ function applyConfigToUI(config) {
   document.getElementById('opt-auto-connect').checked = !!config.options.autoConnect;
   document.getElementById('opt-follow-alerts').checked = !!config.options.followAlerts;
   document.getElementById('opt-sound-alerts').checked = !!config.options.soundAlerts;
-  document.getElementById('opt-tts').checked = !!config.options.ttsEnabled;
   document.getElementById('opt-filter-bots').checked = !!config.options.filterBotCommands;
+
+  // TTS
+  const isTtsOn = !!config.options.ttsEnabled;
+  ttsOptCheck.checked = isTtsOn;
+  ttsAdvancedCard.classList.toggle('hidden', !isTtsOn);
+
+  if (config.options.ttsVolume) {
+    const volPct = Math.round(config.options.ttsVolume * 100);
+    ttsVolSlider.value = volPct;
+    ttsVolVal.textContent = volPct + '%';
+    window.AppTTS.setTtsVolume(config.options.ttsVolume);
+  }
+  if (config.options.ttsRate) {
+    const rateVal = Math.round(config.options.ttsRate * 100);
+    ttsRateSlider.value = rateVal;
+    ttsRateVal.textContent = config.options.ttsRate.toFixed(2) + 'x';
+    window.AppTTS.setTtsRate(config.options.ttsRate);
+  }
+  if (config.options.ttsVoice) {
+    window.AppTTS.setVoiceURI(config.options.ttsVoice);
+  }
+
+  // Plataformas activas para TTS
+  const ttsPlats = config.options.ttsPlatforms || {};
+  PLATFORMS.forEach(p => {
+    const tCheck = document.getElementById(`tts-check-${p}`);
+    if (tCheck) {
+      tCheck.checked = ttsPlats[p] !== false;
+    }
+  });
+  window.AppTTS.setTtsPlatformsConfig(ttsPlats);
 
   // Aplicar módulos
   window.AudioAlerts.setSoundEnabled(config.options.soundAlerts);
   window.FollowAlerts.setFollowAlertsEnabled(config.options.followAlerts);
-  window.AppTTS.setTtsEnabled(config.options.ttsEnabled);
+  window.AppTTS.setTtsEnabled(isTtsOn);
 
   if (config.options.bgOpacity) {
     root.style.setProperty('--bg-opacity', config.options.bgOpacity);
@@ -167,13 +279,23 @@ function applyConfigToUI(config) {
 }
 
 function gatherConfigFromUI() {
+  const ttsPlatformsObj = {};
+  PLATFORMS.forEach(p => {
+    const tCheck = document.getElementById(`tts-check-${p}`);
+    ttsPlatformsObj[p] = tCheck ? tCheck.checked : true;
+  });
+
   const config = {
     platforms: {},
     options: {
       autoConnect: document.getElementById('opt-auto-connect').checked,
       followAlerts: document.getElementById('opt-follow-alerts').checked,
       soundAlerts: document.getElementById('opt-sound-alerts').checked,
-      ttsEnabled: document.getElementById('opt-tts').checked,
+      ttsEnabled: ttsOptCheck.checked,
+      ttsVoice: ttsVoiceSelect.value || '',
+      ttsVolume: parseInt(ttsVolSlider.value, 10) / 100,
+      ttsRate: parseInt(ttsRateSlider.value, 10) / 100,
+      ttsPlatforms: ttsPlatformsObj,
       filterBotCommands: document.getElementById('opt-filter-bots').checked,
       bgOpacity: parseFloat(getComputedStyle(root).getPropertyValue('--bg-opacity')) || 0.45,
     },
@@ -237,6 +359,10 @@ function handleConnect(isAuto = false) {
     return;
   }
 
+  // Resetear estados y contadores de espectadores
+  viewersMap.clear();
+  updateViewersDisplay();
+
   connectBtn.disabled = true;
   connectBtn.textContent = 'Conectando…';
   statusBar.innerHTML = '';
@@ -280,6 +406,10 @@ window.overlayAPI.onPlatformStatus((data) => {
   } else {
     badge.className = 'status-badge error';
     badge.innerHTML = `${iconMarkup(data.platform)}<span>${meta.label}: ${data.error || 'Desconectado'}</span>`;
+    
+    // Si se desconecta, resetear espectadores de esa plataforma
+    viewersMap.set(data.platform, 0);
+    updateViewersDisplay();
   }
 
   updateLiveDot();
@@ -290,20 +420,23 @@ function updateLiveDot() {
   liveDot.classList.toggle('live', anyConnected);
 }
 
-// Actualización de Espectadores
+// Actualización Robusta de Espectadores
 function formatNumber(num) {
-  if (!num || num < 0) return '0';
+  if (!num || num < 0 || isNaN(num)) return '0';
   if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
   if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-  return String(num);
+  return String(Math.floor(num));
 }
 
 function updateViewersDisplay() {
   let total = 0;
   let html = '';
 
-  viewersMap.forEach((count, platform) => {
-    if (count > 0) {
+  PLATFORMS.forEach(platform => {
+    const isConnected = statusLines[platform] && statusLines[platform].classList.contains('connected');
+    const count = viewersMap.get(platform) || 0;
+    
+    if (isConnected || count > 0) {
       total += count;
       const meta = PLATFORM_META[platform] || { color: '#888' };
       html += `<span class="platform-viewers-tag" style="color:${meta.color}">${iconMarkup(platform)}${formatNumber(count)}</span> `;
@@ -316,7 +449,8 @@ function updateViewersDisplay() {
 
 window.overlayAPI.onViewersUpdate((data) => {
   if (data.platform) {
-    viewersMap.set(data.platform, Number(data.viewers) || 0);
+    const count = Math.max(0, parseInt(data.viewers, 10) || 0);
+    viewersMap.set(data.platform, count);
     updateViewersDisplay();
   }
 });
@@ -402,7 +536,7 @@ window.overlayAPI.onChatMessage((data) => {
     return;
   }
 
-  // Lectura por voz (TTS)
+  // Lectura por voz (TTS) con filtro por plataforma
   window.AppTTS.speakMessage(data);
 
   const commentHtml = buildCommentHtml(data.comment, data.emotes);
