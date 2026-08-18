@@ -30,6 +30,7 @@ const DEFAULT_CONFIG = {
     filterBotCommands: false,
     bgOpacity: 0.45,
     fontSize: 13.5,
+    msgSpacing: 6,
   },
 };
 

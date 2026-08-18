@@ -204,6 +204,10 @@ const ttsSkipUrlsCheck = document.getElementById('tts-opt-skip-urls');
 // Elementos de Apariencia
 const opacitySlider = document.getElementById('opacity-slider');
 const opacityVal = document.getElementById('opacity-val');
+const fontSizeSlider = document.getElementById('font-size-slider');
+const fontSizeVal = document.getElementById('font-size-val');
+const msgSpacingSlider = document.getElementById('msg-spacing-slider');
+const msgSpacingVal = document.getElementById('msg-spacing-val');
 
 // Elementos de Actualización
 const updateBanner = document.getElementById('update-banner-container');
@@ -317,6 +321,18 @@ function initUI() {
     opacityVal.textContent = val + '%';
     const decimal = val / 100;
     root.style.setProperty('--bg-opacity', decimal.toFixed(2));
+  });
+
+  fontSizeSlider.addEventListener('input', (e) => {
+    const val = parseFloat(e.target.value);
+    fontSizeVal.textContent = val + 'px';
+    root.style.setProperty('--font-size', val + 'px');
+  });
+
+  msgSpacingSlider.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    msgSpacingVal.textContent = val + 'px';
+    root.style.setProperty('--msg-spacing', val + 'px');
   });
 
   document.getElementById('opt-sound-alerts').addEventListener('change', (e) => {
@@ -549,6 +565,16 @@ function applyConfigToUI(config) {
     opacityVal.textContent = opPct + '%';
     root.style.setProperty('--bg-opacity', config.options.bgOpacity);
   }
+  if (config.options.fontSize) {
+    fontSizeSlider.value = config.options.fontSize;
+    fontSizeVal.textContent = config.options.fontSize + 'px';
+    root.style.setProperty('--font-size', config.options.fontSize + 'px');
+  }
+  if (config.options.msgSpacing) {
+    msgSpacingSlider.value = config.options.msgSpacing;
+    msgSpacingVal.textContent = config.options.msgSpacing + 'px';
+    root.style.setProperty('--msg-spacing', config.options.msgSpacing + 'px');
+  }
 
   window.AudioAlerts.setSoundEnabled(config.options.soundAlerts);
   window.FollowAlerts.setFollowAlertsEnabled(config.options.followAlerts);
@@ -581,6 +607,8 @@ function gatherConfigFromUI() {
       ttsPlatforms: ttsPlatformsObj,
       filterBotCommands: document.getElementById('opt-filter-bots').checked,
       bgOpacity: parseInt(opacitySlider.value, 10) / 100,
+      fontSize: parseFloat(fontSizeSlider.value) || 13.5,
+      msgSpacing: parseInt(msgSpacingSlider.value, 10) || 6,
     },
   };
 

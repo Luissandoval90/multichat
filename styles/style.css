@@ -11,6 +11,7 @@
   --youtube: #ff0000;
   --youtube-glow: rgba(255, 0, 0, 0.35);
   --font-size: 13.5px;
+  --msg-spacing: 6px;
   --surface-bg: rgba(16, 16, 24, var(--bg-opacity));
   --surface-glass: rgba(22, 22, 32, 0.85);
   --surface-border: rgba(255, 255, 255, 0.1);
