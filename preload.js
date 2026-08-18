@@ -1,7 +1,7 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('overlayAPI', {
-  // Conexión y control
+  // Conexión y control de ventana
   connect: (requests) => ipcRenderer.send('connect-request', requests),
   disconnectAll: () => ipcRenderer.send('disconnect-all'),
   minimize: () => ipcRenderer.send('minimize-window'),
@@ -17,6 +17,14 @@ contextBridge.exposeInMainWorld('overlayAPI', {
   onLikeMessage: (callback) => ipcRenderer.on('like-message', (_event, data) => callback(data)),
   onShareMessage: (callback) => ipcRenderer.on('share-message', (_event, data) => callback(data)),
   onViewersUpdate: (callback) => ipcRenderer.on('viewers-update', (_event, data) => callback(data)),
+
+  // Sistema de Actualizaciones Automáticas
+  checkForUpdates: () => ipcRenderer.send('check-for-updates'),
+  restartAndInstall: () => ipcRenderer.send('restart-and-install'),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  onUpdateAvailable: (callback) => ipcRenderer.on('update-available', (_event, data) => callback(data)),
+  onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (_event, data) => callback(data)),
+  onUpdateStatus: (callback) => ipcRenderer.on('update-status', (_event, data) => callback(data)),
 
   // Atajos globales y ventana
   onClickThroughChanged: (callback) => ipcRenderer.on('click-through-changed', (_event, data) => callback(data)),

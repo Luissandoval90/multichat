@@ -14,10 +14,13 @@ const DEFAULT_CONFIG = {
     followAlerts: true,
     soundAlerts: true,
     soundVolume: 0.7,
+    theme: 'cyberpunk',
     ttsEnabled: false,
     ttsVoice: '',
     ttsVolume: 0.85,
     ttsRate: 1.05,
+    ttsIncludeNickname: true,
+    ttsSkipUrls: true,
     ttsPlatforms: {
       tiktok: true,
       twitch: true,

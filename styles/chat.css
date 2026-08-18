@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Contenedor de Chat y Mensajes
+   Contenedor de Chat y Burbujas de Mensajes Pro
    ========================================================================== */
 #chat-container {
   flex: 1;
@@ -25,23 +25,25 @@
   background: transparent;
 }
 
-/* Burbuja de Mensaje */
+/* Burbuja de Mensaje Glassmorphism 2.0 */
 .msg {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   background: var(--surface-bg);
-  backdrop-filter: blur(10px);
-  padding: 6px 10px;
+  backdrop-filter: blur(12px);
+  padding: 7px 10px;
   border-radius: 10px;
   color: var(--text-main);
-  line-height: 1.42;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  line-height: 1.45;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
   word-break: break-word;
-  animation: messageSlideIn 0.22s cubic-bezier(0.2, 0.8, 0.3, 1);
+  animation: messageSlideIn 0.2s cubic-bezier(0.2, 0.8, 0.3, 1);
   border-left: 3.5px solid transparent;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes messageSlideIn {
@@ -55,31 +57,37 @@
   }
 }
 
-/* Colores de borde según plataforma */
+/* Colores y resplandor según plataforma */
 .msg.platform-tiktok  { border-left-color: var(--tiktok); }
 .msg.platform-twitch  { border-left-color: var(--twitch); }
 .msg.platform-kick    { border-left-color: var(--kick); }
 .msg.platform-youtube { border-left-color: var(--youtube); }
 
-/* Avatar */
+/* Avatar HD con anillo de color */
 .msg .avatar {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   flex-shrink: 0;
   margin-top: 1px;
   background: #2a2b36;
   object-fit: cover;
-  box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
 }
+
+.msg.platform-tiktok .avatar  { border-color: rgba(254, 44, 85, 0.4); }
+.msg.platform-twitch .avatar  { border-color: rgba(145, 70, 255, 0.4); }
+.msg.platform-kick .avatar    { border-color: rgba(83, 252, 24, 0.4); }
+.msg.platform-youtube .avatar { border-color: rgba(255, 0, 0, 0.4); }
 
 .msg .avatar.placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 800;
   text-shadow: none;
 }
 
@@ -88,19 +96,20 @@
   min-width: 0;
 }
 
-/* Etiqueta de plataforma */
+/* Insignia / Tag de plataforma */
 .platform-tag {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 800;
-  padding: 1px 5px;
+  padding: 1.5px 5.5px;
   border-radius: 4px;
   color: #fff;
   margin-right: 5px;
   vertical-align: middle;
   text-shadow: none;
+  letter-spacing: 0.2px;
 }
 
 .platform-tag.tiktok  { background: var(--tiktok); }
@@ -115,9 +124,9 @@
 }
 
 .msg .nick {
-  font-weight: 700;
+  font-weight: 750;
   margin-right: 4px;
-  color: #e5e7eb;
+  color: #f3f4f6;
 }
 
 .msg img.emote {
@@ -130,21 +139,21 @@
 
 /* Mensajes de unión */
 .msg.join {
-  background: rgba(255, 209, 102, 0.09);
+  background: rgba(255, 209, 102, 0.1);
   border-left-color: #ffd166;
-  color: #fde68a;
+  color: #fef08a;
   font-style: italic;
-  font-size: 12px;
+  font-size: 11.5px;
   padding: 4px 10px;
 }
 
 /* Mensajes de compartidos (Share) */
 .msg.share {
-  background: linear-gradient(90deg, rgba(56, 189, 248, 0.18), var(--surface-bg));
+  background: linear-gradient(90deg, rgba(56, 189, 248, 0.2), var(--surface-bg));
   border-left-color: #38bdf8;
   color: #bae6fd;
-  font-size: 12.5px;
-  padding: 5px 10px;
+  font-size: 12px;
+  padding: 6px 10px;
   font-weight: 600;
 }
 
@@ -154,72 +163,107 @@
   font-weight: 800;
 }
 
-/* Mensajes de regalo / SuperChat con Diamantes */
+/* Tarjeta de Regalos Mejorada con Imagen Oficial y Español */
 .msg.gift {
-  background: linear-gradient(90deg, rgba(255, 158, 203, 0.22), var(--surface-bg));
-  border: 1px solid rgba(255, 158, 203, 0.35);
+  background: linear-gradient(90deg, rgba(255, 112, 166, 0.2), var(--surface-bg));
+  border: 1px solid rgba(255, 112, 166, 0.35);
   border-left: 4px solid #ff70a6;
   color: #fce7f3;
   font-weight: 600;
   align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
 }
 
 .msg.gift.epic {
-  background: linear-gradient(90deg, rgba(251, 191, 36, 0.28), rgba(244, 63, 94, 0.2));
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.25), rgba(244, 63, 94, 0.2));
   border: 1px solid #fbbf24;
   border-left: 4px solid #f59e0b;
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
+  box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
 }
 
-.msg.gift .gift-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  object-fit: contain;
-  background: rgba(255, 255, 255, 0.08);
+.gift-preview-box {
+  position: relative;
+  width: 38px;
+  height: 38px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.msg.gift .gift-name {
+.gift-preview-box img.gift-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+.gift-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.gift-title-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.gift-name-tag {
   color: #ff9ecb;
-  font-weight: 700;
-}
-
-.msg.gift.epic .gift-name {
-  color: #fef08a;
   font-weight: 800;
+  font-size: 13px;
 }
 
-.msg.gift .diamond-badge {
+.msg.gift.epic .gift-name-tag {
+  color: #fde047;
+}
+
+.gift-meta-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+
+.diamond-badge {
   background: rgba(14, 165, 233, 0.25);
   border: 1px solid rgba(14, 165, 233, 0.5);
   color: #7dd3fc;
+  border-radius: 5px;
+  padding: 1px 6px;
+  font-size: 10.5px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.repeat-badge {
+  background: linear-gradient(135deg, #f43f5e, #ec4899);
+  color: white;
   border-radius: 6px;
   padding: 1px 6px;
   font-size: 11px;
-  font-weight: 800;
-  margin-left: 5px;
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
+  font-weight: 900;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.4);
 }
 
-.msg.gift .repeat {
-  background: rgba(255, 158, 203, 0.3);
-  border-radius: 8px;
-  padding: 1px 6px;
-  font-size: 11px;
-  margin-left: 4px;
-  font-weight: 800;
-}
-
-/* Mensaje del sistema */
+/* Mensajes del Sistema */
 .msg.system {
   text-align: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.55);
-  font-size: 11.5px;
-  background: rgba(0, 0, 0, 0.2);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  background: rgba(0, 0, 0, 0.25);
   border-left: none;
   box-shadow: none;
+  padding: 4px 8px;
 }

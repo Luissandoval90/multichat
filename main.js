@@ -1,45 +1,66 @@
 const { app, BrowserWindow, ipcMain, globalShortcut, screen } = require('electron');
-const { autoUpdater } = require('electron-updater');
 const path = require('path');
 
-const tiktokPlatform = require('./platforms/tiktok');
-const twitchPlatform = require('./platforms/twitch');
-const kickPlatform = require('./platforms/kick');
-const youtubePlatform = require('./platforms/youtube');
-
-const PLATFORMS = {
-  tiktok: tiktokPlatform,
-  twitch: twitchPlatform,
-  kick: kickPlatform,
-  youtube: youtubePlatform,
-};
-
-let mainWindow;
+let mainWindow = null;
 let clickThrough = false;
-
 const activeConnections = {};
 
-// Configurar auto-actualizador
-autoUpdater.autoDownload = true;
-autoUpdater.autoInstallOnAppQuit = true;
+// Carga perezosa (lazy-load) de plataformas para arranque ultra-rápido
+const PLATFORMS = {
+  tiktok: null,
+  twitch: null,
+  kick: null,
+  youtube: null,
+};
 
-autoUpdater.on('update-available', (info) => {
-  console.log('[AutoUpdater] Nueva versión disponible:', info.version);
-  safeSend('chat-message', {
-    platform: 'general',
-    nickname: 'Actualización',
-    comment: `🚀 ¡Nueva versión ${info.version} disponible! Descargando en segundo plano…`,
-  });
-});
+function getPlatformModule(name) {
+  if (!PLATFORMS[name]) {
+    PLATFORMS[name] = require(`./platforms/${name}`);
+  }
+  return PLATFORMS[name];
+}
 
-autoUpdater.on('update-downloaded', (info) => {
-  console.log('[AutoUpdater] Actualización descargada:', info.version);
-  safeSend('chat-message', {
-    platform: 'general',
-    nickname: 'Actualización',
-    comment: `✅ ¡Versión ${info.version} lista! Se instalará la próxima vez que abras el programa.`,
-  });
-});
+// Carga perezosa de electron-updater
+let autoUpdaterInstance = null;
+function getAutoUpdater() {
+  if (!autoUpdaterInstance) {
+    const { autoUpdater } = require('electron-updater');
+    autoUpdater.autoDownload = true;
+    autoUpdater.autoInstallOnAppQuit = true;
+
+    autoUpdater.on('checking-for-update', () => {
+      safeSend('update-status', { status: 'checking', message: 'Buscando actualizaciones en GitHub…' });
+    });
+
+    autoUpdater.on('update-available', (info) => {
+      safeSend('update-available', {
+        version: info.version,
+        releaseDate: info.releaseDate,
+        releaseNotes: info.releaseNotes || 'Mejoras de rendimiento y nuevas funciones.',
+      });
+      safeSend('update-status', { status: 'available', version: info.version, message: `Descargando v${info.version}…` });
+    });
+
+    autoUpdater.on('update-not-available', (info) => {
+      safeSend('update-status', { status: 'not-available', message: `¡Tienes la última versión instalada (v${app.getVersion()})!` });
+    });
+
+    autoUpdater.on('update-downloaded', (info) => {
+      safeSend('update-downloaded', {
+        version: info.version,
+        releaseNotes: info.releaseNotes || 'Actualización lista para instalar.',
+      });
+      safeSend('update-status', { status: 'downloaded', version: info.version, message: `v${info.version} lista para reiniciar` });
+    });
+
+    autoUpdater.on('error', (err) => {
+      safeSend('update-status', { status: 'error', message: 'No se pudo comprobar actualización: ' + (err.message || String(err)) });
+    });
+
+    autoUpdaterInstance = autoUpdater;
+  }
+  return autoUpdaterInstance;
+}
 
 function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
@@ -53,6 +74,7 @@ function createWindow() {
     frame: false,
     transparent: true,
     alwaysOnTop: true,
+    show: false, // Inicio oculto hasta que cargue el HTML para evitar parpadeos
     skipTaskbar: false,
     resizable: true,
     hasShadow: false,
@@ -68,12 +90,10 @@ function createWindow() {
 
   mainWindow.loadFile('overlay.html');
 
-  // Buscar actualizaciones si no estamos en modo desarrollo
-  if (app.isPackaged) {
-    autoUpdater.checkForUpdatesAndNotify().catch((err) => {
-      console.log('[AutoUpdater] Error comprobando actualizaciones:', err.message);
-    });
-  }
+  // Mostrar la ventana en el milisegundo exacto en que el HTML está listo
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
 
   // Atajos de teclado globales
   globalShortcut.register('Control+Alt+T', () => {
@@ -102,6 +122,16 @@ function createWindow() {
     if (!mainWindow) return;
     const [x, y] = mainWindow.getPosition();
     mainWindow.setPosition(x + dx, y + dy);
+  }
+
+  // Buscar actualizaciones en segundo plano después de 2 segundos de arranque
+  if (app.isPackaged) {
+    setTimeout(() => {
+      try {
+        const updater = getAutoUpdater();
+        updater.checkForUpdatesAndNotify().catch(() => {});
+      } catch (e) {}
+    }, 2500);
   }
 }
 
@@ -132,7 +162,7 @@ function connectPlatforms(requests) {
   const requestedKeys = requests.map(r => r.platform);
 
   for (const { platform, handle, options } of requests) {
-    const module = PLATFORMS[platform];
+    const module = getPlatformModule(platform);
     if (!module || !handle) {
       console.warn('[main] Plataforma o handle inválido:', platform, handle);
       continue;
@@ -154,6 +184,7 @@ function connectPlatforms(requests) {
   safeSend('platforms-selected', requestedKeys);
 }
 
+// Eventos de control de ventana y sistema
 ipcMain.on('minimize-window', () => {
   if (mainWindow) mainWindow.minimize();
 });
@@ -172,6 +203,30 @@ ipcMain.on('connect-request', (event, requests) => {
 
 ipcMain.on('disconnect-all', () => {
   disconnectAll();
+});
+
+// Auto-actualizador IPC
+ipcMain.on('restart-and-install', () => {
+  const updater = getAutoUpdater();
+  updater.quitAndInstall();
+});
+
+ipcMain.on('check-for-updates', () => {
+  if (app.isPackaged) {
+    const updater = getAutoUpdater();
+    updater.checkForUpdates().catch((err) => {
+      safeSend('update-status', { status: 'error', message: err.message });
+    });
+  } else {
+    safeSend('update-status', { status: 'checking', message: 'Comprobando en modo desarrollo…' });
+    setTimeout(() => {
+      safeSend('update-status', { status: 'not-available', message: `Modo desarrollo: versión actual v${app.getVersion()}` });
+    }, 1000);
+  }
+});
+
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
 });
 
 app.whenReady().then(createWindow);

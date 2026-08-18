@@ -2,8 +2,30 @@
 // Expone: connect(username, callbacks, options) -> { disconnect() }
 
 const { TikTokLive } = require('@tiktool/live');
+const https = require('https');
 
 const MAX_RECONNECT_DELAY_MS = 30000;
+
+function fetchJson(url) {
+  return new Promise((resolve, reject) => {
+    https.get(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+      },
+    }, (res) => {
+      let raw = '';
+      res.on('data', chunk => raw += chunk);
+      res.on('end', () => {
+        try {
+          resolve(JSON.parse(raw));
+        } catch {
+          resolve(null);
+        }
+      });
+    }).on('error', () => resolve(null));
+  });
+}
 
 function connect(username, callbacks, options = {}) {
   let client = null;
@@ -35,7 +57,21 @@ function connect(username, callbacks, options = {}) {
     }
   }
 
-  function start() {
+  function handleLikeEvent(event) {
+    if (!event || !callbacks.onLike) return;
+    const total = Number(event.totalLikes) || Number(event.totalLikeCount) || Number(event.total) || 0;
+    const delta = Number(event.likeCount) || Number(event.count) || 1;
+
+    callbacks.onLike({
+      platform: 'tiktok',
+      userId: event.user?.uniqueId || event.user?.id,
+      nickname: event.user?.nickname || event.user?.uniqueId,
+      likeCount: delta,
+      totalLikes: total,
+    });
+  }
+
+  async function start() {
     console.log('[TikTok/TikTool] Iniciando conexión para usuario:', currentUsername);
 
     if (!options.tiktoolApiKey) {
@@ -64,23 +100,6 @@ function connect(username, callbacks, options = {}) {
         console.log('[TikTok/TikTool] Conectado. Room ID:', client.roomId);
         reconnectAttempt = 0;
         callbacks.onStatus({ connected: true });
-        
-        // Si hay información inicial de sala, emitir espectadores iniciales
-        if (client.roomInfo) {
-          const initialViewers = client.roomInfo.viewerCount || client.roomInfo.userCount || client.roomInfo.totalUser || 0;
-          if (callbacks.onViewers) {
-            callbacks.onViewers({ platform: 'tiktok', viewers: initialViewers });
-          }
-        }
-      });
-
-      client.on('roomInfo', (info) => {
-        if (info) {
-          const count = info.viewerCount || info.userCount || info.totalUser || 0;
-          if (callbacks.onViewers) {
-            callbacks.onViewers({ platform: 'tiktok', viewers: count });
-          }
-        }
       });
 
       client.on('disconnected', (code, reason) => {
@@ -135,14 +154,13 @@ function connect(username, callbacks, options = {}) {
 
       // Likes en tiempo real y contador total
       client.on('like', (event) => {
-        if (callbacks.onLike) {
-          callbacks.onLike({
-            platform: 'tiktok',
-            userId: event.user?.uniqueId || event.user?.id,
-            nickname: event.user?.nickname || event.user?.uniqueId,
-            likeCount: event.likeCount || 1,
-            totalLikes: event.totalLikes || 0,
-          });
+        handleLikeEvent(event);
+      });
+
+      // Receptor de eventos generales (doble verificación de likes)
+      client.on('event', (event) => {
+        if (event && event.type === 'like') {
+          handleLikeEvent(event);
         }
       });
 
@@ -197,17 +215,29 @@ function connect(username, callbacks, options = {}) {
         emitFollow(event.user || event);
       });
 
-      // Regalos con diamantes y cantidad de combo
+      // Regalos con diamantes, imagen HD y cantidad de combo
       client.on('gift', (event) => {
         if (event.giftType !== 1 || event.repeatEnd) {
+          const imgUrl = event.giftImageUrl || 
+            event.giftPictureUrl || 
+            event.giftDetails?.giftImage?.urlList?.[0] || 
+            event.gift?.image?.urlList?.[0] || 
+            event.giftIconUrl || 
+            null;
+
+          const diamonds = event.diamondCount || 
+            event.giftDetails?.diamondCount || 
+            event.gift?.diamond_count || 
+            0;
+
           callbacks.onGift({
             platform: 'tiktok',
             userId: event.user?.uniqueId || event.user?.id,
             nickname: event.user?.nickname || event.user?.uniqueId,
             avatarUrl: event.user?.profilePicture || event.user?.avatarLargeUrl,
-            giftName: event.giftName || 'Regalo',
-            giftImageUrl: event.giftImageUrl || null,
-            diamondCount: event.diamondCount || 0,
+            giftName: event.giftName || event.describe || 'Regalo',
+            giftImageUrl: imgUrl,
+            diamondCount: diamonds,
             repeatCount: event.repeatCount || 1,
           });
         }

@@ -1,4 +1,4 @@
-// Lógica principal de la interfaz y renderizado de Multi Chat Overlay Pro
+// Lógica principal de la interfaz, temas, pestañas, actualizaciones y renderizado de Multi Chat Overlay Pro
 
 const PLATFORMS = ['tiktok', 'twitch', 'kick', 'youtube'];
 
@@ -20,35 +20,207 @@ function iconMarkup(platform) {
   return PLATFORM_ICONS[platform] || '';
 }
 
+// ==========================================================================
+// Base de Datos Masiva y Traductor Universal de Regalos de TikTok
+// ==========================================================================
+const TIKTOK_GIFTS_DICTIONARY = {
+  // Nivel Básico (1 a 10 Monedas)
+  'Rose': { es: 'Rosa', icon: '🌹', defaultDiamonds: 1 },
+  'TikTok': { es: 'Logo TikTok', icon: '🎵', defaultDiamonds: 1 },
+  'Ice Cream Cone': { es: 'Helado de Cono', icon: '🍦', defaultDiamonds: 1 },
+  'Heart Me': { es: 'Corazón Fan', icon: '🧡', defaultDiamonds: 1 },
+  'GG': { es: 'Buena Partida (GG)', icon: '🎮', defaultDiamonds: 1 },
+  'Finger Heart': { es: 'Corazón Coreano', icon: '🫰', defaultDiamonds: 5 },
+  'Panda': { es: 'Osito Panda', icon: '🐼', defaultDiamonds: 5 },
+  'Mic': { es: 'Micrófono', icon: '🎤', defaultDiamonds: 5 },
+  'Hi': { es: 'Saludito', icon: '👋', defaultDiamonds: 5 },
+  'Coffee': { es: 'Taza de Café', icon: '☕', defaultDiamonds: 10 },
+  'Lollipop': { es: 'Paleta Dulce', icon: '🍭', defaultDiamonds: 10 },
+  'Gamepad': { es: 'Mando Gamer', icon: '🎮', defaultDiamonds: 10 },
+  'Mini Crown': { es: 'Mini Corona', icon: '👑', defaultDiamonds: 10 },
+
+  // Nivel Medio (15 a 99 Monedas)
+  'Love Bang': { es: 'Explosión de Amor', icon: '💥', defaultDiamonds: 25 },
+  'Doughnut': { es: 'Dona Glaseada', icon: '🍩', defaultDiamonds: 30 },
+  'Donut': { es: 'Dona Glaseada', icon: '🍩', defaultDiamonds: 30 },
+  'Perfume': { es: 'Perfume Elegante', icon: '🧴', defaultDiamonds: 20 },
+  'Teddy Bear': { es: 'Oso de Peluche', icon: '🧸', defaultDiamonds: 100 },
+  'Paper Crane': { es: 'Grulla de Papel', icon: '🕊️', defaultDiamonds: 99 },
+  'Little Crown': { es: 'Corona Pequeña', icon: '👑', defaultDiamonds: 99 },
+  'Cap': { es: 'Gorra Deportiva', icon: '🧢', defaultDiamonds: 99 },
+  'Hat': { es: 'Sombrero', icon: '🎩', defaultDiamonds: 99 },
+  'Confetti': { es: 'Lluvia de Confeti', icon: '🎉', defaultDiamonds: 100 },
+  'Flowers': { es: 'Ramo de Flores', icon: '💐', defaultDiamonds: 100 },
+
+  // Nivel Avanzado (150 a 999 Monedas)
+  'Butterfly': { es: 'Mariposa Brillante', icon: '🦋', defaultDiamonds: 169 },
+  'Sunglasses': { es: 'Gafas de Sol', icon: '😎', defaultDiamonds: 199 },
+  'Goggles': { es: 'Gafas de Buceo', icon: '🥽', defaultDiamonds: 199 },
+  'Kiss': { es: 'Beso Apasionado', icon: '💋', defaultDiamonds: 150 },
+  'Love Balloon': { es: 'Globo de Amor', icon: '🎈', defaultDiamonds: 199 },
+  'Magic Wand': { es: 'Varita Mágica', icon: '🪄', defaultDiamonds: 399 },
+  'Swan': { es: 'Cisne Elegante', icon: '🦢', defaultDiamonds: 699 },
+  'Train': { es: 'Tren Expreso', icon: '🚂', defaultDiamonds: 899 },
+  'Fireworks': { es: 'Fuegos Artificiales', icon: '🎆', defaultDiamonds: 1088 },
+  'Firework': { es: 'Fuegos Artificiales', icon: '🎆', defaultDiamonds: 1088 },
+  'Mirror': { es: 'Espejo Mágico', icon: '🪞', defaultDiamonds: 1000 },
+  'Money Gun': { es: 'Pistola de Billetes', icon: '💸', defaultDiamonds: 500 },
+
+  // Nivel Legendario / Épico (1,000 a 40,000+ Monedas)
+  'Whale Diving': { es: 'Ballena Saltando', icon: '🐋', defaultDiamonds: 2150 },
+  'Whale': { es: 'Ballena Gigante', icon: '🐳', defaultDiamonds: 2150 },
+  'Motorcycle': { es: 'Moto de Carreras', icon: '🏍️', defaultDiamonds: 2988 },
+  'Car': { es: 'Auto de Lujo', icon: '🚗', defaultDiamonds: 3000 },
+  'Sports Car': { es: 'Auto Deportivo', icon: '🏎️', defaultDiamonds: 7000 },
+  'Supercar': { es: 'Superdeportivo', icon: '🏎️', defaultDiamonds: 7000 },
+  'Yacht': { es: 'Super Yate', icon: '🛥️', defaultDiamonds: 9888 },
+  'Private Jet': { es: 'Jet Privado', icon: '✈️', defaultDiamonds: 4888 },
+  'Falcon': { es: 'Halcón Dorado', icon: '🦅', defaultDiamonds: 10999 },
+  'Planet': { es: 'Planeta Cósmico', icon: '🪐', defaultDiamonds: 15000 },
+  'Rocket': { es: 'Cohete Espacial', icon: '🚀', defaultDiamonds: 20000 },
+  'Dragon': { es: 'Dragón Legendario', icon: '🐉', defaultDiamonds: 26999 },
+  'Golden Dragon': { es: 'Dragón Dorado', icon: '🐉', defaultDiamonds: 26999 },
+  'Lion': { es: 'León Rugiente', icon: '🦁', defaultDiamonds: 29999 },
+  'Leon': { es: 'León Rugiente', icon: '🦁', defaultDiamonds: 29999 },
+  'Castle': { es: 'Castillo de Cuento', icon: '🏰', defaultDiamonds: 20000 },
+  'Pegasus': { es: 'Pegaso Místico', icon: '🦄', defaultDiamonds: 27999 },
+  'Phoenix': { es: 'Fénix Inmortal', icon: '🔥', defaultDiamonds: 25999 },
+  'TikTok Universe': { es: 'Universo TikTok', icon: '🌌', defaultDiamonds: 34999 },
+  'Universe': { es: 'Universo TikTok', icon: '🌌', defaultDiamonds: 34999 },
+  'TikTok Stars': { es: 'Estrellas TikTok', icon: '⭐', defaultDiamonds: 39999 },
+  'Zeus': { es: 'Dios Zeus', icon: '⚡', defaultDiamonds: 34000 },
+  'Poseidon': { es: 'Dios Poseidón', icon: '🔱', defaultDiamonds: 30000 },
+};
+
+const WORD_TRANSLATIONS = {
+  'heart': 'Corazón',
+  'love': 'Amor',
+  'rose': 'Rosa',
+  'flower': 'Flor',
+  'crown': 'Corona',
+  'star': 'Estrella',
+  'cat': 'Gatito',
+  'dog': 'Perrito',
+  'bear': 'Oso',
+  'panda': 'Panda',
+  'lion': 'León',
+  'tiger': 'Tigre',
+  'dragon': 'Dragón',
+  'car': 'Auto',
+  'bike': 'Moto',
+  'plane': 'Avión',
+  'rocket': 'Cohete',
+  'whale': 'Ballena',
+  'dolphin': 'Delfín',
+  'shark': 'Tiburón',
+  'bird': 'Pájaro',
+  'eagle': 'Águila',
+  'falcon': 'Halcón',
+  'castle': 'Castillo',
+  'diamond': 'Diamante',
+  'gold': 'Oro',
+  'magic': 'Mágico',
+  'fire': 'Fuego',
+  'firework': 'Fuegos Artificiales',
+  'coffee': 'Café',
+  'cake': 'Pastel',
+  'ice cream': 'Helado',
+  'donut': 'Dona',
+  'pizza': 'Pizza',
+  'burger': 'Hamburguesa',
+  'balloon': 'Globo',
+  'confetti': 'Confeti',
+  'kiss': 'Beso',
+  'universe': 'Universo',
+  'galaxy': 'Galaxia',
+  'planet': 'Planeta',
+  'rainbow': 'Arcoíris',
+  'lightning': 'Rayo',
+};
+
+function translateGiftName(rawName) {
+  if (!rawName) return 'Regalo 🎁';
+  const clean = rawName.trim();
+
+  if (TIKTOK_GIFTS_DICTIONARY[clean]) {
+    const item = TIKTOK_GIFTS_DICTIONARY[clean];
+    return `${item.es} ${item.icon}`;
+  }
+
+  let words = clean.split(/\s+/);
+  let translatedWords = words.map(w => {
+    const low = w.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return WORD_TRANSLATIONS[low] || w;
+  });
+
+  return translatedWords.join(' ');
+}
+
+function formatGiftData(data) {
+  const rawName = (data.giftName || '').trim();
+  const dictMatch = TIKTOK_GIFTS_DICTIONARY[rawName] || null;
+  const translatedName = translateGiftName(rawName);
+
+  const diamondsPerUnit = data.diamondCount || (dictMatch ? dictMatch.defaultDiamonds : 0);
+  const totalDiamonds = diamondsPerUnit * (data.repeatCount || 1);
+  const isEpic = totalDiamonds >= 100 || (data.repeatCount && data.repeatCount >= 10) || rawName.toLowerCase().includes('lion') || rawName.toLowerCase().includes('universe') || rawName.toLowerCase().includes('dragon');
+
+  return {
+    translatedName,
+    totalDiamonds,
+    isEpic,
+    imageUrl: data.giftImageUrl || null,
+  };
+}
+
 // Elementos DOM
 const chatContainer = document.getElementById('chat-container');
 const statusBar = document.getElementById('status-bar');
 const setupPanel = document.getElementById('setup-panel');
+const statsBar = document.getElementById('stats-bar');
 const connectBtn = document.getElementById('connect-btn');
 const liveDot = document.getElementById('live-dot');
 const editBtn = document.getElementById('edit-btn');
+const toggleHudBtn = document.getElementById('toggle-hud-btn');
 const testAlertBtn = document.getElementById('test-alert-btn');
 const root = document.documentElement;
 
-// Elementos de Estadísticas
+// Elementos de Estadísticas HUD
 const totalViewersEl = document.getElementById('total-viewers-count');
 const platformViewersContainer = document.getElementById('platform-viewers-container');
 const likesCountEl = document.getElementById('likes-count');
 
 // Elementos de TTS
 const ttsOptCheck = document.getElementById('opt-tts');
-const ttsAdvancedCard = document.getElementById('tts-advanced-card');
 const ttsVoiceSelect = document.getElementById('tts-voice-select');
 const btnTestVoice = document.getElementById('btn-test-voice');
 const ttsVolSlider = document.getElementById('tts-volume-slider');
 const ttsRateSlider = document.getElementById('tts-rate-slider');
 const ttsVolVal = document.getElementById('tts-vol-val');
 const ttsRateVal = document.getElementById('tts-rate-val');
+const ttsIncludeNickCheck = document.getElementById('tts-opt-include-nick');
+const ttsSkipUrlsCheck = document.getElementById('tts-opt-skip-urls');
+
+// Elementos de Apariencia
+const opacitySlider = document.getElementById('opacity-slider');
+const opacityVal = document.getElementById('opacity-val');
+
+// Elementos de Actualización
+const updateBanner = document.getElementById('update-banner-container');
+const updateVersionTag = document.getElementById('update-version-tag');
+const updateTimerText = document.getElementById('update-timer-text');
+const updateProgressBar = document.getElementById('update-progress-bar');
+const btnRestartUpdate = document.getElementById('btn-restart-update');
+const btnDismissUpdate = document.getElementById('btn-dismiss-update');
+const btnCheckUpdates = document.getElementById('btn-check-updates');
+const updateStatusMsg = document.getElementById('update-status-msg');
+const appVersionLabel = document.getElementById('app-version-label');
 
 const statusLines = {};
 const avatarCacheMap = new Map();
-const viewersMap = new Map(); // platform -> number
+const viewersMap = new Map();
 let totalLikes = 0;
+let updateCountdownInterval = null;
 
 const MAX_MESSAGES = 160;
 const TRIM_BATCH = 30;
@@ -56,24 +228,52 @@ let pendingScroll = false;
 let currentConfig = null;
 
 // ==========================================================================
-// 1. Inicialización de la Interfaz y Carga de Configuración
+// 1. Inicialización, Pestañas y Temas
 // ==========================================================================
 function initUI() {
-  // Inyectar logos en las tarjetas
   PLATFORMS.forEach(p => {
     const logoEl = document.getElementById(`logo-${p}`);
     if (logoEl) logoEl.innerHTML = iconMarkup(p);
   });
 
-  // Cargar configuración guardada
+  // Sistema de Pestañas (Tabs)
+  const tabBtns = document.querySelectorAll('.tab-btn');
+  const tabContents = document.querySelectorAll('.tab-content');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      tabBtns.forEach(b => b.classList.remove('active'));
+      tabContents.forEach(c => c.classList.add('hidden'));
+
+      btn.classList.add('active');
+      const targetId = btn.getAttribute('data-tab');
+      const targetContent = document.getElementById(targetId);
+      if (targetContent) targetContent.classList.remove('hidden');
+    });
+  });
+
+  // Selector de Temas Visuales (Skins)
+  const themeBtns = document.querySelectorAll('.theme-pill-btn');
+  themeBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const theme = btn.getAttribute('data-theme');
+      setAppTheme(theme);
+    });
+  });
+
   currentConfig = window.AppStorage.loadConfig();
   applyConfigToUI(currentConfig);
 
-  // Inicializar voces del sistema para TTS
+  // Cargar versión de la app
+  if (window.overlayAPI && window.overlayAPI.getAppVersion) {
+    window.overlayAPI.getAppVersion().then(v => {
+      if (appVersionLabel) appVersionLabel.textContent = `v${v}`;
+    }).catch(() => {});
+  }
+
   window.AppTTS.initVoices(populateVoiceSelect);
   setTimeout(populateVoiceSelect, 300);
 
-  // Eventos de Checkbox de plataformas
   PLATFORMS.forEach(p => {
     const check = document.getElementById(`check-${p}`);
     const input = document.getElementById(`input-${p}`);
@@ -90,12 +290,15 @@ function initUI() {
     }
   });
 
-  // Controles de la barra de título
   document.getElementById('close-btn').addEventListener('click', () => window.overlayAPI.close());
   document.getElementById('minimize-btn').addEventListener('click', () => window.overlayAPI.minimize());
   editBtn.addEventListener('click', () => setupPanel.classList.toggle('hidden'));
 
-  // Botón para probar alerta de seguidor
+  toggleHudBtn.addEventListener('click', () => {
+    statsBar.classList.toggle('hidden');
+    toggleHudBtn.classList.toggle('active-toggle', !statsBar.classList.contains('hidden'));
+  });
+
   testAlertBtn.addEventListener('click', () => {
     window.FollowAlerts.triggerFollowAlert({
       platform: 'tiktok',
@@ -105,12 +308,17 @@ function initUI() {
     });
   });
 
-  // Botón de Conectar / Guardar
   connectBtn.addEventListener('click', () => {
     handleConnect();
   });
 
-  // Opciones generales en tiempo real
+  opacitySlider.addEventListener('input', (e) => {
+    const val = parseInt(e.target.value, 10);
+    opacityVal.textContent = val + '%';
+    const decimal = val / 100;
+    root.style.setProperty('--bg-opacity', decimal.toFixed(2));
+  });
+
   document.getElementById('opt-sound-alerts').addEventListener('change', (e) => {
     window.AudioAlerts.setSoundEnabled(e.target.checked);
   });
@@ -118,11 +326,16 @@ function initUI() {
     window.FollowAlerts.setFollowAlertsEnabled(e.target.checked);
   });
 
-  // Control de TTS
   ttsOptCheck.addEventListener('change', (e) => {
-    const isChecked = e.target.checked;
-    ttsAdvancedCard.classList.toggle('hidden', !isChecked);
-    window.AppTTS.setTtsEnabled(isChecked);
+    window.AppTTS.setTtsEnabled(e.target.checked);
+  });
+
+  ttsIncludeNickCheck.addEventListener('change', (e) => {
+    window.AppTTS.setIncludeNickname(e.target.checked);
+  });
+
+  ttsSkipUrlsCheck.addEventListener('change', (e) => {
+    window.AppTTS.setSkipUrls(e.target.checked);
   });
 
   ttsVoiceSelect.addEventListener('change', (e) => {
@@ -145,7 +358,6 @@ function initUI() {
     window.AppTTS.setTtsRate(val / 100);
   });
 
-  // Eventos de checkboxes individuales de TTS por plataforma
   PLATFORMS.forEach(p => {
     const tCheck = document.getElementById(`tts-check-${p}`);
     if (tCheck) {
@@ -155,7 +367,22 @@ function initUI() {
     }
   });
 
-  // Auto-conectar si está habilitado y hay plataformas configuradas
+  // Manejo de Actualizaciones
+  btnCheckUpdates.addEventListener('click', () => {
+    updateStatusMsg.textContent = 'Buscando actualizaciones en GitHub…';
+    window.overlayAPI.checkForUpdates();
+  });
+
+  btnRestartUpdate.addEventListener('click', () => {
+    if (updateCountdownInterval) clearInterval(updateCountdownInterval);
+    window.overlayAPI.restartAndInstall();
+  });
+
+  btnDismissUpdate.addEventListener('click', () => {
+    if (updateCountdownInterval) clearInterval(updateCountdownInterval);
+    updateBanner.classList.add('hidden');
+  });
+
   if (currentConfig.options.autoConnect) {
     const hasEnabledPlatform = PLATFORMS.some(p => currentConfig.platforms[p]?.enabled && currentConfig.platforms[p]?.handle);
     if (hasEnabledPlatform) {
@@ -165,6 +392,52 @@ function initUI() {
   }
 }
 
+function setAppTheme(theme) {
+  document.body.className = `theme-${theme}`;
+  const themeBtns = document.querySelectorAll('.theme-pill-btn');
+  themeBtns.forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-theme') === theme);
+  });
+  if (currentConfig && currentConfig.options) {
+    currentConfig.options.theme = theme;
+    window.AppStorage.saveConfig(currentConfig);
+  }
+}
+
+function showUpdateBanner(info) {
+  if (updateCountdownInterval) clearInterval(updateCountdownInterval);
+
+  updateVersionTag.textContent = `v${info.version || 'Nueva'}`;
+  updateBanner.classList.remove('hidden');
+
+  let secondsLeft = 10;
+  updateTimerText.textContent = `Reiniciando en ${secondsLeft}s...`;
+  updateProgressBar.style.width = '100%';
+
+  updateCountdownInterval = setInterval(() => {
+    secondsLeft--;
+    if (secondsLeft > 0) {
+      updateTimerText.textContent = `Reiniciando en ${secondsLeft}s...`;
+      updateProgressBar.style.width = `${(secondsLeft / 10) * 100}%`;
+    } else {
+      clearInterval(updateCountdownInterval);
+      updateTimerText.textContent = 'Reiniciando ahora…';
+      window.overlayAPI.restartAndInstall();
+    }
+  }, 1000);
+}
+
+// Listeners de actualización automática
+window.overlayAPI.onUpdateDownloaded((info) => {
+  showUpdateBanner(info);
+});
+
+window.overlayAPI.onUpdateStatus((data) => {
+  if (updateStatusMsg) {
+    updateStatusMsg.textContent = data.message || '';
+  }
+});
+
 function populateVoiceSelect() {
   const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
   if (!voices || voices.length === 0) return;
@@ -172,7 +445,6 @@ function populateVoiceSelect() {
   const currentSelected = ttsVoiceSelect.value || (currentConfig && currentConfig.options.ttsVoice) || '';
   ttsVoiceSelect.innerHTML = '';
 
-  // Ordenar: voces en español primero
   const sortedVoices = [...voices].sort((a, b) => {
     const aEs = a.lang.startsWith('es');
     const bEs = b.lang.startsWith('es');
@@ -200,7 +472,6 @@ function populateVoiceSelect() {
 }
 
 function applyConfigToUI(config) {
-  // Aplicar plataformas
   PLATFORMS.forEach(p => {
     const pData = config.platforms[p] || {};
     const check = document.getElementById(`check-${p}`);
@@ -217,7 +488,6 @@ function applyConfigToUI(config) {
     }
   });
 
-  // Campos específicos
   if (config.platforms.tiktok?.apiKey) {
     const keyInput = document.getElementById('input-tiktok-key');
     if (keyInput) keyInput.value = config.platforms.tiktok.apiKey;
@@ -231,16 +501,23 @@ function applyConfigToUI(config) {
     if (secInput) secInput.value = config.platforms.twitch.clientSecret;
   }
 
-  // Opciones generales
   document.getElementById('opt-auto-connect').checked = !!config.options.autoConnect;
   document.getElementById('opt-follow-alerts').checked = !!config.options.followAlerts;
   document.getElementById('opt-sound-alerts').checked = !!config.options.soundAlerts;
   document.getElementById('opt-filter-bots').checked = !!config.options.filterBotCommands;
 
+  // Tema
+  const currentTheme = config.options.theme || 'cyberpunk';
+  setAppTheme(currentTheme);
+
   // TTS
   const isTtsOn = !!config.options.ttsEnabled;
   ttsOptCheck.checked = isTtsOn;
-  ttsAdvancedCard.classList.toggle('hidden', !isTtsOn);
+  ttsIncludeNickCheck.checked = config.options.ttsIncludeNickname !== false;
+  ttsSkipUrlsCheck.checked = config.options.ttsSkipUrls !== false;
+
+  window.AppTTS.setIncludeNickname(ttsIncludeNickCheck.checked);
+  window.AppTTS.setSkipUrls(ttsSkipUrlsCheck.checked);
 
   if (config.options.ttsVolume) {
     const volPct = Math.round(config.options.ttsVolume * 100);
@@ -258,24 +535,24 @@ function applyConfigToUI(config) {
     window.AppTTS.setVoiceURI(config.options.ttsVoice);
   }
 
-  // Plataformas activas para TTS
   const ttsPlats = config.options.ttsPlatforms || {};
   PLATFORMS.forEach(p => {
     const tCheck = document.getElementById(`tts-check-${p}`);
-    if (tCheck) {
-      tCheck.checked = ttsPlats[p] !== false;
-    }
+    if (tCheck) tCheck.checked = ttsPlats[p] !== false;
   });
   window.AppTTS.setTtsPlatformsConfig(ttsPlats);
 
-  // Aplicar módulos
+  // Apariencia
+  if (config.options.bgOpacity) {
+    const opPct = Math.round(config.options.bgOpacity * 100);
+    opacitySlider.value = opPct;
+    opacityVal.textContent = opPct + '%';
+    root.style.setProperty('--bg-opacity', config.options.bgOpacity);
+  }
+
   window.AudioAlerts.setSoundEnabled(config.options.soundAlerts);
   window.FollowAlerts.setFollowAlertsEnabled(config.options.followAlerts);
   window.AppTTS.setTtsEnabled(isTtsOn);
-
-  if (config.options.bgOpacity) {
-    root.style.setProperty('--bg-opacity', config.options.bgOpacity);
-  }
 }
 
 function gatherConfigFromUI() {
@@ -285,19 +562,25 @@ function gatherConfigFromUI() {
     ttsPlatformsObj[p] = tCheck ? tCheck.checked : true;
   });
 
+  const activeThemeBtn = document.querySelector('.theme-pill-btn.active');
+  const selectedTheme = activeThemeBtn ? activeThemeBtn.getAttribute('data-theme') : 'cyberpunk';
+
   const config = {
     platforms: {},
     options: {
       autoConnect: document.getElementById('opt-auto-connect').checked,
       followAlerts: document.getElementById('opt-follow-alerts').checked,
       soundAlerts: document.getElementById('opt-sound-alerts').checked,
+      theme: selectedTheme,
       ttsEnabled: ttsOptCheck.checked,
+      ttsIncludeNickname: ttsIncludeNickCheck.checked,
+      ttsSkipUrls: ttsSkipUrlsCheck.checked,
       ttsVoice: ttsVoiceSelect.value || '',
       ttsVolume: parseInt(ttsVolSlider.value, 10) / 100,
       ttsRate: parseInt(ttsRateSlider.value, 10) / 100,
       ttsPlatforms: ttsPlatformsObj,
       filterBotCommands: document.getElementById('opt-filter-bots').checked,
-      bgOpacity: parseFloat(getComputedStyle(root).getPropertyValue('--bg-opacity')) || 0.45,
+      bgOpacity: parseInt(opacitySlider.value, 10) / 100,
     },
   };
 
@@ -312,7 +595,6 @@ function gatherConfigFromUI() {
     };
   });
 
-  // Guardar API keys y credenciales
   const tiktokKey = document.getElementById('input-tiktok-key')?.value.trim() || '';
   config.platforms.tiktok.apiKey = tiktokKey;
 
@@ -359,9 +641,10 @@ function handleConnect(isAuto = false) {
     return;
   }
 
-  // Resetear estados y contadores de espectadores
   viewersMap.clear();
   updateViewersDisplay();
+  totalLikes = 0;
+  likesCountEl.textContent = '0';
 
   connectBtn.disabled = true;
   connectBtn.textContent = 'Conectando…';
@@ -375,7 +658,7 @@ function handleConnect(isAuto = false) {
 }
 
 // ==========================================================================
-// 3. Barra de Estado y Estadísticas en Vivo
+// 3. Barra HUD y Estadísticas en Tiempo Real
 // ==========================================================================
 function ensureStatusLine(platform) {
   if (statusLines[platform]) return statusLines[platform];
@@ -406,8 +689,6 @@ window.overlayAPI.onPlatformStatus((data) => {
   } else {
     badge.className = 'status-badge error';
     badge.innerHTML = `${iconMarkup(data.platform)}<span>${meta.label}: ${data.error || 'Desconectado'}</span>`;
-    
-    // Si se desconecta, resetear espectadores de esa plataforma
     viewersMap.set(data.platform, 0);
     updateViewersDisplay();
   }
@@ -420,7 +701,6 @@ function updateLiveDot() {
   liveDot.classList.toggle('live', anyConnected);
 }
 
-// Actualización Robusta de Espectadores
 function formatNumber(num) {
   if (!num || num < 0 || isNaN(num)) return '0';
   if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
@@ -439,7 +719,7 @@ function updateViewersDisplay() {
     if (isConnected || count > 0) {
       total += count;
       const meta = PLATFORM_META[platform] || { color: '#888' };
-      html += `<span class="platform-viewers-tag" style="color:${meta.color}">${iconMarkup(platform)}${formatNumber(count)}</span> `;
+      html += `<span class="platform-pill" style="color:${meta.color}">${iconMarkup(platform)}${formatNumber(count)}</span>`;
     }
   });
 
@@ -455,19 +735,24 @@ window.overlayAPI.onViewersUpdate((data) => {
   }
 });
 
-// Actualización de Likes de TikTok
+// Likes de TikTok Robusto y Continuo
 window.overlayAPI.onLikeMessage((data) => {
-  if (data.totalLikes && data.totalLikes > totalLikes) {
-    totalLikes = data.totalLikes;
-    likesCountEl.textContent = formatNumber(totalLikes);
-  } else if (data.likeCount) {
-    totalLikes += data.likeCount;
-    likesCountEl.textContent = formatNumber(totalLikes);
+  const incomingTotal = parseInt(data.totalLikes, 10);
+  const incomingDelta = parseInt(data.likeCount, 10);
+
+  if (!isNaN(incomingTotal) && incomingTotal > 0) {
+    totalLikes = Math.max(totalLikes, incomingTotal);
+  } else if (!isNaN(incomingDelta) && incomingDelta > 0) {
+    totalLikes += incomingDelta;
+  } else {
+    totalLikes += 1;
   }
+
+  likesCountEl.textContent = formatNumber(totalLikes);
 });
 
 // ==========================================================================
-// 4. Renderizado de Mensajes y Chat
+// 4. Renderizado de Mensajes y Regalos Ricos
 // ==========================================================================
 function scheduleScroll() {
   if (pendingScroll) return;
@@ -516,7 +801,7 @@ function avatarHtml(data) {
   return `<span class="avatar placeholder" style="background:var(--${meta.className}, #888)">${initial}</span>`;
 }
 
-// Mensajes de Chat
+// Chat
 window.overlayAPI.onChatMessage((data) => {
   const filterBots = document.getElementById('opt-filter-bots')?.checked;
   if (filterBots && data.comment && /^[!/.?#]/.test(data.comment.trim())) {
@@ -525,7 +810,6 @@ window.overlayAPI.onChatMessage((data) => {
 
   const userKey = `${data.platform}:${data.userId || data.nickname}`;
 
-  // Actualización asíncrona de avatar (Twitch Helix)
   if (data._avatarUpdate) {
     avatarCacheMap.set(userKey, data.avatarUrl);
     const pendingImgs = chatContainer.querySelectorAll(`img.avatar-pending[data-user-key="${cssEscape(userKey)}"]`);
@@ -536,7 +820,6 @@ window.overlayAPI.onChatMessage((data) => {
     return;
   }
 
-  // Lectura por voz (TTS) con filtro por plataforma
   window.AppTTS.speakMessage(data);
 
   const commentHtml = buildCommentHtml(data.comment, data.emotes);
@@ -555,13 +838,13 @@ window.overlayAPI.onChatMessage((data) => {
   addMessageNode(div);
 });
 
-// Eventos de nuevos Seguidores (Follows)
+// Follows
 window.overlayAPI.onFollowMessage((data) => {
-  console.log('[Renderer] Nuevo seguidor detectado:', data);
+  console.log('[Renderer] Nuevo seguidor:', data);
   window.FollowAlerts.triggerFollowAlert(data);
 });
 
-// Eventos de Compartidos (Share)
+// Share
 window.overlayAPI.onShareMessage((data) => {
   addSimpleMessage(
     `${platformTag(data.platform)}<span class="share-icon">📢 ↗</span> <b>${escapeHtml(data.nickname || data.userId)}</b> compartió el directo`,
@@ -569,7 +852,7 @@ window.overlayAPI.onShareMessage((data) => {
   );
 });
 
-// Mensajes de unión
+// Join
 window.overlayAPI.onJoinMessage((data) => {
   addSimpleMessage(
     `${platformTag(data.platform)} <span>→</span> <b>${escapeHtml(data.nickname || data.userId)}</b> se unió`,
@@ -577,23 +860,37 @@ window.overlayAPI.onJoinMessage((data) => {
   );
 });
 
-// Regalos / SuperChats con Diamantes
+// Regalos en Español con Imágenes HD y Diamantes
 window.overlayAPI.onGiftMessage((data) => {
   if (window.AudioAlerts && typeof window.AudioAlerts.playGiftSound === 'function') {
     window.AudioAlerts.playGiftSound();
   }
 
-  const times = data.repeatCount > 1 ? `<span class="repeat">x${data.repeatCount}</span>` : '';
-  const diamonds = data.diamondCount && data.diamondCount > 0 ? `<span class="diamond-badge">💎 ${data.diamondCount * (data.repeatCount || 1)}</span>` : '';
-  const isEpic = (data.diamondCount && data.diamondCount >= 50) || (data.repeatCount && data.repeatCount >= 10);
+  const giftDetails = formatGiftData(data);
+  const repeatMarkup = data.repeatCount > 1 ? `<span class="repeat-badge">x${data.repeatCount}</span>` : '';
+  const diamondMarkup = giftDetails.totalDiamonds > 0 ? `<span class="diamond-badge">💎 ${giftDetails.totalDiamonds}</span>` : '';
 
-  const icon = data.giftImageUrl
-    ? `<img class="gift-icon" src="${data.giftImageUrl}" alt="" loading="lazy" />`
+  const giftImageMarkup = giftDetails.imageUrl
+    ? `<img class="gift-icon" src="${giftDetails.imageUrl}" alt="" loading="lazy" />`
     : '<span style="font-size:22px">🎁</span>';
 
   const div = document.createElement('div');
-  div.className = `msg gift platform-${data.platform}${isEpic ? ' epic' : ''}`;
-  div.innerHTML = `${icon}<span class="body">${platformTag(data.platform)}<b>${escapeHtml(data.nickname || data.userId)}</b> envió <span class="gift-name">${escapeHtml(data.giftName || 'un regalo')}</span>${times}${diamonds}</span>`;
+  div.className = `msg gift platform-${data.platform}${giftDetails.isEpic ? ' epic' : ''}`;
+  div.innerHTML = `
+    <div class="gift-preview-box">${giftImageMarkup}</div>
+    <div class="gift-info">
+      <div class="gift-title-row">
+        ${platformTag(data.platform)}
+        <b>${escapeHtml(data.nickname || data.userId)}</b>
+        <span style="color:#d1d5db; font-size:11px;">envió</span>
+        <span class="gift-name-tag">${escapeHtml(giftDetails.translatedName)}</span>
+        ${repeatMarkup}
+      </div>
+      <div class="gift-meta-row">
+        ${diamondMarkup}
+      </div>
+    </div>
+  `;
   addMessageNode(div);
 });
 
@@ -603,6 +900,12 @@ window.overlayAPI.onAdjustBgOpacity((delta) => {
   currentOpacity = Math.min(0.95, Math.max(0.05, currentOpacity + delta));
   root.style.setProperty('--bg-opacity', currentOpacity.toFixed(2));
   
+  if (opacitySlider) {
+    const pct = Math.round(currentOpacity * 100);
+    opacitySlider.value = pct;
+    opacityVal.textContent = pct + '%';
+  }
+
   if (currentConfig && currentConfig.options) {
     currentConfig.options.bgOpacity = currentOpacity;
     window.AppStorage.saveConfig(currentConfig);

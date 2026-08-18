@@ -7,160 +7,264 @@
   <link rel="stylesheet" href="styles/chat.css" />
   <link rel="stylesheet" href="styles/alerts.css" />
 </head>
-<body>
+<body class="theme-cyberpunk">
   <div id="app">
     <!-- Contenedor flotante para alertas de seguidores -->
     <div id="follower-alert-container"></div>
 
-    <!-- Barra de título -->
+    <!-- Banner Flotante de Actualización con Temporizador de 10s -->
+    <div id="update-banner-container" class="hidden">
+      <div class="update-banner-header">
+        <div class="update-banner-title">
+          <span>🚀 ¡Nueva versión disponible!</span>
+          <span id="update-version-tag" style="color:#a970ff; font-weight:800;">v2.0.2</span>
+        </div>
+        <div class="update-timer-text" id="update-timer-text">Reiniciando en 10s...</div>
+      </div>
+      <div class="update-progress-track">
+        <div class="update-progress-bar" id="update-progress-bar"></div>
+      </div>
+      <div class="update-banner-actions">
+        <button type="button" class="btn-restart-update" id="btn-restart-update">🔄 Reiniciar y Actualizar Ahora</button>
+        <button type="button" class="btn-dismiss-update" id="btn-dismiss-update">Más tarde</button>
+      </div>
+    </div>
+
+    <!-- Barra de Título (Titlebar) -->
     <div id="titlebar">
       <div class="brand">
         <span class="dot" id="live-dot"></span>
         <span>Multi Chat Overlay</span>
       </div>
       <div class="controls">
-        <button id="test-alert-btn" title="Probar sonido y animación de seguidor">★</button>
-        <button id="edit-btn" title="Configurar plataformas">⚙</button>
+        <button id="toggle-hud-btn" title="Ocultar / Mostrar barra de estadísticas">👁</button>
+        <button id="test-alert-btn" title="Probar alerta de seguidor">★</button>
+        <button id="edit-btn" title="Configuración">⚙</button>
         <button id="minimize-btn" title="Minimizar">–</button>
         <button id="close-btn" class="close-btn" title="Cerrar">✕</button>
       </div>
     </div>
 
-    <!-- Barra de Estadísticas en Vivo (Espectadores y Likes) -->
+    <!-- Barra HUD de Estadísticas Pro (Espectadores y Likes) -->
     <div id="stats-bar">
-      <div class="stats-group" id="viewers-group">
-        <div class="stat-item total-viewers" id="stat-total-viewers">
+      <div class="stats-group">
+        <div class="stat-pill total" id="stat-total-viewers">
           <span>👥</span> <span id="total-viewers-count">0</span>
         </div>
-        <div class="stat-item" id="platform-viewers-container"></div>
+        <div class="stats-group" id="platform-viewers-container"></div>
       </div>
       <div class="stats-group">
-        <div class="stat-item likes-count" id="stat-likes">
+        <div class="stat-pill likes" id="stat-likes">
           <span>❤️</span> <span id="likes-count">0</span>
         </div>
       </div>
     </div>
 
-    <!-- Panel de Configuración -->
+    <!-- Panel de Configuración Organizado por Pestañas (Tabs) -->
     <div id="setup-panel">
-      <!-- TikTok -->
-      <div class="platform-card" id="card-tiktok" style="--card-accent: var(--tiktok);">
-        <div class="platform-main-row">
-          <input type="checkbox" class="check" id="check-tiktok" />
-          <span class="logo" id="logo-tiktok"></span>
-          <input type="text" id="input-tiktok" placeholder="@usuario de TikTok" disabled />
+      <!-- Pestañas de Navegación -->
+      <div class="tab-header">
+        <button class="tab-btn active" data-tab="tab-accounts">🌐 Redes</button>
+        <button class="tab-btn" data-tab="tab-voice">🔊 Voz (TTS)</button>
+        <button class="tab-btn" data-tab="tab-appearance">🎨 Apariencia</button>
+        <button class="tab-btn" data-tab="tab-updates">🔔 Novedades</button>
+      </div>
+
+      <!-- Pestaña 1: Cuentas y Redes -->
+      <div class="tab-content" id="tab-accounts">
+        <!-- TikTok -->
+        <div class="platform-card" id="card-tiktok" style="--card-accent: var(--tiktok);">
+          <div class="platform-main-row">
+            <input type="checkbox" class="check" id="check-tiktok" />
+            <span class="logo" id="logo-tiktok"></span>
+            <input type="text" id="input-tiktok" placeholder="@usuario de TikTok" disabled />
+          </div>
+          <div class="sub-config hidden" id="sub-tiktok">
+            <input type="text" id="input-tiktok-key" placeholder="API key de TikTool (se guarda para siempre)" />
+            <a href="https://tik.tools/login" target="_blank" class="link-hint">Obtener clave gratis en tik.tools (sin tarjeta) ↗</a>
+          </div>
         </div>
-        <div class="sub-config hidden" id="sub-tiktok">
-          <input type="text" id="input-tiktok-key" placeholder="API key de TikTool (se guarda para siempre)" />
-          <a href="https://tik.tools/login" target="_blank" class="link-hint">Obtener clave gratis en tik.tools (sin tarjeta) ↗</a>
+
+        <!-- Twitch -->
+        <div class="platform-card" id="card-twitch" style="--card-accent: var(--twitch);">
+          <div class="platform-main-row">
+            <input type="checkbox" class="check" id="check-twitch" />
+            <span class="logo" id="logo-twitch"></span>
+            <input type="text" id="input-twitch" placeholder="canal de Twitch" disabled />
+          </div>
+          <div class="sub-config hidden" id="sub-twitch">
+            <input type="text" id="input-twitch-client-id" placeholder="Client ID (opcional para avatares)" />
+            <input type="text" id="input-twitch-client-secret" placeholder="Client Secret (opcional)" />
+            <a href="https://dev.twitch.tv/console/apps/create" target="_blank" class="link-hint">Crear app gratis en Twitch ↗</a>
+          </div>
+        </div>
+
+        <!-- Kick -->
+        <div class="platform-card" id="card-kick" style="--card-accent: var(--kick);">
+          <div class="platform-main-row">
+            <input type="checkbox" class="check" id="check-kick" />
+            <span class="logo" id="logo-kick"></span>
+            <input type="text" id="input-kick" placeholder="canal de Kick" disabled />
+          </div>
+        </div>
+
+        <!-- YouTube -->
+        <div class="platform-card" id="card-youtube" style="--card-accent: var(--youtube);">
+          <div class="platform-main-row">
+            <input type="checkbox" class="check" id="check-youtube" />
+            <span class="logo" id="logo-youtube"></span>
+            <input type="text" id="input-youtube" placeholder="@canal o link de YouTube" disabled />
+          </div>
         </div>
       </div>
 
-      <!-- Twitch -->
-      <div class="platform-card" id="card-twitch" style="--card-accent: var(--twitch);">
-        <div class="platform-main-row">
-          <input type="checkbox" class="check" id="check-twitch" />
-          <span class="logo" id="logo-twitch"></span>
-          <input type="text" id="input-twitch" placeholder="canal de Twitch" disabled />
-        </div>
-        <div class="sub-config hidden" id="sub-twitch">
-          <input type="text" id="input-twitch-client-id" placeholder="Client ID (opcional para avatares)" />
-          <input type="text" id="input-twitch-client-secret" placeholder="Client Secret (opcional)" />
-          <a href="https://dev.twitch.tv/console/apps/create" target="_blank" class="link-hint">Crear app gratis en Twitch ↗</a>
-        </div>
-      </div>
-
-      <!-- Kick -->
-      <div class="platform-card" id="card-kick" style="--card-accent: var(--kick);">
-        <div class="platform-main-row">
-          <input type="checkbox" class="check" id="check-kick" />
-          <span class="logo" id="logo-kick"></span>
-          <input type="text" id="input-kick" placeholder="canal de Kick" disabled />
-        </div>
-      </div>
-
-      <!-- YouTube -->
-      <div class="platform-card" id="card-youtube" style="--card-accent: var(--youtube);">
-        <div class="platform-main-row">
-          <input type="checkbox" class="check" id="check-youtube" />
-          <span class="logo" id="logo-youtube"></span>
-          <input type="text" id="input-youtube" placeholder="@canal o link de YouTube" disabled />
-        </div>
-      </div>
-
-      <!-- Opciones generales -->
-      <div class="options-grid">
-        <label class="opt-toggle">
-          <input type="checkbox" id="opt-auto-connect" checked />
-          <span>Auto-conectar al abrir</span>
-        </label>
-        <label class="opt-toggle">
-          <input type="checkbox" id="opt-follow-alerts" checked />
-          <span>Alertas de seguidores</span>
-        </label>
-        <label class="opt-toggle">
-          <input type="checkbox" id="opt-sound-alerts" checked />
-          <span>Sonidos de alerta</span>
-        </label>
-        <label class="opt-toggle">
-          <input type="checkbox" id="opt-tts" />
-          <span>Leer chat (Voz TTS)</span>
-        </label>
-        <label class="opt-toggle">
-          <input type="checkbox" id="opt-filter-bots" />
-          <span>Ocultar comandos (!)</span>
-        </label>
-      </div>
-
-      <!-- Ajustes Detallados de Voz / TTS (Voz por plataforma y selector de voz) -->
-      <div class="tts-settings-card hidden" id="tts-advanced-card">
-        <div class="tts-settings-title">
-          <span>🔊 Configuración de Voz (TTS)</span>
-        </div>
-        
-        <div class="tts-row">
-          <select class="tts-select" id="tts-voice-select">
-            <option value="">Cargando voces del sistema…</option>
-          </select>
-          <button type="button" class="btn-tts-test" id="btn-test-voice" title="Escuchar muestra">▶ Probar</button>
-        </div>
-
-        <div class="tts-settings-title" style="font-size: 10.5px; margin-top: 2px;">
-          <span>Leer chat de:</span>
-        </div>
-        <div class="tts-platforms-group">
-          <label class="tts-platform-toggle">
-            <input type="checkbox" id="tts-check-tiktok" checked />
-            <span style="color: var(--tiktok);">TikTok</span>
-          </label>
-          <label class="tts-platform-toggle">
-            <input type="checkbox" id="tts-check-twitch" checked />
-            <span style="color: var(--twitch);">Twitch</span>
-          </label>
-          <label class="tts-platform-toggle">
-            <input type="checkbox" id="tts-check-kick" checked />
-            <span style="color: var(--kick);">Kick</span>
-          </label>
-          <label class="tts-platform-toggle">
-            <input type="checkbox" id="tts-check-youtube" checked />
-            <span style="color: var(--youtube);">YouTube</span>
+      <!-- Pestaña 2: Voz y Audio (TTS) -->
+      <div class="tab-content hidden" id="tab-voice">
+        <div class="config-group">
+          <div class="config-group-title">Lectura de Chat por Voz (TTS)</div>
+          <label class="opt-toggle">
+            <input type="checkbox" id="opt-tts" />
+            <span>Activar voz que lee los mensajes</span>
           </label>
         </div>
 
-        <div class="tts-sliders-row">
-          <div class="tts-slider-item">
-            <label for="tts-volume-slider">Volumen: <span id="tts-vol-val">85%</span></label>
+        <div class="config-group" id="tts-voice-options-group">
+          <div class="config-group-title">Selector de Voz del Sistema</div>
+          <div style="display: flex; gap: 6px;">
+            <select class="tts-select" id="tts-voice-select">
+              <option value="">Cargando voces de Windows…</option>
+            </select>
+            <button type="button" class="btn-test" id="btn-test-voice" title="Escuchar muestra">▶ Probar</button>
+          </div>
+
+          <div class="config-group-title" style="margin-top: 4px;">Leer mensajes de:</div>
+          <div class="tts-platforms-grid">
+            <label class="tts-pill-toggle">
+              <input type="checkbox" id="tts-check-tiktok" checked />
+              <span style="color: var(--tiktok); font-weight:700;">TikTok</span>
+            </label>
+            <label class="tts-pill-toggle">
+              <input type="checkbox" id="tts-check-twitch" checked />
+              <span style="color: var(--twitch); font-weight:700;">Twitch</span>
+            </label>
+            <label class="tts-pill-toggle">
+              <input type="checkbox" id="tts-check-kick" checked />
+              <span style="color: var(--kick); font-weight:700;">Kick</span>
+            </label>
+            <label class="tts-pill-toggle">
+              <input type="checkbox" id="tts-check-youtube" checked />
+              <span style="color: var(--youtube); font-weight:700;">YouTube</span>
+            </label>
+          </div>
+
+          <div class="config-group-title" style="margin-top: 4px;">Estilo de Lectura (Fluidez)</div>
+          <label class="opt-toggle">
+            <input type="checkbox" id="tts-opt-include-nick" checked />
+            <span>Leer nombre del usuario antes del mensaje</span>
+          </label>
+          <label class="opt-toggle">
+            <input type="checkbox" id="tts-opt-skip-urls" checked />
+            <span>Omitir enlaces web para evitar spam</span>
+          </label>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span>Volumen de voz</span>
+              <span id="tts-vol-val">85%</span>
+            </div>
             <input type="range" id="tts-volume-slider" min="10" max="100" value="85" />
           </div>
-          <div class="tts-slider-item">
-            <label for="tts-rate-slider">Velocidad: <span id="tts-rate-val">1.05x</span></label>
+
+          <div class="slider-row">
+            <div class="slider-header">
+              <span>Velocidad de habla</span>
+              <span id="tts-rate-val">1.05x</span>
+            </div>
             <input type="range" id="tts-rate-slider" min="70" max="160" value="105" />
           </div>
         </div>
+
+        <div class="config-group">
+          <div class="config-group-title">Alertas Sonoras</div>
+          <label class="opt-toggle">
+            <input type="checkbox" id="opt-sound-alerts" checked />
+            <span>Sonido de campana para nuevos seguidores y regalos</span>
+          </label>
+        </div>
       </div>
 
-      <!-- Botones de Acción -->
-      <div class="actions-row">
+      <!-- Pestaña 3: Apariencia y Temas (Skins) -->
+      <div class="tab-content hidden" id="tab-appearance">
+        <div class="config-group">
+          <div class="config-group-title">Tema Visual (Skin)</div>
+          <div class="theme-selector-grid">
+            <button type="button" class="theme-pill-btn active" data-theme="cyberpunk">🟣 Cyberpunk</button>
+            <button type="button" class="theme-pill-btn" data-theme="minimal">🖤 Minimalista</button>
+            <button type="button" class="theme-pill-btn" data-theme="chroma">🌈 Chroma RGB</button>
+            <button type="button" class="theme-pill-btn" data-theme="glass">💎 Cristal Glass</button>
+          </div>
+        </div>
+
+        <div class="config-group">
+          <div class="config-group-title">Fondo y Transparencia</div>
+          <div class="slider-row">
+            <div class="slider-header">
+              <span>Opacidad del fondo</span>
+              <span id="opacity-val">45%</span>
+            </div>
+            <input type="range" id="opacity-slider" min="5" max="95" value="45" />
+          </div>
+        </div>
+
+        <div class="config-group">
+          <div class="config-group-title">Alertas y Filtros</div>
+          <label class="opt-toggle">
+            <input type="checkbox" id="opt-follow-alerts" checked />
+            <span>Mostrar tarjeta animada de nuevo seguidor</span>
+          </label>
+          <label class="opt-toggle">
+            <input type="checkbox" id="opt-filter-bots" />
+            <span>Ocultar comandos de bots (!ban, /help, etc.)</span>
+          </label>
+          <label class="opt-toggle">
+            <input type="checkbox" id="opt-auto-connect" checked />
+            <span>Conectar automáticamente al abrir el programa</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Pestaña 4: Novedades y Notificaciones -->
+      <div class="tab-content hidden" id="tab-updates">
+        <div class="config-group">
+          <div class="config-group-title">Estado del Programa</div>
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <span style="font-size:12px; font-weight:700;">Multi Chat Overlay</span>
+              <span id="app-version-label" style="font-size:11px; color:#a970ff; font-weight:800; margin-left:4px;">v2.0.1</span>
+            </div>
+            <button type="button" class="btn-check-updates" id="btn-check-updates">🔍 Buscar Actualización</button>
+          </div>
+          <div id="update-status-msg" style="font-size:11px; color:#9ca3af; margin-top:4px;">
+            El programa se actualiza automáticamente con tus publicaciones de GitHub.
+          </div>
+        </div>
+
+        <div class="config-group">
+          <div class="config-group-title">Novedades y Registro de Cambios</div>
+          <div class="notifications-log-box" id="notifications-log">
+            <b>v2.0.1:</b><br>
+            • Selector de temas visuales (Cyberpunk, Minimalista, Chroma, Cristal)<br>
+            • Personalización de voz TTS (prefijo de nombre y filtro de URLs)<br>
+            • Banner de actualización con temporizador de 10s y reinicio instantáneo<br>
+            • Regalos de TikTok 100% traducidos al español con imágenes oficiales HD<br>
+            • Barra HUD Pro de espectadores y contador de likes en tiempo real<br>
+            • Guardado permanente de claves y auto-conexión
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón de Conexión en Footer -->
+      <div class="actions-footer">
         <button id="connect-btn" class="btn-primary">Guardar y Conectar</button>
       </div>
     </div>
