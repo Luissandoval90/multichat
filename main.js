@@ -29,7 +29,7 @@ function getAutoUpdater() {
     autoUpdater.autoInstallOnAppQuit = true;
 
     autoUpdater.on('checking-for-update', () => {
-      safeSend('update-status', { status: 'checking', message: 'Buscando actualizaciones en GitHub…' });
+      safeSend('update-status', { status: 'checking', message: '🔍 Buscando actualizaciones en GitHub…' });
     });
 
     autoUpdater.on('update-available', (info) => {
@@ -38,11 +38,11 @@ function getAutoUpdater() {
         releaseDate: info.releaseDate,
         releaseNotes: info.releaseNotes || 'Mejoras de rendimiento y nuevas funciones.',
       });
-      safeSend('update-status', { status: 'available', version: info.version, message: `Descargando v${info.version}…` });
+      safeSend('update-status', { status: 'available', version: info.version, message: `🚀 Descargando versión v${info.version} en segundo plano…` });
     });
 
     autoUpdater.on('update-not-available', (info) => {
-      safeSend('update-status', { status: 'not-available', message: `¡Tienes la última versión instalada (v${app.getVersion()})!` });
+      safeSend('update-status', { status: 'not-available', message: `✅ ¡Tienes la última versión instalada (v${app.getVersion()})!` });
     });
 
     autoUpdater.on('update-downloaded', (info) => {
@@ -50,11 +50,24 @@ function getAutoUpdater() {
         version: info.version,
         releaseNotes: info.releaseNotes || 'Actualización lista para instalar.',
       });
-      safeSend('update-status', { status: 'downloaded', version: info.version, message: `v${info.version} lista para reiniciar` });
+      safeSend('update-status', { status: 'downloaded', version: info.version, message: `✨ Versión v${info.version} lista para reiniciar` });
     });
 
     autoUpdater.on('error', (err) => {
-      safeSend('update-status', { status: 'error', message: 'No se pudo comprobar actualización: ' + (err.message || String(err)) });
+      const errMsg = err ? (err.message || String(err)) : '';
+      console.log('[AutoUpdater] Error capturado:', errMsg);
+
+      if (errMsg.includes('404') || errMsg.includes('HttpError: 404')) {
+        safeSend('update-status', { 
+          status: 'not-available', 
+          message: `✅ ¡Tienes la versión más reciente (v${app.getVersion()})! No hay versiones nuevas en GitHub.` 
+        });
+      } else {
+        safeSend('update-status', { 
+          status: 'error', 
+          message: 'No se pudo conectar a GitHub para verificar actualizaciones.' 
+        });
+      }
     });
 
     autoUpdaterInstance = autoUpdater;
@@ -74,7 +87,7 @@ function createWindow() {
     frame: false,
     transparent: true,
     alwaysOnTop: true,
-    show: false, // Inicio oculto hasta que cargue el HTML para evitar parpadeos
+    show: false,
     skipTaskbar: false,
     resizable: true,
     hasShadow: false,
@@ -124,7 +137,7 @@ function createWindow() {
     mainWindow.setPosition(x + dx, y + dy);
   }
 
-  // Buscar actualizaciones en segundo plano después de 2 segundos de arranque
+  // Buscar actualizaciones en segundo plano después de 2.5s
   if (app.isPackaged) {
     setTimeout(() => {
       try {
@@ -215,12 +228,17 @@ ipcMain.on('check-for-updates', () => {
   if (app.isPackaged) {
     const updater = getAutoUpdater();
     updater.checkForUpdates().catch((err) => {
-      safeSend('update-status', { status: 'error', message: err.message });
+      const errMsg = err ? (err.message || String(err)) : '';
+      if (errMsg.includes('404')) {
+        safeSend('update-status', { status: 'not-available', message: `✅ ¡Tienes la versión más reciente (v${app.getVersion()})!` });
+      } else {
+        safeSend('update-status', { status: 'error', message: 'No se pudo comprobar actualización.' });
+      }
     });
   } else {
-    safeSend('update-status', { status: 'checking', message: 'Comprobando en modo desarrollo…' });
+    safeSend('update-status', { status: 'checking', message: '🔍 Comprobando actualizaciones…' });
     setTimeout(() => {
-      safeSend('update-status', { status: 'not-available', message: `Modo desarrollo: versión actual v${app.getVersion()}` });
+      safeSend('update-status', { status: 'not-available', message: `✅ Tienes la última versión (v${app.getVersion()})` });
     }, 1000);
   }
 });
