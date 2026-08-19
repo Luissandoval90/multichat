@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Multi Chat - OBS Browser Source</title>
+  <link rel="icon" type="image/png" href="multichat.png" />
+  <link rel="stylesheet" href="styles/style.css" />
+  <link rel="stylesheet" href="styles/chat.css" />
+  <link rel="stylesheet" href="styles/alerts.css" />
+  <style>
+    body {
+      background: transparent !important;
+      overflow: hidden;
+    }
+    #obs-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100vw;
+      padding: 10px;
+      box-sizing: border-box;
+      position: relative;
+    }
+    #obs-pinned-box {
+      margin-bottom: 8px;
+    }
+    #chat-container {
+      flex: 1;
+      overflow-y: hidden;
+    }
+    .obs-connection-indicator {
+      position: fixed;
+      bottom: 6px;
+      right: 8px;
+      font-size: 10px;
+      color: rgba(255, 255, 255, 0.35);
+      background: rgba(0, 0, 0, 0.4);
+      padding: 2px 6px;
+      border-radius: 4px;
+      display: none;
+    }
+  </style>
+</head>
+<body class="theme-cyberpunk">
+  <div id="obs-container">
+    <div id="follower-alert-container"></div>
+    <div id="pinned-message-container" class="hidden"></div>
+    <div id="chat-container"></div>
+    <div id="obs-status" class="obs-connection-indicator">Conectando a MultiChat…</div>
+  </div>
+
+  <script src="src/audio.js"></script>
+  <script src="src/alerts.js"></script>
+  <script>
+    const chatContainer = document.getElementById('chat-container');
+    const pinnedContainer = document.getElementById('pinned-message-container');
+    const obsStatus = document.getElementById('obs-status');
+    const root = document.documentElement;
+
+    const MAX_MESSAGES = 60;
+    let ws = null;
+    let reconnectTimer = null;
+
+    const PLATFORM_ICONS = {
+      tiktok:  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.82c-.9-.68-1.51-1.68-1.68-2.82H12.5v13.4c0 1.53-1.25 2.78-2.78 2.78-1.53 0-2.78-1.25-2.78-2.78s1.25-2.78 2.78-2.78c.28 0 .55.04.8.12V10.9a5.85 5.85 0 0 0-.8-.06 5.4 5.4 0 1 0 5.4 5.4V9.36a8.34 8.34 0 0 0 4.88 1.56V8.5a5.79 5.79 0 0 1-3.4-2.68z"/></svg>',
+      twitch:  '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M4.3 2 3 5.7v13.6h4.6V22l3.1-2.7h4.1L21 13.4V2H4.3zm14.9 10.5-3 3h-3.7l-2.6 2.3v-2.3H6.3V4h12.9v8.5z"/><path d="M15.6 6.7h1.9v5.4h-1.9zM10.6 6.7h1.9v5.4h-1.9z"/></svg>',
+      kick:    '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h5v5h2V6h2V4h2V2h7v6h-2v2h-2v2h-2v2h2v2h2v2h2v6h-7v-2h-2v-2h-2v-2h-2v5H3V3z"/></svg>',
+      youtube: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>',
+    };
+
+    function iconMarkup(platform) {
+      return PLATFORM_ICONS[platform] || '';
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    function addMessageNode(node) {
+      chatContainer.appendChild(node);
+      while (chatContainer.children.length > MAX_MESSAGES) {
+        chatContainer.removeChild(chatContainer.firstChild);
+      }
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function platformTag(platform) {
+      return `<span class="platform-tag ${platform}">${iconMarkup(platform)}${platform.toUpperCase()}</span>`;
+    }
+
+    function avatarHtml(data) {
+      if (data.avatarUrl) {
+        return `<img class="avatar" src="${data.avatarUrl}" alt="" loading="lazy" />`;
+      }
+      const initial = (data.nickname || data.userId || '?').charAt(0).toUpperCase();
+      return `<span class="avatar placeholder" style="background:var(--${data.platform}, #888)">${initial}</span>`;
+    }
+
+    function renderChatMessage(data) {
+      const div = document.createElement('div');
+      div.className = `msg platform-${data.platform}`;
+      div.innerHTML = `${avatarHtml(data)}<span class="body">${platformTag(data.platform)}<span class="nick">${escapeHtml(data.nickname || data.userId)}</span>: ${escapeHtml(data.comment)}</span>`;
+      addMessageNode(div);
+    }
+
+    function renderGiftMessage(data) {
+      const repeatMarkup = data.repeatCount > 1 ? `<span class="repeat-badge">x${data.repeatCount}</span>` : '';
+      const diamondMarkup = data.diamondCount > 0 ? `<span class="diamond-badge">💎 ${data.diamondCount}</span>` : '';
+      const giftImg = data.giftImageUrl ? `<img class="gift-icon" src="${data.giftImageUrl}" alt="" />` : '<span style="font-size:22px">🎁</span>';
+
+      const div = document.createElement('div');
+      div.className = `msg gift platform-${data.platform}`;
+      div.innerHTML = `
+        <div class="gift-preview-box">${giftImg}</div>
+        <div class="gift-info">
+          <div class="gift-title-row">
+            ${platformTag(data.platform)}
+            <b>${escapeHtml(data.nickname || data.userId)}</b>
+            <span style="color:#d1d5db; font-size:11px;">envió</span>
+            <span class="gift-name-tag">${escapeHtml(data.giftName || 'Regalo')}</span>
+            ${repeatMarkup}
+          </div>
+          <div class="gift-meta-row">${diamondMarkup}</div>
+        </div>
+      `;
+      addMessageNode(div);
+    }
+
+    function renderJoinMessage(data) {
+      const div = document.createElement('div');
+      div.className = `msg join platform-${data.platform}`;
+      div.innerHTML = `<span class="body">${platformTag(data.platform)}<span class="nick">${escapeHtml(data.nickname || data.userId)}</span> <span class="join-text">se unió</span></span>`;
+      addMessageNode(div);
+    }
+
+    function renderPinnedMessage(data) {
+      if (!data) {
+        pinnedContainer.innerHTML = '';
+        pinnedContainer.classList.add('hidden');
+        return;
+      }
+      pinnedContainer.classList.remove('hidden');
+      pinnedContainer.innerHTML = `
+        <div class="pinned-card platform-${data.platform}">
+          <div class="pinned-badge">📌 MENSAJE FIJADO</div>
+          <div class="pinned-body">
+            ${avatarHtml(data)}
+            <div class="pinned-text">
+              <b>${escapeHtml(data.nickname || data.userId)}:</b> ${escapeHtml(data.comment)}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function connectWebSocket() {
+      const host = window.location.host || 'localhost:3750';
+      const wsUrl = `ws://${host}/ws`;
+      
+      try {
+        ws = new WebSocket(wsUrl);
+
+        ws.onopen = () => {
+          obsStatus.style.display = 'none';
+          console.log('[OBS Browser Source] Conectado al servidor local de MultiChat');
+        };
+
+        ws.onmessage = (e) => {
+          try {
+            const msg = JSON.parse(e.data);
+            if (msg.type === 'chat') renderChatMessage(msg.data);
+            if (msg.type === 'join') renderJoinMessage(msg.data);
+            if (msg.type === 'gift') renderGiftMessage(msg.data);
+            if (msg.type === 'follow' && window.FollowAlerts) window.FollowAlerts.triggerFollowAlert(msg.data);
+            if (msg.type === 'pin') renderPinnedMessage(msg.data);
+            if (msg.type === 'config') {
+              if (msg.data.theme) document.body.className = `theme-${msg.data.theme}`;
+              if (msg.data.fontSize) root.style.setProperty('--font-size', msg.data.fontSize + 'px');
+              if (msg.data.msgSpacing) root.style.setProperty('--msg-spacing', msg.data.msgSpacing + 'px');
+            }
+          } catch (err) {
+            console.error('[OBS] Error parseando mensaje:', err);
+          }
+        };
+
+        ws.onclose = () => {
+          obsStatus.style.display = 'block';
+          obsStatus.textContent = 'Reconectando con MultiChat…';
+          if (!reconnectTimer) {
+            reconnectTimer = setTimeout(() => {
+              reconnectTimer = null;
+              connectWebSocket();
+            }, 2500);
+          }
+        };
+
+        ws.onerror = () => {
+          ws.close();
+        };
+      } catch (err) {
+        if (!reconnectTimer) {
+          reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            connectWebSocket();
+          }, 3000);
+        }
+      }
+    }
+
+    connectWebSocket();
+  </script>
+</body>
+</html>

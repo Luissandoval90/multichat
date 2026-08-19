@@ -1,4 +1,4 @@
-// Lógica principal de la interfaz, temas, pestañas, actualizaciones y renderizado de Multi Chat Overlay Pro
+// Lógica principal de la interfaz, temas, pestañas, actualizaciones, mensajes fijados, SFX y OBS de Multi Chat Overlay Pro
 
 const PLATFORMS = ['tiktok', 'twitch', 'kick', 'youtube'];
 
@@ -24,7 +24,6 @@ function iconMarkup(platform) {
 // Base de Datos Masiva y Traductor Universal de Regalos de TikTok
 // ==========================================================================
 const TIKTOK_GIFTS_DICTIONARY = {
-  // Nivel Básico (1 a 10 Monedas)
   'Rose': { es: 'Rosa', icon: '🌹', defaultDiamonds: 1 },
   'TikTok': { es: 'Logo TikTok', icon: '🎵', defaultDiamonds: 1 },
   'Ice Cream Cone': { es: 'Helado de Cono', icon: '🍦', defaultDiamonds: 1 },
@@ -38,8 +37,6 @@ const TIKTOK_GIFTS_DICTIONARY = {
   'Lollipop': { es: 'Paleta Dulce', icon: '🍭', defaultDiamonds: 10 },
   'Gamepad': { es: 'Mando Gamer', icon: '🎮', defaultDiamonds: 10 },
   'Mini Crown': { es: 'Mini Corona', icon: '👑', defaultDiamonds: 10 },
-
-  // Nivel Medio (15 a 99 Monedas)
   'Love Bang': { es: 'Explosión de Amor', icon: '💥', defaultDiamonds: 25 },
   'Doughnut': { es: 'Dona Glaseada', icon: '🍩', defaultDiamonds: 30 },
   'Donut': { es: 'Dona Glaseada', icon: '🍩', defaultDiamonds: 30 },
@@ -51,8 +48,6 @@ const TIKTOK_GIFTS_DICTIONARY = {
   'Hat': { es: 'Sombrero', icon: '🎩', defaultDiamonds: 99 },
   'Confetti': { es: 'Lluvia de Confeti', icon: '🎉', defaultDiamonds: 100 },
   'Flowers': { es: 'Ramo de Flores', icon: '💐', defaultDiamonds: 100 },
-
-  // Nivel Avanzado (150 a 999 Monedas)
   'Butterfly': { es: 'Mariposa Brillante', icon: '🦋', defaultDiamonds: 169 },
   'Sunglasses': { es: 'Gafas de Sol', icon: '😎', defaultDiamonds: 199 },
   'Goggles': { es: 'Gafas de Buceo', icon: '🥽', defaultDiamonds: 199 },
@@ -65,8 +60,6 @@ const TIKTOK_GIFTS_DICTIONARY = {
   'Firework': { es: 'Fuegos Artificiales', icon: '🎆', defaultDiamonds: 1088 },
   'Mirror': { es: 'Espejo Mágico', icon: '🪞', defaultDiamonds: 1000 },
   'Money Gun': { es: 'Pistola de Billetes', icon: '💸', defaultDiamonds: 500 },
-
-  // Nivel Legendario / Épico (1,000 a 40,000+ Monedas)
   'Whale Diving': { es: 'Ballena Saltando', icon: '🐋', defaultDiamonds: 2150 },
   'Whale': { es: 'Ballena Gigante', icon: '🐳', defaultDiamonds: 2150 },
   'Motorcycle': { es: 'Moto de Carreras', icon: '🏍️', defaultDiamonds: 2988 },
@@ -93,55 +86,22 @@ const TIKTOK_GIFTS_DICTIONARY = {
 };
 
 const WORD_TRANSLATIONS = {
-  'heart': 'Corazón',
-  'love': 'Amor',
-  'rose': 'Rosa',
-  'flower': 'Flor',
-  'crown': 'Corona',
-  'star': 'Estrella',
-  'cat': 'Gatito',
-  'dog': 'Perrito',
-  'bear': 'Oso',
-  'panda': 'Panda',
-  'lion': 'León',
-  'tiger': 'Tigre',
-  'dragon': 'Dragón',
-  'car': 'Auto',
-  'bike': 'Moto',
-  'plane': 'Avión',
-  'rocket': 'Cohete',
-  'whale': 'Ballena',
-  'dolphin': 'Delfín',
-  'shark': 'Tiburón',
-  'bird': 'Pájaro',
-  'eagle': 'Águila',
-  'falcon': 'Halcón',
-  'castle': 'Castillo',
-  'diamond': 'Diamante',
-  'gold': 'Oro',
-  'magic': 'Mágico',
-  'fire': 'Fuego',
-  'firework': 'Fuegos Artificiales',
-  'coffee': 'Café',
-  'cake': 'Pastel',
-  'ice cream': 'Helado',
-  'donut': 'Dona',
-  'pizza': 'Pizza',
-  'burger': 'Hamburguesa',
-  'balloon': 'Globo',
-  'confetti': 'Confeti',
-  'kiss': 'Beso',
-  'universe': 'Universo',
-  'galaxy': 'Galaxia',
-  'planet': 'Planeta',
-  'rainbow': 'Arcoíris',
-  'lightning': 'Rayo',
+  'heart': 'Corazón', 'love': 'Amor', 'rose': 'Rosa', 'flower': 'Flor',
+  'crown': 'Corona', 'star': 'Estrella', 'cat': 'Gatito', 'dog': 'Perrito',
+  'bear': 'Oso', 'panda': 'Panda', 'lion': 'León', 'tiger': 'Tigre',
+  'dragon': 'Dragón', 'car': 'Auto', 'bike': 'Moto', 'plane': 'Avión',
+  'rocket': 'Cohete', 'whale': 'Ballena', 'dolphin': 'Delfín', 'shark': 'Tiburón',
+  'bird': 'Pájaro', 'eagle': 'Águila', 'falcon': 'Halcón', 'castle': 'Castillo',
+  'diamond': 'Diamante', 'gold': 'Oro', 'magic': 'Mágico', 'fire': 'Fuego',
+  'firework': 'Fuegos Artificiales', 'coffee': 'Café', 'cake': 'Pastel',
+  'ice cream': 'Helado', 'donut': 'Dona', 'pizza': 'Pizza', 'burger': 'Hamburguesa',
+  'balloon': 'Globo', 'confetti': 'Confeti', 'kiss': 'Beso', 'universe': 'Universo',
+  'galaxy': 'Galaxia', 'planet': 'Planeta', 'rainbow': 'Arcoíris', 'lightning': 'Rayo',
 };
 
 function translateGiftName(rawName) {
   if (!rawName) return 'Regalo 🎁';
   const clean = rawName.trim();
-
   if (TIKTOK_GIFTS_DICTIONARY[clean]) {
     const item = TIKTOK_GIFTS_DICTIONARY[clean];
     return `${item.es} ${item.icon}`;
@@ -185,12 +145,16 @@ const toggleHudBtn = document.getElementById('toggle-hud-btn');
 const testAlertBtn = document.getElementById('test-alert-btn');
 const root = document.documentElement;
 
+// Mensaje Fijado (Pin)
+const pinnedContainer = document.getElementById('pinned-message-container');
+let activePinnedData = null;
+
 // Elementos de Estadísticas HUD
 const totalViewersEl = document.getElementById('total-viewers-count');
 const platformViewersContainer = document.getElementById('platform-viewers-container');
 const likesCountEl = document.getElementById('likes-count');
 
-// Elementos de TTS
+// Elementos de TTS & Audio
 const ttsOptCheck = document.getElementById('opt-tts');
 const ttsVoiceSelect = document.getElementById('tts-voice-select');
 const btnTestVoice = document.getElementById('btn-test-voice');
@@ -200,6 +164,15 @@ const ttsVolVal = document.getElementById('tts-vol-val');
 const ttsRateVal = document.getElementById('tts-rate-val');
 const ttsIncludeNickCheck = document.getElementById('tts-opt-include-nick');
 const ttsSkipUrlsCheck = document.getElementById('tts-opt-skip-urls');
+
+// SFX Comandos
+const optSfx = document.getElementById('opt-sfx');
+const sfxVolumeSlider = document.getElementById('sfx-volume-slider');
+const sfxVolVal = document.getElementById('sfx-vol-val');
+
+// OBS Modo
+const obsUrlInput = document.getElementById('obs-url-input');
+const btnCopyObs = document.getElementById('btn-copy-obs');
 
 // Elementos de Apariencia
 const opacitySlider = document.getElementById('opacity-slider');
@@ -232,7 +205,53 @@ let pendingScroll = false;
 let currentConfig = null;
 
 // ==========================================================================
-// 1. Inicialización, Pestañas y Temas
+// 1. Mensajes Fijados (Pin Message Logic)
+// ==========================================================================
+function setPinnedMessage(data) {
+  activePinnedData = data;
+  pinnedContainer.classList.remove('hidden');
+
+  const meta = PLATFORM_META[data.platform] || { className: 'accent', label: data.platform };
+  const userNick = data.nickname || data.userId || 'Usuario';
+  const commentText = data.comment || '';
+
+  pinnedContainer.innerHTML = `
+    <div class="pinned-card platform-${data.platform}">
+      <div class="pinned-header-row">
+        <div class="pinned-badge">📌 MENSAJE FIJADO</div>
+        <button type="button" class="unpin-btn" id="btn-unpin" title="Desanclar mensaje">✕</button>
+      </div>
+      <div class="pinned-body">
+        ${avatarHtml(data)}
+        <div class="pinned-text">
+          ${platformTag(data.platform)}
+          <b style="color:var(--text-main); margin-right:4px;">${escapeHtml(userNick)}:</b>
+          <span>${escapeHtml(commentText)}</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('btn-unpin').addEventListener('click', () => {
+    clearPinnedMessage();
+  });
+
+  if (window.overlayAPI && typeof window.overlayAPI.pinMessage === 'function') {
+    window.overlayAPI.pinMessage(activePinnedData);
+  }
+}
+
+function clearPinnedMessage() {
+  activePinnedData = null;
+  pinnedContainer.innerHTML = '';
+  pinnedContainer.classList.add('hidden');
+  if (window.overlayAPI && typeof window.overlayAPI.pinMessage === 'function') {
+    window.overlayAPI.pinMessage(null);
+  }
+}
+
+// ==========================================================================
+// 2. Inicialización, Pestañas y Temas
 // ==========================================================================
 function initUI() {
   PLATFORMS.forEach(p => {
@@ -267,6 +286,24 @@ function initUI() {
 
   currentConfig = window.AppStorage.loadConfig();
   applyConfigToUI(currentConfig);
+
+  // Cargar configuración persistente del disco y sincronizar
+  window.AppStorage.loadAsyncConfig().then(cfg => {
+    if (cfg) {
+      currentConfig = cfg;
+      applyConfigToUI(currentConfig);
+    }
+  });
+
+  // Guardado instantáneo al escribir o cambiar cualquier opción
+  setupPanel.addEventListener('input', () => {
+    const cfg = gatherConfigFromUI();
+    window.AppStorage.saveConfig(cfg);
+  });
+  setupPanel.addEventListener('change', () => {
+    const cfg = gatherConfigFromUI();
+    window.AppStorage.saveConfig(cfg);
+  });
 
   // Cargar versión de la app
   if (window.overlayAPI && window.overlayAPI.getAppVersion) {
@@ -316,6 +353,24 @@ function initUI() {
     handleConnect();
   });
 
+  // Copiar Enlace OBS
+  if (btnCopyObs) {
+    btnCopyObs.addEventListener('click', () => {
+      const url = obsUrlInput ? obsUrlInput.value : 'http://localhost:3750';
+      navigator.clipboard.writeText(url).then(() => {
+        btnCopyObs.textContent = '✓ ¡Copiado!';
+        btnCopyObs.classList.add('copied');
+        setTimeout(() => {
+          btnCopyObs.textContent = '📋 Copiar Enlace';
+          btnCopyObs.classList.remove('copied');
+        }, 2200);
+      }).catch(() => {
+        btnCopyObs.textContent = '✓ http://localhost:3750';
+      });
+    });
+  }
+
+  // Sliders de Apariencia
   opacitySlider.addEventListener('input', (e) => {
     const val = parseInt(e.target.value, 10);
     opacityVal.textContent = val + '%';
@@ -342,6 +397,34 @@ function initUI() {
     window.FollowAlerts.setFollowAlertsEnabled(e.target.checked);
   });
 
+  // SFX Comandos
+  if (optSfx) {
+    optSfx.addEventListener('change', (e) => {
+      window.AudioAlerts.setSfxEnabled(e.target.checked);
+    });
+  }
+  if (sfxVolumeSlider) {
+    sfxVolumeSlider.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value, 10);
+      if (sfxVolVal) sfxVolVal.textContent = val + '%';
+      window.AudioAlerts.setSfxVolume(val / 100);
+    });
+  }
+
+  // Previsualización de badges SFX
+  document.querySelectorAll('.sfx-badge').forEach(badge => {
+    badge.addEventListener('click', () => {
+      const type = badge.getAttribute('data-sfx');
+      if (type === 'applause') window.AudioAlerts.playApplauseSound();
+      if (type === 'laugh') window.AudioAlerts.playLaughSound();
+      if (type === 'gg') window.AudioAlerts.playGgSound();
+      if (type === 'airhorn') window.AudioAlerts.playAirhornSound();
+      if (type === 'f') window.AudioAlerts.playFSound();
+      if (type === 'alert') window.AudioAlerts.playAlertSound();
+    });
+  });
+
+  // TTS
   ttsOptCheck.addEventListener('change', (e) => {
     window.AppTTS.setTtsEnabled(e.target.checked);
   });
@@ -558,6 +641,18 @@ function applyConfigToUI(config) {
   });
   window.AppTTS.setTtsPlatformsConfig(ttsPlats);
 
+  // SFX Comandos
+  if (optSfx) {
+    optSfx.checked = config.options.sfxEnabled !== false;
+    window.AudioAlerts.setSfxEnabled(optSfx.checked);
+  }
+  if (sfxVolumeSlider && config.options.sfxVolume !== undefined) {
+    const sfxPct = Math.round(config.options.sfxVolume * 100);
+    sfxVolumeSlider.value = sfxPct;
+    if (sfxVolVal) sfxVolVal.textContent = sfxPct + '%';
+    window.AudioAlerts.setSfxVolume(config.options.sfxVolume);
+  }
+
   // Apariencia
   if (config.options.bgOpacity) {
     const opPct = Math.round(config.options.bgOpacity * 100);
@@ -597,6 +692,8 @@ function gatherConfigFromUI() {
       autoConnect: document.getElementById('opt-auto-connect').checked,
       followAlerts: document.getElementById('opt-follow-alerts').checked,
       soundAlerts: document.getElementById('opt-sound-alerts').checked,
+      sfxEnabled: optSfx ? optSfx.checked : true,
+      sfxVolume: sfxVolumeSlider ? parseInt(sfxVolumeSlider.value, 10) / 100 : 0.75,
       theme: selectedTheme,
       ttsEnabled: ttsOptCheck.checked,
       ttsIncludeNickname: ttsIncludeNickCheck.checked,
@@ -623,11 +720,11 @@ function gatherConfigFromUI() {
     };
   });
 
-  const tiktokKey = document.getElementById('input-tiktok-key')?.value.trim() || '';
+  const tiktokKey = document.getElementById('input-tiktok-key')?.value.trim() || currentConfig?.platforms?.tiktok?.apiKey || '';
   config.platforms.tiktok.apiKey = tiktokKey;
 
-  const twitchCid = document.getElementById('input-twitch-client-id')?.value.trim() || '';
-  const twitchSec = document.getElementById('input-twitch-client-secret')?.value.trim() || '';
+  const twitchCid = document.getElementById('input-twitch-client-id')?.value.trim() || currentConfig?.platforms?.twitch?.clientId || '';
+  const twitchSec = document.getElementById('input-twitch-client-secret')?.value.trim() || currentConfig?.platforms?.twitch?.clientSecret || '';
   config.platforms.twitch.clientId = twitchCid;
   config.platforms.twitch.clientSecret = twitchSec;
 
@@ -635,7 +732,7 @@ function gatherConfigFromUI() {
 }
 
 // ==========================================================================
-// 2. Conexión de Plataformas
+// 3. Conexión de Plataformas
 // ==========================================================================
 function handleConnect(isAuto = false) {
   const config = gatherConfigFromUI();
@@ -686,7 +783,7 @@ function handleConnect(isAuto = false) {
 }
 
 // ==========================================================================
-// 3. Barra HUD y Estadísticas en Tiempo Real
+// 4. Barra HUD y Estadísticas en Tiempo Real
 // ==========================================================================
 function ensureStatusLine(platform) {
   if (statusLines[platform]) return statusLines[platform];
@@ -780,7 +877,7 @@ window.overlayAPI.onLikeMessage((data) => {
 });
 
 // ==========================================================================
-// 4. Renderizado de Mensajes y Regalos Ricos
+// 5. Renderizado de Mensajes, Pin Buttons y Comandos SFX
 // ==========================================================================
 function scheduleScroll() {
   if (pendingScroll) return;
@@ -831,6 +928,11 @@ function avatarHtml(data) {
 
 // Chat
 window.overlayAPI.onChatMessage((data) => {
+  // Procesar efectos de sonido SFX si contiene comando
+  if (window.AudioAlerts && typeof window.AudioAlerts.processChatSfxCommand === 'function') {
+    window.AudioAlerts.processChatSfxCommand(data.comment);
+  }
+
   const filterBots = document.getElementById('opt-filter-bots')?.checked;
   if (filterBots && data.comment && /^[!/.?#]/.test(data.comment.trim())) {
     return;
@@ -863,6 +965,19 @@ window.overlayAPI.onChatMessage((data) => {
     : avatarHtml(data).replace('class="avatar placeholder"', `class="avatar placeholder avatar-pending" data-user-key="${escapeAttr(userKey)}"`);
 
   div.innerHTML = `${avatar}<span class="body">${platformTag(data.platform)}<span class="nick"${nickStyle}>${escapeHtml(data.nickname || data.userId)}</span>${commentHtml}</span>`;
+
+  // Botón para Fijar Mensaje (Pin)
+  const pinBtn = document.createElement('button');
+  pinBtn.type = 'button';
+  pinBtn.className = 'pin-btn';
+  pinBtn.title = 'Fijar este mensaje arriba';
+  pinBtn.innerHTML = '📌';
+  pinBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setPinnedMessage(data);
+  });
+  div.appendChild(pinBtn);
+
   addMessageNode(div);
 });
 
@@ -874,18 +989,24 @@ window.overlayAPI.onFollowMessage((data) => {
 
 // Share
 window.overlayAPI.onShareMessage((data) => {
-  addSimpleMessage(
-    `${platformTag(data.platform)}<span class="share-icon">📢 ↗</span> <b>${escapeHtml(data.nickname || data.userId)}</b> compartió el directo`,
-    'share'
-  );
+  const userKey = `${data.platform}:${data.userId || data.nickname}`;
+  const knownAvatar = data.avatarUrl || avatarCacheMap.get(userKey);
+  const avatar = knownAvatar
+    ? `<img class="avatar" src="${knownAvatar}" alt="" loading="lazy" />`
+    : avatarHtml(data);
+
+  const div = document.createElement('div');
+  div.className = `msg share platform-${data.platform}`;
+  div.innerHTML = `${avatar}<span class="body">${platformTag(data.platform)}<span class="nick">${escapeHtml(data.nickname || data.userId)}</span> <span class="share-text">📢 compartió el directo</span></span>`;
+  addMessageNode(div);
 });
 
 // Join
 window.overlayAPI.onJoinMessage((data) => {
-  addSimpleMessage(
-    `${platformTag(data.platform)} <span>→</span> <b>${escapeHtml(data.nickname || data.userId)}</b> se unió`,
-    'join'
-  );
+  const div = document.createElement('div');
+  div.className = `msg join platform-${data.platform}`;
+  div.innerHTML = `<span class="body">${platformTag(data.platform)}<span class="nick">${escapeHtml(data.nickname || data.userId)}</span> <span class="join-text">se unió</span></span>`;
+  addMessageNode(div);
 });
 
 // Regalos en Español con Imágenes HD y Diamantes
@@ -919,6 +1040,22 @@ window.overlayAPI.onGiftMessage((data) => {
       </div>
     </div>
   `;
+
+  // Botón para fijar regalo destacado
+  const pinBtn = document.createElement('button');
+  pinBtn.type = 'button';
+  pinBtn.className = 'pin-btn';
+  pinBtn.title = 'Fijar este regalo arriba';
+  pinBtn.innerHTML = '📌';
+  pinBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    setPinnedMessage({
+      ...data,
+      comment: `Envió ${giftDetails.translatedName} ${data.repeatCount > 1 ? 'x' + data.repeatCount : ''} ${giftDetails.totalDiamonds > 0 ? '(💎 ' + giftDetails.totalDiamonds + ')' : ''}`,
+    });
+  });
+  div.appendChild(pinBtn);
+
   addMessageNode(div);
 });
 

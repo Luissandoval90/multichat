@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Multi Chat Overlay Pro</title>
+  <link rel="icon" type="image/png" href="multichat.png" />
   <link rel="stylesheet" href="styles/style.css" />
   <link rel="stylesheet" href="styles/chat.css" />
   <link rel="stylesheet" href="styles/alerts.css" />
@@ -33,6 +34,7 @@
     <!-- Barra de Título (Titlebar) -->
     <div id="titlebar">
       <div class="brand">
+        <img src="multichat.png" class="brand-logo" alt="MultiChat" />
         <span class="dot" id="live-dot"></span>
         <span>Multi Chat Overlay</span>
       </div>
@@ -80,8 +82,8 @@
             <input type="text" id="input-tiktok" placeholder="@usuario de TikTok" disabled />
           </div>
           <div class="sub-config hidden" id="sub-tiktok">
-            <input type="text" id="input-tiktok-key" placeholder="API key de TikTool (se guarda para siempre)" />
-            <a href="https://tik.tools/login" target="_blank" class="link-hint">Obtener clave gratis en tik.tools (sin tarjeta) ↗</a>
+            <input type="text" id="input-tiktok-key" placeholder="Pega tu clave gratuita de tik.tools aquí" />
+            <a href="https://tik.tools/login" target="_blank" class="link-hint">👉 Obtener clave gratis en tik.tools (Entrar con Google) ↗</a>
           </div>
         </div>
 
@@ -114,6 +116,18 @@
             <input type="checkbox" class="check" id="check-youtube" />
             <span class="logo" id="logo-youtube"></span>
             <input type="text" id="input-youtube" placeholder="@canal o link de YouTube" disabled />
+          </div>
+        </div>
+
+        <!-- Modo OBS Studio / Streamlabs -->
+        <div class="config-group" style="margin-top: 4px;">
+          <div class="config-group-title">🌐 Modo OBS Studio / Streamlabs</div>
+          <div class="obs-copy-row">
+            <input type="text" id="obs-url-input" value="http://localhost:3750" readonly />
+            <button type="button" class="btn-copy-obs" id="btn-copy-obs">📋 Copiar Enlace</button>
+          </div>
+          <div style="font-size:10px; color:#9ca3af; margin-top:2px;">
+            Pégalo como <b>"Fuente de Navegador" (Browser Source)</b> en OBS para mostrar el chat transparente en tu transmisión.
           </div>
         </div>
       </div>
@@ -185,11 +199,35 @@
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">Alertas Sonoras</div>
+          <div class="config-group-title">Alertas Sonoras de Seguidores y Regalos</div>
           <label class="opt-toggle">
             <input type="checkbox" id="opt-sound-alerts" checked />
             <span>Sonido de campana para nuevos seguidores y regalos</span>
           </label>
+        </div>
+
+        <div class="config-group">
+          <div class="config-group-title">🔊 Comandos de Efectos de Sonido (!SFX)</div>
+          <label class="opt-toggle">
+            <input type="checkbox" id="opt-sfx" checked />
+            <span>Activar sonidos interactivos cuando escriben en el chat</span>
+          </label>
+          <div class="slider-row" style="margin-top: 4px;">
+            <div class="slider-header">
+              <span>Volumen de SFX</span>
+              <span id="sfx-vol-val">75%</span>
+            </div>
+            <input type="range" id="sfx-volume-slider" min="10" max="100" value="75" />
+          </div>
+          <div class="config-group-title" style="margin-top: 6px; font-size:10px;">Comandos disponibles (Clic para probar):</div>
+          <div class="sfx-badge-grid">
+            <span class="sfx-badge" data-sfx="applause" title="Probar sonido">👏 !aplausos</span>
+            <span class="sfx-badge" data-sfx="laugh" title="Probar sonido">😂 !risa</span>
+            <span class="sfx-badge" data-sfx="gg" title="Probar sonido">🎮 !gg</span>
+            <span class="sfx-badge" data-sfx="airhorn" title="Probar sonido">📢 !airhorn</span>
+            <span class="sfx-badge" data-sfx="f" title="Probar sonido">🥀 !f</span>
+            <span class="sfx-badge" data-sfx="alert" title="Probar sonido">🔔 !alerta</span>
+          </div>
         </div>
       </div>
 
@@ -270,13 +308,14 @@
         <div class="config-group">
           <div class="config-group-title">Novedades y Registro de Cambios</div>
           <div class="notifications-log-box" id="notifications-log">
-            <b>v2.0.1:</b><br>
-            • Selector de temas visuales (Cyberpunk, Minimalista, Chroma, Cristal)<br>
-            • Personalización de voz TTS (prefijo de nombre y filtro de URLs)<br>
-            • Banner de actualización con temporizador de 10s y reinicio instantáneo<br>
-            • Regalos de TikTok 100% traducidos al español con imágenes oficiales HD<br>
-            • Barra HUD Pro de espectadores y contador de likes en tiempo real<br>
-            • Guardado permanente de claves y auto-conexión
+            <b>v2.2.0:</b><br>
+            • 📌 Fijar mensajes destacados arriba con botón de desanclar<br>
+            • 🔊 Comandos interactivos de audio (!aplausos, !risa, !gg, !airhorn, !f, !alerta)<br>
+            • 🌐 Servidor local integrado para OBS Studio Browser Source (http://localhost:3750)<br>
+            • 🎨 Logo oficial multichat.png integrado en ventana y barra de título<br>
+            • 📐 Rediseño de simetría y alineación perfecta de mensajes<br>
+            • 👤 Avisos de unión optimizados y compactos sin foto<br>
+            • 💾 Doble persistencia permanente de usuarios y tokens en disco
           </div>
         </div>
       </div>
@@ -289,6 +328,9 @@
 
     <!-- Barra de Estado de Conexión -->
     <div id="status-bar"></div>
+
+    <!-- Mensaje Fijado Destacado (Pin) -->
+    <div id="pinned-message-container" class="hidden"></div>
 
     <!-- Flujo de Mensajes del Chat -->
     <div id="chat-container"></div>

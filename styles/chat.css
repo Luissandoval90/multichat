@@ -57,6 +57,124 @@
   }
 }
 
+/* ==========================================================================
+   Mensaje Fijado Destacado (Pinned Card)
+   ========================================================================== */
+#pinned-message-container {
+  padding: 6px 8px 0;
+  flex-shrink: 0;
+  z-index: 8;
+  animation: pinSlideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes pinSlideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.pinned-card {
+  background: linear-gradient(135deg, rgba(24, 20, 36, 0.95), rgba(40, 25, 55, 0.95));
+  border: 1px solid rgba(169, 112, 255, 0.45);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), 0 0 12px rgba(169, 112, 255, 0.25);
+  border-radius: 9px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  backdrop-filter: blur(14px);
+  position: relative;
+}
+
+.pinned-card.platform-tiktok  { border-color: rgba(254, 44, 85, 0.55); box-shadow: 0 0 12px rgba(254, 44, 85, 0.25); }
+.pinned-card.platform-twitch  { border-color: rgba(145, 70, 255, 0.55); box-shadow: 0 0 12px rgba(145, 70, 255, 0.25); }
+.pinned-card.platform-kick    { border-color: rgba(83, 252, 24, 0.55); box-shadow: 0 0 12px rgba(83, 252, 24, 0.25); }
+.pinned-card.platform-youtube { border-color: rgba(255, 0, 0, 0.55); box-shadow: 0 0 12px rgba(255, 0, 0, 0.25); }
+
+.pinned-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pinned-badge {
+  font-size: 10px;
+  font-weight: 800;
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.unpin-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #d1d5db;
+  border-radius: 4px;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.unpin-btn:hover {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.pinned-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: var(--font-size, 13.5px);
+  line-height: 1.4;
+}
+
+.pinned-text {
+  flex: 1;
+  word-break: break-word;
+}
+
+/* Botón Pin en cada burbuja al pasar el mouse */
+.msg {
+  position: relative;
+}
+
+.msg .pin-btn {
+  position: absolute;
+  top: 4px;
+  right: 6px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #9ca3af;
+  border-radius: 4px;
+  width: 20px;
+  height: 18px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.msg:hover .pin-btn {
+  display: flex;
+}
+
+.msg .pin-btn:hover {
+  background: var(--accent, #a970ff);
+  color: #fff;
+  border-color: var(--accent, #a970ff);
+  transform: scale(1.1);
+}
+
 /* Colores y resplandor según plataforma */
 .msg.platform-tiktok  { border-left-color: var(--tiktok); }
 .msg.platform-twitch  { border-left-color: var(--twitch); }
@@ -137,30 +255,40 @@
   border-radius: 3px;
 }
 
-/* Mensajes de unión */
+/* Mensajes de unión (Join) - Compactos sin foto */
 .msg.join {
-  background: rgba(255, 209, 102, 0.1);
-  border-left-color: #ffd166;
-  color: #fef08a;
-  font-style: italic;
-  font-size: 11.5px;
+  background: rgba(255, 255, 255, 0.03);
   padding: 4px 10px;
+  min-height: auto;
+  opacity: 0.85;
 }
 
-/* Mensajes de compartidos (Share) */
+.msg.join .body {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.msg.join .nick {
+  font-weight: 700;
+  color: #e5e7eb;
+}
+
+.msg.join .join-text {
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Mensajes de compartidos (Share) Simétricos */
 .msg.share {
-  background: linear-gradient(90deg, rgba(56, 189, 248, 0.2), var(--surface-bg));
-  border-left-color: #38bdf8;
-  color: #bae6fd;
-  font-size: 12px;
-  padding: 6px 10px;
-  font-weight: 600;
+  background: var(--surface-bg);
 }
 
-.msg.share .share-icon {
+.msg.share .share-text {
   color: #38bdf8;
-  margin-right: 4px;
-  font-weight: 800;
+  font-size: 0.9em;
+  font-weight: 600;
 }
 
 /* Tarjeta de Regalos Mejorada con Imagen Oficial y Español */

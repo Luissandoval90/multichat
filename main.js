@@ -1,9 +1,18 @@
 const { app, BrowserWindow, ipcMain, globalShortcut, screen } = require('electron');
 const path = require('path');
+const http = require('http');
+const fs = require('fs');
+const { WebSocketServer, WebSocket } = require('ws');
 
 let mainWindow = null;
 let clickThrough = false;
 const activeConnections = {};
+
+// OBS Server state
+let obsServer = null;
+let obsWss = null;
+const OBS_PORT = 3750;
+let currentPinnedMessage = null;
 
 // Carga perezosa (lazy-load) de plataformas para arranque ultra-rápido
 const PLATFORMS = {
@@ -75,6 +84,85 @@ function getAutoUpdater() {
   return autoUpdaterInstance;
 }
 
+// ==========================================================================
+// Servidor Local Embebido para OBS Studio Browser Source
+// ==========================================================================
+function broadcastToObs(type, data) {
+  if (!obsWss) return;
+  const payload = JSON.stringify({ type, data });
+  obsWss.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(payload);
+    }
+  });
+}
+
+function startObsServer() {
+  if (obsServer) return;
+
+  obsServer = http.createServer((req, res) => {
+    const parsedUrl = new URL(req.url, `http://localhost:${OBS_PORT}`);
+    let pathname = parsedUrl.pathname;
+
+    if (pathname === '/' || pathname === '/obs' || pathname === '/index.html') {
+      pathname = '/obs.html';
+    }
+
+    const safePath = path.normalize(path.join(__dirname, pathname));
+    if (!safePath.startsWith(__dirname)) {
+      res.writeHead(403);
+      res.end('Acceso denegado');
+      return;
+    }
+
+    fs.readFile(safePath, (err, data) => {
+      if (err) {
+        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+        res.end('Archivo no encontrado');
+        return;
+      }
+
+      const ext = path.extname(safePath).toLowerCase();
+      const mimeTypes = {
+        '.html': 'text/html; charset=utf-8',
+        '.css': 'text/css; charset=utf-8',
+        '.js': 'application/javascript; charset=utf-8',
+        '.json': 'application/json; charset=utf-8',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.svg': 'image/svg+xml',
+      };
+
+      res.writeHead(200, {
+        'Content-Type': mimeTypes[ext] || 'application/octet-stream',
+        'Access-Control-Allow-Origin': '*',
+      });
+      res.end(data);
+    });
+  });
+
+  obsWss = new WebSocketServer({ server: obsServer, path: '/ws' });
+
+  obsWss.on('connection', (ws) => {
+    console.log('[OBS Server] Nuevo cliente OBS Studio conectado.');
+    if (currentPinnedMessage) {
+      ws.send(JSON.stringify({ type: 'pin', data: currentPinnedMessage }));
+    }
+  });
+
+  obsServer.listen(OBS_PORT, '127.0.0.1', () => {
+    console.log(`[OBS Server] Servidor local para OBS Studio listo en: http://localhost:${OBS_PORT}`);
+  });
+
+  obsServer.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`[OBS Server] Puerto ${OBS_PORT} ya en uso, el servidor sigue activo.`);
+    } else {
+      console.error('[OBS Server] Error:', err);
+    }
+  });
+}
+
 function createWindow() {
   const primaryDisplay = screen.getPrimaryDisplay();
   const { width } = primaryDisplay.workAreaSize;
@@ -88,6 +176,7 @@ function createWindow() {
     transparent: true,
     alwaysOnTop: true,
     show: false,
+    icon: path.join(__dirname, 'multichat.png'),
     skipTaskbar: false,
     resizable: true,
     hasShadow: false,
@@ -102,6 +191,9 @@ function createWindow() {
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
   mainWindow.loadFile('overlay.html');
+
+  // Iniciar servidor local OBS
+  startObsServer();
 
   // Mostrar la ventana en el milisegundo exacto en que el HTML está listo
   mainWindow.once('ready-to-show', () => {
@@ -184,12 +276,30 @@ function connectPlatforms(requests) {
     console.log('[main] Iniciando módulo:', platform, 'para:', handle);
     activeConnections[platform] = module.connect(handle, {
       onStatus: (data) => safeSend('platform-status', { platform, ...data }),
-      onChat: (data) => safeSend('chat-message', data),
-      onJoin: (data) => safeSend('join-message', data),
-      onGift: (data) => safeSend('gift-message', data),
-      onFollow: (data) => safeSend('follow-message', data),
-      onLike: (data) => safeSend('like-message', data),
-      onShare: (data) => safeSend('share-message', data),
+      onChat: (data) => {
+        safeSend('chat-message', data);
+        broadcastToObs('chat', data);
+      },
+      onJoin: (data) => {
+        safeSend('join-message', data);
+        broadcastToObs('join', data);
+      },
+      onGift: (data) => {
+        safeSend('gift-message', data);
+        broadcastToObs('gift', data);
+      },
+      onFollow: (data) => {
+        safeSend('follow-message', data);
+        broadcastToObs('follow', data);
+      },
+      onLike: (data) => {
+        safeSend('like-message', data);
+        broadcastToObs('like', data);
+      },
+      onShare: (data) => {
+        safeSend('share-message', data);
+        broadcastToObs('share', data);
+      },
       onViewers: (data) => safeSend('viewers-update', data),
     }, options || {});
   }
@@ -218,6 +328,12 @@ ipcMain.on('disconnect-all', () => {
   disconnectAll();
 });
 
+// Mensaje fijado (Pin) sincronizado con OBS
+ipcMain.on('pin-message', (_event, pinnedData) => {
+  currentPinnedMessage = pinnedData || null;
+  broadcastToObs('pin', currentPinnedMessage);
+});
+
 // Auto-actualizador IPC
 ipcMain.on('restart-and-install', () => {
   const updater = getAutoUpdater();
@@ -243,6 +359,34 @@ ipcMain.on('check-for-updates', () => {
   }
 });
 
+function getConfigFilePath() {
+  return path.join(app.getPath('userData'), 'multichat_config.json');
+}
+
+ipcMain.on('save-config-file', (_event, config) => {
+  try {
+    const filePath = getConfigFilePath();
+    fs.writeFileSync(filePath, JSON.stringify(config, null, 2), 'utf8');
+    console.log('[main] Configuración guardada en archivo permanente:', filePath);
+    broadcastToObs('config', config.options || {});
+  } catch (err) {
+    console.error('[main] Error guardando config en disco:', err);
+  }
+});
+
+ipcMain.handle('load-config-file', () => {
+  try {
+    const filePath = getConfigFilePath();
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      return JSON.parse(raw);
+    }
+  } catch (err) {
+    console.error('[main] Error leyendo config de disco:', err);
+  }
+  return null;
+});
+
 ipcMain.handle('get-app-version', () => {
   return app.getVersion();
 });
@@ -252,10 +396,16 @@ app.whenReady().then(createWindow);
 app.on('window-all-closed', () => {
   disconnectAll();
   globalShortcut.unregisterAll();
+  if (obsServer) {
+    try { obsServer.close(); } catch (e) {}
+  }
   if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('will-quit', () => {
   disconnectAll();
   globalShortcut.unregisterAll();
+  if (obsServer) {
+    try { obsServer.close(); } catch (e) {}
+  }
 });

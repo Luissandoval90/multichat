@@ -1,31 +1,9 @@
-// Conexión al chat en vivo y eventos de TikTok usando TikTool (@tiktool/live).
+// Conexión oficial al chat en vivo y eventos de TikTok usando @tiktool/live.
 // Expone: connect(username, callbacks, options) -> { disconnect() }
 
 const { TikTokLive } = require('@tiktool/live');
-const https = require('https');
 
 const MAX_RECONNECT_DELAY_MS = 30000;
-
-function fetchJson(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-        'Accept': 'application/json, text/plain, */*',
-      },
-    }, (res) => {
-      let raw = '';
-      res.on('data', chunk => raw += chunk);
-      res.on('end', () => {
-        try {
-          resolve(JSON.parse(raw));
-        } catch {
-          resolve(null);
-        }
-      });
-    }).on('error', () => resolve(null));
-  });
-}
 
 function connect(username, callbacks, options = {}) {
   let client = null;
@@ -71,13 +49,15 @@ function connect(username, callbacks, options = {}) {
     });
   }
 
-  async function start() {
-    console.log('[TikTok/TikTool] Iniciando conexión para usuario:', currentUsername);
+  function start() {
+    console.log('[TikTok] Iniciando conexión para usuario:', currentUsername);
 
-    if (!options.tiktoolApiKey) {
+    const apiKey = (options.tiktoolApiKey || '').trim();
+
+    if (!apiKey) {
       callbacks.onStatus({ 
         connected: false, 
-        error: 'TikTok requiere una clave gratuita de tik.tools (solo se pone una vez)' 
+        error: 'Requiere tu clave gratis de tik.tools en Ajustes ⚙' 
       });
       return;
     }
@@ -92,19 +72,19 @@ function connect(username, callbacks, options = {}) {
     try {
       client = new TikTokLive({
         uniqueId: currentUsername,
-        apiKey: options.tiktoolApiKey,
+        apiKey: apiKey,
         autoReconnect: false,
       });
 
       client.on('connected', () => {
-        console.log('[TikTok/TikTool] Conectado. Room ID:', client.roomId);
+        console.log('[TikTok] Conectado exitosamente. Room ID:', client.roomId);
         reconnectAttempt = 0;
         callbacks.onStatus({ connected: true });
       });
 
       client.on('disconnected', (code, reason) => {
         if (stopped) return;
-        console.warn('[TikTok/TikTool] Desconectado:', code, reason);
+        console.warn('[TikTok] Desconectado:', code, reason);
         callbacks.onStatus({ connected: false, error: 'TikTok desconectado, reintentando…' });
         if (callbacks.onViewers) {
           callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
@@ -113,12 +93,15 @@ function connect(username, callbacks, options = {}) {
       });
 
       client.on('error', (err) => {
-        console.error('[TikTok/TikTool] ERROR:', err);
+        console.error('[TikTok] ERROR:', err);
         const msg = err.message || String(err);
-        callbacks.onStatus({ 
-          connected: false, 
-          error: msg.includes('LIVE has ended') ? 'El usuario no está en vivo en TikTok' : 'TikTok: ' + msg 
-        });
+        let friendlyMsg = 'TikTok: ' + msg;
+        if (msg.includes('LIVE has ended')) {
+          friendlyMsg = 'El usuario no está en vivo en TikTok';
+        } else if (msg.includes('Invalid API key') || msg.includes('Unauthorized') || msg.includes('401')) {
+          friendlyMsg = 'Clave de TikTool inválida. Revisa en Ajustes ⚙';
+        }
+        callbacks.onStatus({ connected: false, error: friendlyMsg });
         if (callbacks.onViewers) {
           callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
         }
@@ -157,7 +140,6 @@ function connect(username, callbacks, options = {}) {
         handleLikeEvent(event);
       });
 
-      // Receptor de eventos generales (doble verificación de likes)
       client.on('event', (event) => {
         if (event && event.type === 'like') {
           handleLikeEvent(event);
@@ -244,12 +226,15 @@ function connect(username, callbacks, options = {}) {
       });
 
       client.connect().catch(err => {
-        console.error('[TikTok/TikTool] connect() error:', err);
+        console.error('[TikTok] connect() error:', err);
         const msg = err.message || String(err);
-        callbacks.onStatus({ 
-          connected: false, 
-          error: msg.includes('LIVE has ended') ? 'El usuario no está en vivo en TikTok' : 'TikTok: ' + msg 
-        });
+        let friendlyMsg = 'TikTok: ' + msg;
+        if (msg.includes('LIVE has ended')) {
+          friendlyMsg = 'El usuario no está en vivo en TikTok';
+        } else if (msg.includes('Invalid API key') || msg.includes('Unauthorized') || msg.includes('401')) {
+          friendlyMsg = 'Clave de TikTool inválida. Revisa en Ajustes ⚙';
+        }
+        callbacks.onStatus({ connected: false, error: friendlyMsg });
         if (callbacks.onViewers) {
           callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
         }
@@ -257,7 +242,7 @@ function connect(username, callbacks, options = {}) {
       });
 
     } catch (err) {
-      console.error('[TikTok/TikTool] Falló inicialización:', err);
+      console.error('[TikTok] Falló inicialización:', err);
       callbacks.onStatus({ connected: false, error: 'TikTok: ' + (err.message || String(err)) });
       scheduleReconnect();
     }

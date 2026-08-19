@@ -26,6 +26,13 @@ contextBridge.exposeInMainWorld('overlayAPI', {
   onUpdateDownloaded: (callback) => ipcRenderer.on('update-downloaded', (_event, data) => callback(data)),
   onUpdateStatus: (callback) => ipcRenderer.on('update-status', (_event, data) => callback(data)),
 
+  // Persistencia segura en disco
+  saveConfigFile: (config) => ipcRenderer.send('save-config-file', config),
+  loadConfigFile: () => ipcRenderer.invoke('load-config-file'),
+
+  // Mensajes fijados (Pin)
+  pinMessage: (pinnedData) => ipcRenderer.send('pin-message', pinnedData),
+
   // Atajos globales y ventana
   onClickThroughChanged: (callback) => ipcRenderer.on('click-through-changed', (_event, data) => callback(data)),
   onAdjustBgOpacity: (callback) => ipcRenderer.on('adjust-bg-opacity', (_event, delta) => callback(delta)),
