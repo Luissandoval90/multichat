@@ -1,0 +1,58 @@
+name: Build Multi Chat Overlay Pro
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply premium UI layer
+        shell: pwsh
+        run: |
+          $files = @('overlay.html','obs.html')
+          foreach ($file in $files) {
+            $html = Get-Content $file -Raw
+            if ($html -notmatch 'styles/premium.css') {
+              $html = $html -replace '<link rel="stylesheet" href="styles/style.css" />', '<link rel="stylesheet" href="styles/style.css" />`r`n  <link rel="stylesheet" href="styles/premium.css" />'
+            }
+            $html = $html -replace '<body class="theme-cyberpunk">', '<body class="theme-cyberpunk premium-shell">'
+            Set-Content -Path $file -Value $html -Encoding UTF8
+          }
+          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version='2.4.0';fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Windows package
+        run: npm run dist
+
+      - name: Create source ZIP
+        shell: pwsh
+        run: |
+          $items = @('main.js','preload.js','overlay.html','obs.html','multichat.png','styles','src','platforms','package.json','package-lock.json','README.md','iniciar.bat')
+          Compress-Archive -Path $items -DestinationPath 'MultiChat-Overlay-Pro-v2.4.0-source.zip' -Force
+
+      - name: Upload Windows artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: MultiChat-Overlay-Pro-v2.4.0-Windows
+          path: |
+            dist/*.exe
+            dist/*.blockmap
+            MultiChat-Overlay-Pro-v2.4.0-source.zip
+          if-no-files-found: error
