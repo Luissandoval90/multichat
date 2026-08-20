@@ -251,6 +251,146 @@ function clearPinnedMessage() {
 }
 
 // ==========================================================================
+// 2. Sistema de Clips & Google Drive
+// ==========================================================================
+const clipNotificationContainer = document.getElementById('clip-notification-container');
+const btnOpenGdrive = document.getElementById('btn-open-gdrive');
+const btnOpenLocalClips = document.getElementById('btn-open-local-clips');
+const btnTestClip = document.getElementById('btn-test-clip');
+const clipStatusText = document.getElementById('clip-status-text');
+let clipDismissTimeout = null;
+
+function showClipNotification(clipData) {
+  if (clipDismissTimeout) clearTimeout(clipDismissTimeout);
+  
+  if (window.AudioAlerts && typeof window.AudioAlerts.playClipSound === 'function') {
+    window.AudioAlerts.playClipSound();
+  }
+
+  const requester = clipData.requestedBy || 'Chat';
+  const driveUrl = clipData.fileUrl || clipData.folderUrl || 'https://drive.google.com/drive/folders/1oT4GlKx1E5hRMcbrq6qGpdrNHuc_5MPH';
+
+  clipNotificationContainer.classList.remove('hidden');
+  clipNotificationContainer.innerHTML = `
+    <div class="clip-card">
+      <div class="clip-card-left">
+        <div class="clip-icon-box">🎬</div>
+        <div>
+          <div class="clip-card-title">¡Clip Grabado por @${escapeHtml(requester)}!</div>
+          <div class="clip-card-sub">Subido a tu Google Drive • ${clipData.duration || 30}s</div>
+        </div>
+      </div>
+      <button type="button" class="btn-open-clip-link" id="btn-view-clip-drive">Ver en Drive ↗</button>
+    </div>
+  `;
+
+  document.getElementById('btn-view-clip-drive').addEventListener('click', () => {
+    window.overlayAPI.openExternalUrl(driveUrl);
+  });
+
+  clipDismissTimeout = setTimeout(() => {
+    clipNotificationContainer.classList.add('hidden');
+  }, 9000);
+}
+
+if (window.overlayAPI && window.overlayAPI.onClipCreated) {
+  window.overlayAPI.onClipCreated((data) => {
+    showClipNotification(data);
+  });
+}
+
+let screenStream = null;
+let mediaRecorder = null;
+let recordedChunks = [];
+
+async function initScreenRollingBuffer() {
+  try {
+    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
+      screenStream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          frameRate: 30,
+          width: 1280,
+          height: 720
+        },
+        audio: false
+      });
+    } else if (window.overlayAPI && window.overlayAPI.getDesktopSources) {
+      const sources = await window.overlayAPI.getDesktopSources();
+      if (sources && sources.length > 0) {
+        screenStream = await navigator.mediaDevices.getUserMedia({
+          audio: false,
+          video: {
+            mandatory: {
+              chromeMediaSource: 'desktop',
+              chromeMediaSourceId: sources[0].id,
+              maxWidth: 1280,
+              maxHeight: 720,
+              maxFrameRate: 30
+            }
+          }
+        });
+      }
+    }
+
+    if (!screenStream) return;
+
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(screenStream, { mimeType: 'video/webm' });
+    mediaRecorder.ondataavailable = (e) => {
+      if (e.data && e.data.size > 0) {
+        recordedChunks.push(e.data);
+        if (recordedChunks.length > 45) {
+          recordedChunks.shift();
+        }
+      }
+    };
+    mediaRecorder.start(1000);
+    console.log('[Renderer] Búfer de captura de pantalla real activo (30s-45s).');
+  } catch(e) {
+    console.log('[Renderer] Captura de pantalla status:', e.message);
+  }
+}
+
+async function triggerClipCreation(requestedBy = 'Streamer') {
+  if (!window.overlayAPI || !window.overlayAPI.createClip) return;
+  
+  if (clipStatusText) clipStatusText.textContent = '🎬 Descargando clip del live y subiendo a Google Drive…';
+
+  const tiktokInput = document.getElementById('input-tiktok');
+  const twitchInput = document.getElementById('input-twitch');
+  const streamerName = (tiktokInput && tiktokInput.value.trim()) || 
+                       currentConfig?.platforms?.tiktok?.handle || 
+                       (twitchInput && twitchInput.value.trim()) || 
+                       currentConfig?.platforms?.twitch?.handle || 
+                       'Streamer';
+
+  const platform = (tiktokInput && tiktokInput.value.trim()) ? 'tiktok' : 
+                   ((twitchInput && twitchInput.value.trim()) ? 'twitch' : 'tiktok');
+
+  const durationBtns = document.querySelectorAll('[data-clip-duration]');
+  let chosenDuration = 30;
+  durationBtns.forEach(btn => {
+    if (btn.classList.contains('active')) chosenDuration = parseInt(btn.getAttribute('data-clip-duration'), 10) || 30;
+  });
+
+  const res = await window.overlayAPI.createClip({
+    streamerName,
+    requestedBy,
+    platform,
+    durationSeconds: chosenDuration,
+  });
+
+  if (res && res.success) {
+    if (clipStatusText) clipStatusText.textContent = `✅ Clip guardado exitosamente en tu Google Drive`;
+    setTimeout(() => { if (clipStatusText) clipStatusText.textContent = ''; }, 5000);
+  } else if (res && res.cooldown) {
+    if (clipStatusText) clipStatusText.textContent = `⏳ ${res.message}`;
+  } else {
+    if (clipStatusText) clipStatusText.textContent = `⚠ ${res ? res.error : 'Error al crear clip'}`;
+  }
+}
+
+// ==========================================================================
 // 2. Inicialización, Pestañas y Temas
 // ==========================================================================
 function initUI() {
@@ -281,6 +421,15 @@ function initUI() {
     btn.addEventListener('click', () => {
       const theme = btn.getAttribute('data-theme');
       setAppTheme(theme);
+    });
+  });
+
+  // Selector de Fuentes Tipográficas
+  const fontBtns = document.querySelectorAll('.font-pill-btn');
+  fontBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const font = btn.getAttribute('data-font');
+      setAppFont(font);
     });
   });
 
@@ -369,6 +518,33 @@ function initUI() {
       });
     });
   }
+
+  // Clips & Google Drive Buttons
+  if (btnOpenGdrive) {
+    btnOpenGdrive.addEventListener('click', () => {
+      window.overlayAPI.openExternalUrl('https://drive.google.com/drive/folders/1oT4GlKx1E5hRMcbrq6qGpdrNHuc_5MPH');
+    });
+  }
+
+  if (btnOpenLocalClips) {
+    btnOpenLocalClips.addEventListener('click', () => {
+      window.overlayAPI.openClipsFolder();
+    });
+  }
+
+  if (btnTestClip) {
+    btnTestClip.addEventListener('click', () => {
+      triggerClipCreation('Prueba_Streamer');
+    });
+  }
+
+  const clipDurationBtns = document.querySelectorAll('[data-clip-duration]');
+  clipDurationBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      clipDurationBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
 
   // Sliders de Apariencia
   opacitySlider.addEventListener('input', (e) => {
@@ -489,16 +665,40 @@ function initUI() {
       handleConnect(true);
     }
   }
+
+  // Iniciar búfer de grabación continua de pantalla para clips en vivo
+  setTimeout(() => {
+    initScreenRollingBuffer();
+  }, 1000);
 }
 
 function setAppTheme(theme) {
-  document.body.className = `theme-${theme}`;
+  const allThemes = ['cyberpunk', 'minimal', 'chroma', 'glass'];
+  allThemes.forEach(t => document.body.classList.remove(`theme-${t}`));
+  document.body.classList.add(`theme-${theme}`);
+
   const themeBtns = document.querySelectorAll('.theme-pill-btn');
   themeBtns.forEach(b => {
     b.classList.toggle('active', b.getAttribute('data-theme') === theme);
   });
   if (currentConfig && currentConfig.options) {
     currentConfig.options.theme = theme;
+    window.AppStorage.saveConfig(currentConfig);
+  }
+}
+
+function setAppFont(font) {
+  const allFonts = ['outfit', 'minecraft', 'cyber', 'kawaii', 'classic'];
+  allFonts.forEach(f => document.body.classList.remove(`font-${f}`));
+  document.body.classList.add(`font-${font}`);
+
+  const fontBtns = document.querySelectorAll('.font-pill-btn');
+  fontBtns.forEach(b => {
+    b.classList.toggle('active', b.getAttribute('data-font') === font);
+  });
+
+  if (currentConfig && currentConfig.options) {
+    currentConfig.options.fontFamily = font;
     window.AppStorage.saveConfig(currentConfig);
   }
 }
@@ -605,9 +805,12 @@ function applyConfigToUI(config) {
   document.getElementById('opt-sound-alerts').checked = !!config.options.soundAlerts;
   document.getElementById('opt-filter-bots').checked = !!config.options.filterBotCommands;
 
-  // Tema
+  // Tema y Fuente
   const currentTheme = config.options.theme || 'cyberpunk';
   setAppTheme(currentTheme);
+
+  const currentFont = config.options.fontFamily || 'outfit';
+  setAppFont(currentFont);
 
   // TTS
   const isTtsOn = !!config.options.ttsEnabled;
@@ -671,6 +874,10 @@ function applyConfigToUI(config) {
     root.style.setProperty('--msg-spacing', config.options.msgSpacing + 'px');
   }
 
+  // Clips & Drive
+  const optClip = document.getElementById('opt-clip-enabled');
+  if (optClip) optClip.checked = config.options.clipEnabled !== false;
+
   window.AudioAlerts.setSoundEnabled(config.options.soundAlerts);
   window.FollowAlerts.setFollowAlertsEnabled(config.options.followAlerts);
   window.AppTTS.setTtsEnabled(isTtsOn);
@@ -686,6 +893,9 @@ function gatherConfigFromUI() {
   const activeThemeBtn = document.querySelector('.theme-pill-btn.active');
   const selectedTheme = activeThemeBtn ? activeThemeBtn.getAttribute('data-theme') : 'cyberpunk';
 
+  const activeFontBtn = document.querySelector('.font-pill-btn.active');
+  const selectedFont = activeFontBtn ? activeFontBtn.getAttribute('data-font') : 'outfit';
+
   const config = {
     platforms: {},
     options: {
@@ -695,6 +905,7 @@ function gatherConfigFromUI() {
       sfxEnabled: optSfx ? optSfx.checked : true,
       sfxVolume: sfxVolumeSlider ? parseInt(sfxVolumeSlider.value, 10) / 100 : 0.75,
       theme: selectedTheme,
+      fontFamily: selectedFont,
       ttsEnabled: ttsOptCheck.checked,
       ttsIncludeNickname: ttsIncludeNickCheck.checked,
       ttsSkipUrls: ttsSkipUrlsCheck.checked,
@@ -706,6 +917,7 @@ function gatherConfigFromUI() {
       bgOpacity: parseInt(opacitySlider.value, 10) / 100,
       fontSize: parseFloat(fontSizeSlider.value) || 13.5,
       msgSpacing: parseInt(msgSpacingSlider.value, 10) || 6,
+      clipEnabled: document.getElementById('opt-clip-enabled') ? document.getElementById('opt-clip-enabled').checked : true,
     },
   };
 
@@ -928,6 +1140,14 @@ function avatarHtml(data) {
 
 // Chat
 window.overlayAPI.onChatMessage((data) => {
+  // Detectar comando !clip para guardar video en Google Drive
+  const optClipEnabled = document.getElementById('opt-clip-enabled');
+  const commentText = (data.comment || '').trim();
+  if ((!optClipEnabled || optClipEnabled.checked) && /(?:^|\s)[!/.]?(clip|clipear|rec|grabar)\b/i.test(commentText)) {
+    console.log('[Renderer] ¡Comando !clip detectado en el chat! Usuario:', data.nickname || data.userId, 'Comentario:', commentText);
+    triggerClipCreation(data.nickname || data.userId);
+  }
+
   // Procesar efectos de sonido SFX si contiene comando
   if (window.AudioAlerts && typeof window.AudioAlerts.processChatSfxCommand === 'function') {
     window.AudioAlerts.processChatSfxCommand(data.comment);

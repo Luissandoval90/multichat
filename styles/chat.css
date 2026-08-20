@@ -58,6 +58,83 @@
 }
 
 /* ==========================================================================
+   Alerta Cinemática de Clip Creado
+   ========================================================================== */
+#clip-notification-container {
+  padding: 6px 10px 0;
+  flex-shrink: 0;
+  z-index: 9;
+  animation: clipPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes clipPopIn {
+  from { opacity: 0; transform: translateY(-12px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.clip-card {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.95), rgba(217, 119, 6, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6), 0 0 16px rgba(245, 158, 11, 0.4);
+  border-radius: 9px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #ffffff;
+  backdrop-filter: blur(14px);
+}
+
+.clip-card-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.clip-icon-box {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.clip-card-title {
+  font-size: 11.5px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+.clip-card-sub {
+  font-size: 10px;
+  opacity: 0.9;
+}
+
+.btn-open-clip-link {
+  background: #ffffff;
+  border: none;
+  color: #b45309;
+  padding: 5px 9px;
+  border-radius: 5px;
+  font-size: 10.5px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-open-clip-link:hover {
+  background: #fef3c7;
+  transform: scale(1.04);
+}
+
+/* ==========================================================================
    Mensaje Fijado Destacado (Pinned Card)
    ========================================================================== */
 #pinned-message-container {

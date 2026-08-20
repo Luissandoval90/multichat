@@ -1,6 +1,6 @@
 {
   "name": "multi-chat-overlay",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Overlay de chat en vivo con alertas para TikTok, Twitch, Kick y YouTube",
   "main": "main.js",
   "author": "Luis Sandoval",
@@ -22,6 +22,7 @@
     "@tiktool/live": "2.12.1",
     "electron-updater": "^6.8.9",
     "tiktok-live-connector": "^2.4.3",
+    "tiktok-live-recorder": "^1.0.4",
     "tmi.js": "1.8.5",
     "ws": "8.21.1",
     "youtube-chat": "^2.2.0"

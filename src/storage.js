@@ -17,6 +17,7 @@ const DEFAULT_CONFIG = {
     sfxEnabled: true,
     sfxVolume: 0.75,
     theme: 'cyberpunk',
+    fontFamily: 'outfit',
     ttsEnabled: false,
     ttsVoice: '',
     ttsVolume: 0.85,
@@ -33,6 +34,10 @@ const DEFAULT_CONFIG = {
     bgOpacity: 0.45,
     fontSize: 13.5,
     msgSpacing: 6,
+    clipEnabled: true,
+    clipDuration: 30,
+    clipWebhookUrl: 'https://script.google.com/macros/s/AKfycbzZzePfDrKhLrF5F6eRvl0kU-IFVIB1SbnSWv_Z0mSIG3HXkZsYnt6GHkAn52BTPg861Q/exec',
+    clipFolderUrl: 'https://drive.google.com/drive/folders/1oT4GlKx1E5hRMcbrq6qGpdrNHuc_5MPH',
   },
 };
 

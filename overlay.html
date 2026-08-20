@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Multi Chat Overlay Pro</title>
   <link rel="icon" type="image/png" href="multichat.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Inter:wght@500;700;800&family=Orbitron:wght@600;800&family=Outfit:wght@500;700;800&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles/style.css" />
   <link rel="stylesheet" href="styles/chat.css" />
   <link rel="stylesheet" href="styles/alerts.css" />
@@ -67,6 +70,7 @@
       <!-- Pestañas de Navegación -->
       <div class="tab-header">
         <button class="tab-btn active" data-tab="tab-accounts">🌐 Redes</button>
+        <button class="tab-btn" data-tab="tab-clips">🎬 Clips & Drive</button>
         <button class="tab-btn" data-tab="tab-voice">🔊 Voz (TTS)</button>
         <button class="tab-btn" data-tab="tab-appearance">🎨 Apariencia</button>
         <button class="tab-btn" data-tab="tab-updates">🔔 Novedades</button>
@@ -129,6 +133,50 @@
           <div style="font-size:10px; color:#9ca3af; margin-top:2px;">
             Pégalo como <b>"Fuente de Navegador" (Browser Source)</b> en OBS para mostrar el chat transparente en tu transmisión.
           </div>
+        </div>
+      </div>
+
+      <!-- Pestaña: Clips & Google Drive -->
+      <div class="tab-content hidden" id="tab-clips">
+        <div class="config-group">
+          <div class="config-group-title">Comando !clip en Vivo</div>
+          <label class="opt-toggle">
+            <input type="checkbox" id="opt-clip-enabled" checked />
+            <span>Permitir que el chat guarde clips escribiendo <b>!clip</b></span>
+          </label>
+        </div>
+
+        <div class="config-group">
+          <div class="config-group-title">Duración del Clip</div>
+          <div class="theme-selector-grid">
+            <button type="button" class="theme-pill-btn active" data-clip-duration="30">⏱ 30 Segundos</button>
+            <button type="button" class="theme-pill-btn" data-clip-duration="45">⏱ 45 Segundos</button>
+            <button type="button" class="theme-pill-btn" data-clip-duration="60">⏱ 60 Segundos</button>
+            <button type="button" class="theme-pill-btn" data-clip-duration="15">⏱ 15 Segundos</button>
+          </div>
+        </div>
+
+        <div class="config-group">
+          <div class="config-group-title">☁️ Almacenamiento en Google Drive</div>
+          <div style="font-size:11px; color:#d1d5db; line-height:1.4;">
+            Los clips se suben automáticamente a la carpeta compartida de Google Drive:
+          </div>
+          <div style="display:flex; gap:6px; margin-top:4px;">
+            <button type="button" class="btn-check-updates" id="btn-open-gdrive" style="flex:1; background:linear-gradient(135deg, #0284c7, #2563eb);">
+              📂 Abrir Carpeta de Google Drive ↗
+            </button>
+            <button type="button" class="btn-test" id="btn-open-local-clips" title="Ver clips guardados en esta PC">
+              📁 PC Local
+            </button>
+          </div>
+        </div>
+
+        <div class="config-group">
+          <div class="config-group-title">Probar Generador de Clips</div>
+          <button type="button" class="btn-primary" id="btn-test-clip" style="background:linear-gradient(135deg, #f59e0b, #d97706);">
+            🎬 Probar y Crear Clip Ahora
+          </button>
+          <div id="clip-status-text" style="font-size:10.5px; color:#9ca3af; text-align:center; margin-top:2px;"></div>
         </div>
       </div>
 
@@ -234,6 +282,17 @@
       <!-- Pestaña 3: Apariencia y Temas (Skins) -->
       <div class="tab-content hidden" id="tab-appearance">
         <div class="config-group">
+          <div class="config-group-title">Fuente Tipográfica (Estilo de Letras)</div>
+          <div class="font-selector-grid">
+            <button type="button" class="font-pill-btn active" data-font="outfit">✨ Moderna (Outfit)</button>
+            <button type="button" class="font-pill-btn font-preview-minecraft" data-font="minecraft">🎮 Minecraft Pixel</button>
+            <button type="button" class="font-pill-btn font-preview-cyber" data-font="cyber">🚀 Cyber Gamer</button>
+            <button type="button" class="font-pill-btn font-preview-kawaii" data-font="kawaii">🧸 Kawaii (Fredoka)</button>
+            <button type="button" class="font-pill-btn font-preview-classic" data-font="classic">⚡ Clásica (Inter)</button>
+          </div>
+        </div>
+
+        <div class="config-group">
           <div class="config-group-title">Tema Visual (Skin)</div>
           <div class="theme-selector-grid">
             <button type="button" class="theme-pill-btn active" data-theme="cyberpunk">🟣 Cyberpunk</button>
@@ -308,13 +367,17 @@
         <div class="config-group">
           <div class="config-group-title">Novedades y Registro de Cambios</div>
           <div class="notifications-log-box" id="notifications-log">
+            <b>v2.3.0:</b><br>
+            • 🎬 Comando !clip en vivo: graba clips MP4 y los sube automáticamente a Google Drive<br>
+            • ☁️ Almacenamiento central en Google Drive con enlace compartible seguro<br>
+            • 🔤 5 Fuentes tipográficas en vivo (🎮 Minecraft Pixel, ✨ Moderna, 🚀 Cyber, 🧸 Kawaii, ⚡ Clásica)<br>
+            • 💎 Rediseño visual artesanal Glassmorphism 3.0 de alta gama<br>
+            <br>
             <b>v2.2.0:</b><br>
             • 📌 Fijar mensajes destacados arriba con botón de desanclar<br>
             • 🔊 Comandos interactivos de audio (!aplausos, !risa, !gg, !airhorn, !f, !alerta)<br>
             • 🌐 Servidor local integrado para OBS Studio Browser Source (http://localhost:3750)<br>
             • 🎨 Logo oficial multichat.png integrado en ventana y barra de título<br>
-            • 📐 Rediseño de simetría y alineación perfecta de mensajes<br>
-            • 👤 Avisos de unión optimizados y compactos sin foto<br>
             • 💾 Doble persistencia permanente de usuarios y tokens en disco
           </div>
         </div>
@@ -328,6 +391,9 @@
 
     <!-- Barra de Estado de Conexión -->
     <div id="status-bar"></div>
+
+    <!-- Alerta Flotante de Clip Creado -->
+    <div id="clip-notification-container" class="hidden"></div>
 
     <!-- Mensaje Fijado Destacado (Pin) -->
     <div id="pinned-message-container" class="hidden"></div>

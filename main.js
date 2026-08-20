@@ -1,8 +1,9 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, screen } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, screen, shell, desktopCapturer, session } = require('electron');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
 const { WebSocketServer, WebSocket } = require('ws');
+const clipper = require('./src/clipper');
 
 let mainWindow = null;
 let clickThrough = false;
@@ -189,6 +190,17 @@ function createWindow() {
 
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
+
+  // Manejador automático de captura de pantalla para clips en vivo (sin diálogos molestos)
+  try {
+    session.defaultSession.setDisplayMediaRequestHandler((_request, callback) => {
+      desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {
+        if (sources && sources.length > 0) {
+          callback({ video: sources[0] });
+        }
+      }).catch(() => {});
+    });
+  } catch (e) {}
 
   mainWindow.loadFile('overlay.html');
 
@@ -391,7 +403,80 @@ ipcMain.handle('get-app-version', () => {
   return app.getVersion();
 });
 
-app.whenReady().then(createWindow);
+// Sistema de Clips & Google Drive con Grabador Continuo de Pantalla
+const screenFrameBuffer = [];
+const MAX_SCREEN_FRAMES = 45; // Búfer de hasta 45 segundos
+
+function startScreenFrameRecorder() {
+  setInterval(async () => {
+    try {
+      if (!desktopCapturer) return;
+      const sources = await desktopCapturer.getSources({
+        types: ['screen'],
+        thumbnailSize: { width: 1280, height: 720 }
+      });
+      if (sources && sources.length > 0) {
+        const frameBuf = sources[0].thumbnail.toJPEG(85);
+        if (frameBuf && frameBuf.length > 1000) {
+          screenFrameBuffer.push(frameBuf);
+          if (screenFrameBuffer.length > MAX_SCREEN_FRAMES) {
+            screenFrameBuffer.shift();
+          }
+        }
+      }
+    } catch (e) {}
+  }, 1000);
+}
+
+ipcMain.handle('create-clip', async (_event, params) => {
+  const clipParams = {
+    ...(params || {}),
+    screenFrames: [...screenFrameBuffer],
+  };
+  const result = await clipper.createClip(clipParams);
+  if (result && result.success) {
+    safeSend('clip-created', result);
+    broadcastToObs('clip', result);
+  }
+  return result;
+});
+
+ipcMain.handle('get-desktop-sources', async () => {
+  try {
+    return await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 0, height: 0 } });
+  } catch (e) {
+    console.error('[main] Error obteniendo desktop sources:', e);
+    return [];
+  }
+});
+
+ipcMain.handle('save-recorded-clip', async (_event, { buffer, streamerName, requestedBy, platform, durationSeconds }) => {
+  const result = await clipper.saveBufferAndUpload({
+    rawBuffer: Buffer.from(buffer),
+    streamerName,
+    requestedBy,
+    platform,
+    durationSeconds
+  });
+  if (result && result.success) {
+    safeSend('clip-created', result);
+    broadcastToObs('clip', result);
+  }
+  return result;
+});
+
+ipcMain.on('open-clips-folder', () => {
+  shell.openPath(clipper.getClipsDirectory());
+});
+
+ipcMain.on('open-external-url', (_event, url) => {
+  if (url) shell.openExternal(url);
+});
+
+app.whenReady().then(() => {
+  createWindow();
+  startScreenFrameRecorder();
+});
 
 app.on('window-all-closed', () => {
   disconnectAll();

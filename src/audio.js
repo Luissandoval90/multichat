@@ -353,11 +353,42 @@ function processChatSfxCommand(commentText) {
   return false;
 }
 
+// Alerta de Clip Grabado (Fanfarria cinemática)
+function playClipSound() {
+  if (!soundEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    const fanfareNotes = [440, 554.37, 659.25, 880]; // A4, C#5, E5, A5
+    fanfareNotes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, now + (idx * 0.09));
+
+      gain.gain.setValueAtTime(0.01, now + (idx * 0.09));
+      gain.gain.linearRampToValueAtTime(0.4 * soundVolume, now + (idx * 0.09) + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + (idx * 0.09) + 0.7);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start(now + (idx * 0.09));
+      osc.stop(now + (idx * 0.09) + 0.75);
+    });
+  } catch (e) {
+    console.warn('[Audio] Error en clip sound:', e);
+  }
+}
+
 window.AudioAlerts = {
   setSoundEnabled,
   setSoundVolume,
   playFollowSound,
   playGiftSound,
+  playClipSound,
   setSfxEnabled,
   setSfxVolume,
   processChatSfxCommand,

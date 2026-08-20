@@ -33,6 +33,14 @@ contextBridge.exposeInMainWorld('overlayAPI', {
   // Mensajes fijados (Pin)
   pinMessage: (pinnedData) => ipcRenderer.send('pin-message', pinnedData),
 
+  // Clips y Google Drive
+  createClip: (params) => ipcRenderer.invoke('create-clip', params),
+  onClipCreated: (callback) => ipcRenderer.on('clip-created', (_event, data) => callback(data)),
+  openClipsFolder: () => ipcRenderer.send('open-clips-folder'),
+  openExternalUrl: (url) => ipcRenderer.send('open-external-url', url),
+  getDesktopSources: () => ipcRenderer.invoke('get-desktop-sources'),
+  saveRecordedClip: (params) => ipcRenderer.invoke('save-recorded-clip', params),
+
   // Atajos globales y ventana
   onClickThroughChanged: (callback) => ipcRenderer.on('click-through-changed', (_event, data) => callback(data)),
   onAdjustBgOpacity: (callback) => ipcRenderer.on('adjust-bg-opacity', (_event, delta) => callback(delta)),

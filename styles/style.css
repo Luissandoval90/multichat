@@ -1,22 +1,47 @@
+/* ==========================================================================
+   Multi Chat Overlay Pro - Estilos Globales & Diseño Premium de Alta Gama
+   ========================================================================== */
+
 :root {
   --bg-opacity: 0.45;
   --accent: #a970ff;
-  --accent-glow: rgba(169, 112, 255, 0.35);
+  --accent-glow: rgba(169, 112, 255, 0.4);
   --tiktok: #fe2c55;
-  --tiktok-glow: rgba(254, 44, 85, 0.35);
+  --tiktok-glow: rgba(254, 44, 85, 0.4);
   --twitch: #9146ff;
-  --twitch-glow: rgba(145, 70, 255, 0.35);
+  --twitch-glow: rgba(145, 70, 255, 0.4);
   --kick: #53fc18;
-  --kick-glow: rgba(83, 252, 24, 0.35);
+  --kick-glow: rgba(83, 252, 24, 0.4);
   --youtube: #ff0000;
-  --youtube-glow: rgba(255, 0, 0, 0.35);
+  --youtube-glow: rgba(255, 0, 0, 0.4);
+
+  /* Fuentes Tipográficas */
+  --font-current: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-size: 13.5px;
   --msg-spacing: 6px;
-  --surface-bg: rgba(16, 16, 24, var(--bg-opacity));
-  --surface-glass: rgba(22, 22, 32, 0.85);
-  --surface-border: rgba(255, 255, 255, 0.1);
+
+  /* Superficies Glassmorphism 3.0 */
+  --surface-bg: rgba(15, 15, 23, var(--bg-opacity));
+  --surface-glass: rgba(20, 20, 30, 0.88);
+  --surface-border: rgba(255, 255, 255, 0.08);
   --text-main: #f9fafb;
   --text-muted: #9ca3af;
+}
+
+/* Clases de Fuentes Tipográficas Dinámicas */
+body.font-minecraft { --font-current: 'Press Start 2P', monospace; }
+body.font-cyber     { --font-current: 'Orbitron', sans-serif; }
+body.font-kawaii    { --font-current: 'Fredoka', sans-serif; }
+body.font-classic   { --font-current: 'Inter', -apple-system, sans-serif; }
+body.font-outfit    { --font-current: 'Outfit', -apple-system, sans-serif; }
+
+/* Ajuste específico para que la fuente Minecraft se lea perfecta */
+body.font-minecraft #chat-container {
+  letter-spacing: 0.3px;
+  line-height: 1.6;
+}
+body.font-minecraft .msg .nick {
+  font-size: 0.9em;
 }
 
 /* ==========================================================================
@@ -35,8 +60,8 @@ body.theme-chroma #app {
 }
 
 body.theme-glass {
-  --surface-bg: rgba(255, 255, 255, calc(var(--bg-opacity) * 0.25));
-  --surface-border: rgba(255, 255, 255, 0.2);
+  --surface-bg: rgba(255, 255, 255, calc(var(--bg-opacity) * 0.22));
+  --surface-border: rgba(255, 255, 255, 0.18);
   --text-main: #ffffff;
 }
 
@@ -51,11 +76,12 @@ html, body {
   height: 100%;
   background: transparent;
   overflow: hidden;
-  font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;
+  font-family: var(--font-current);
   -webkit-app-region: no-drag;
   user-select: none;
   color: var(--text-main);
   font-size: var(--font-size);
+  -webkit-font-smoothing: antialiased;
 }
 
 #app {
@@ -67,7 +93,8 @@ html, body {
   overflow: hidden;
   position: relative;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
 }
 
 /* ==========================================================================
@@ -75,60 +102,48 @@ html, body {
    ========================================================================== */
 #update-banner-container {
   position: absolute;
-  top: 40px;
+  top: 42px;
   left: 10px;
   right: 10px;
-  z-index: 1000;
-  background: linear-gradient(135deg, rgba(20, 20, 32, 0.98), rgba(35, 20, 50, 0.98));
-  border: 1px solid rgba(169, 112, 255, 0.5);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(169, 112, 255, 0.3);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(16, 185, 129, 0.4);
   border-radius: 10px;
   padding: 10px 12px;
+  z-index: 1000;
+  backdrop-filter: blur(14px);
   display: flex;
   flex-direction: column;
   gap: 8px;
-  animation: updateSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  backdrop-filter: blur(16px);
+  animation: bannerPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes updateSlideIn {
-  from { opacity: 0; transform: translateY(-15px) scale(0.95); }
+@keyframes bannerPop {
+  from { opacity: 0; transform: translateY(-12px) scale(0.96); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .update-banner-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-}
-
-.update-banner-title {
-  font-size: 12px;
-  font-weight: 800;
-  color: #f3e8ff;
-  display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.update-timer-text {
-  font-size: 11px;
-  font-weight: 700;
-  color: #fbbf24;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: white;
 }
 
 .update-progress-track {
   width: 100%;
   height: 4px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
   overflow: hidden;
 }
 
 .update-progress-bar {
   height: 100%;
   width: 100%;
-  background: linear-gradient(90deg, #fe2c55, #9146ff);
+  background: #ffffff;
   transition: width 1s linear;
 }
 
@@ -139,34 +154,36 @@ html, body {
 
 .btn-restart-update {
   flex: 1;
-  background: linear-gradient(135deg, #10b981, #059669);
+  background: #ffffff;
   border: none;
-  color: white;
-  padding: 6px 10px;
+  color: #065f46;
+  padding: 7px 10px;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 800;
   cursor: pointer;
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: all 0.15s ease;
 }
 
 .btn-restart-update:hover {
-  filter: brightness(1.15);
+  background: #f0fdf4;
+  transform: translateY(-1px);
 }
 
 .btn-dismiss-update {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: #d1d5db;
-  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  padding: 7px 10px;
   border-radius: 6px;
   font-size: 11px;
   cursor: pointer;
+  transition: all 0.15s;
 }
 
 .btn-dismiss-update:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: white;
+  background: rgba(0, 0, 0, 0.4);
 }
 
 /* ==========================================================================
@@ -174,7 +191,7 @@ html, body {
    ========================================================================== */
 #titlebar {
   -webkit-app-region: drag;
-  background: linear-gradient(90deg, rgba(14, 14, 22, 0.95), rgba(24, 16, 36, 0.95));
+  background: linear-gradient(90deg, rgba(12, 12, 18, 0.96), rgba(20, 14, 30, 0.96));
   backdrop-filter: blur(16px);
   padding: 6px 10px;
   display: flex;
@@ -233,7 +250,7 @@ html, body {
 }
 
 #titlebar button {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: #e5e7eb;
   border-radius: 5px;
@@ -248,7 +265,7 @@ html, body {
 }
 
 #titlebar button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.18);
   color: #fff;
   transform: translateY(-1px);
 }
@@ -340,8 +357,8 @@ html, body {
    Panel de Configuración por Pestañas (Tabs)
    ========================================================================== */
 #setup-panel {
-  background: rgba(14, 14, 22, 0.98);
-  backdrop-filter: blur(20px);
+  background: rgba(12, 12, 18, 0.98);
+  backdrop-filter: blur(22px);
   display: flex;
   flex-direction: column;
   border-bottom: 1px solid var(--surface-border);
@@ -358,41 +375,39 @@ html, body {
 
 .tab-header {
   display: flex;
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.4);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 4px 8px 0;
+  padding: 6px 8px;
   gap: 4px;
 }
 
 .tab-btn {
   flex: 1;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--text-muted);
-  padding: 8px 6px;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  transition: all 0.2s ease;
-  white-space: nowrap;
+  padding: 6px 8px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #9ca3af;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
 .tab-btn:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 6px 6px 0 0;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .tab-btn.active {
-  color: #fff;
-  border-bottom-color: var(--accent);
-  background: rgba(169, 112, 255, 0.1);
-  border-radius: 6px 6px 0 0;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(169, 112, 255, 0.25), rgba(145, 70, 255, 0.25));
+  border: 1px solid rgba(169, 112, 255, 0.4);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .tab-content {
@@ -468,20 +483,15 @@ html, body {
 
 .platform-main-row input[type="text"]:focus {
   border-color: var(--card-accent, var(--accent));
-}
-
-.platform-main-row input[type="text"]:disabled {
-  opacity: 0.35;
-  cursor: not-allowed;
+  box-shadow: 0 0 8px rgba(169, 112, 255, 0.25);
 }
 
 .sub-config {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-left: 28px;
-  padding-top: 4px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.08);
+  gap: 4px;
+  padding-left: 25px;
+  margin-top: 2px;
 }
 
 .sub-config input[type="text"] {
@@ -489,31 +499,34 @@ html, body {
   padding: 6px 9px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background: rgba(0, 0, 0, 0.35);
-  color: white;
+  background: rgba(0, 0, 0, 0.45);
+  color: #e5e7eb;
   font-size: 11px;
   outline: none;
 }
 
-.sub-config .link-hint {
-  font-size: 10px;
+.link-hint {
+  font-size: 10.5px;
   color: #60a5fa;
   text-decoration: none;
+  display: inline-block;
+  margin-top: 2px;
+  transition: color 0.15s;
 }
 
-.sub-config .link-hint:hover {
+.link-hint:hover {
+  color: #93c5fd;
   text-decoration: underline;
 }
 
-/* Opciones y Toggles */
 .config-group {
-  background: rgba(0, 0, 0, 0.25);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 8px 10px;
 }
 
 .config-group-title {
@@ -538,6 +551,63 @@ html, body {
   accent-color: var(--accent);
   width: 16px;
   height: 16px;
+}
+
+/* Selector de Fuentes Tipográficas */
+.font-selector-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.font-pill-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  color: #e5e7eb;
+  font-size: 11.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.font-pill-btn.font-preview-minecraft {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8.5px;
+  letter-spacing: -0.3px;
+}
+
+.font-pill-btn.font-preview-cyber {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 10.5px;
+}
+
+.font-pill-btn.font-preview-kawaii {
+  font-family: 'Fredoka', sans-serif;
+  font-size: 12px;
+}
+
+.font-pill-btn.font-preview-classic {
+  font-family: 'Inter', sans-serif;
+  font-size: 11.5px;
+}
+
+.font-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.font-pill-btn.active {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(169, 112, 255, 0.28), rgba(145, 70, 255, 0.2));
+  color: #fff;
+  box-shadow: 0 0 10px rgba(169, 112, 255, 0.3);
 }
 
 /* Selector de Temas */
@@ -571,6 +641,7 @@ html, body {
   border-color: var(--accent);
   background: rgba(169, 112, 255, 0.2);
   color: #fff;
+  box-shadow: 0 0 10px rgba(169, 112, 255, 0.3);
 }
 
 .tts-select {
@@ -600,20 +671,19 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 11px;
+  background: rgba(0, 0, 0, 0.3);
   padding: 5px 8px;
-  background: rgba(255, 255, 255, 0.04);
   border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 11px;
   cursor: pointer;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .slider-row {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  font-size: 11px;
-  color: #9ca3af;
+  gap: 3px;
+  font-size: 11.5px;
 }
 
 .slider-header {
@@ -654,6 +724,12 @@ html, body {
   font-weight: 800;
   cursor: pointer;
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+  transition: all 0.15s ease;
+}
+
+.btn-check-updates:hover {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
 }
 
 /* Modo OBS Browser Source */

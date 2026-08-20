@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <title>Multi Chat - OBS Browser Source</title>
   <link rel="icon" type="image/png" href="multichat.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Inter:wght@500;700;800&family=Orbitron:wght@600;800&family=Outfit:wght@500;700;800&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles/style.css" />
   <link rel="stylesheet" href="styles/chat.css" />
   <link rel="stylesheet" href="styles/alerts.css" />
@@ -135,6 +138,25 @@
       addMessageNode(div);
     }
 
+    function renderClipMessage(data) {
+      if (!data) return;
+      const div = document.createElement('div');
+      div.className = 'msg clip-card';
+      div.style.margin = '4px 0';
+      div.innerHTML = `
+        <div class="clip-card-left">
+          <div class="clip-icon-box">🎬</div>
+          <div>
+            <div class="clip-card-title">¡Clip Grabado por @${escapeHtml(data.requestedBy || 'Chat')}!</div>
+            <div class="clip-card-sub">Guardado en Google Drive • ${data.duration || 30}s</div>
+          </div>
+        </div>
+      `;
+      chatContainer.appendChild(div);
+      setTimeout(() => { try { div.remove(); } catch(e){} }, 9000);
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
     function renderPinnedMessage(data) {
       if (!data) {
         pinnedContainer.innerHTML = '';
@@ -173,10 +195,16 @@
             if (msg.type === 'chat') renderChatMessage(msg.data);
             if (msg.type === 'join') renderJoinMessage(msg.data);
             if (msg.type === 'gift') renderGiftMessage(msg.data);
+            if (msg.type === 'clip') renderClipMessage(msg.data);
             if (msg.type === 'follow' && window.FollowAlerts) window.FollowAlerts.triggerFollowAlert(msg.data);
             if (msg.type === 'pin') renderPinnedMessage(msg.data);
             if (msg.type === 'config') {
               if (msg.data.theme) document.body.className = `theme-${msg.data.theme}`;
+              if (msg.data.fontFamily) {
+                const allFonts = ['outfit', 'minecraft', 'cyber', 'kawaii', 'classic'];
+                allFonts.forEach(f => document.body.classList.remove(`font-${f}`));
+                document.body.classList.add(`font-${msg.data.fontFamily}`);
+              }
               if (msg.data.fontSize) root.style.setProperty('--font-size', msg.data.fontSize + 'px');
               if (msg.data.msgSpacing) root.style.setProperty('--msg-spacing', msg.data.msgSpacing + 'px');
             }
