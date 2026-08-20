@@ -1,7 +1,7 @@
 {
   "name": "multi-chat-overlay",
-  "version": "2.3.0",
-  "description": "Overlay de chat en vivo con alertas para TikTok, Twitch, Kick y YouTube",
+  "version": "2.4.0",
+  "description": "Overlay profesional de chat en vivo con clips, alertas y sincronización OBS para TikTok, Twitch, Kick y YouTube",
   "main": "main.js",
   "author": "Luis Sandoval",
   "scripts": {
@@ -9,14 +9,7 @@
     "dist": "electron-builder --win",
     "release": "electron-builder --win --publish always"
   },
-  "keywords": [
-    "multichat",
-    "overlay",
-    "tiktok",
-    "twitch",
-    "kick",
-    "youtube"
-  ],
+  "keywords": ["multichat","overlay","tiktok","twitch","kick","youtube","obs","clips"],
   "license": "ISC",
   "dependencies": {
     "@tiktool/live": "2.12.1",
@@ -32,52 +25,17 @@
     "electron": "33.4.11",
     "electron-builder": "^25.1.8"
   },
-  "overrides": {
-    "@noble/hashes": "1.7.1"
-  },
+  "overrides": { "@noble/hashes": "1.7.1" },
   "build": {
     "appId": "com.luissandoval.multichatoverlay",
     "productName": "Multi Chat Overlay",
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "Luissandoval90",
-        "repo": "multichat",
-        "releaseType": "release"
-      }
-    ],
+    "publish": [{ "provider": "github", "owner": "Luissandoval90", "repo": "multichat", "releaseType": "release" }],
     "asar": true,
-    "files": [
-      "main.js",
-      "preload.js",
-      "overlay.html",
-      "obs.html",
-      "multichat.png",
-      "styles/**/*",
-      "src/**/*",
-      "platforms/**/*",
-      "package.json",
-      "node_modules/**/*"
-    ],
-    "directories": {
-      "output": "dist"
-    },
+    "files": ["main.js","preload.js","overlay.html","obs.html","multichat.png","styles/**/*","src/**/*","platforms/**/*","package.json","node_modules/**/*"],
+    "directories": { "output": "dist" },
     "win": {
       "icon": "multichat.png",
-      "target": [
-        {
-          "target": "nsis",
-          "arch": [
-            "x64"
-          ]
-        },
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
+      "target": [{ "target": "nsis", "arch": ["x64"] }, { "target": "portable", "arch": ["x64"] }],
       "signAndEditExecutable": false
     },
     "nsis": {
