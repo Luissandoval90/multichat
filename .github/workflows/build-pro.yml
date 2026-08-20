@@ -18,16 +18,30 @@ jobs:
       - name: Apply premium UI layer
         shell: pwsh
         run: |
-          $files = @('overlay.html','obs.html')
-          foreach ($file in $files) {
-            $html = Get-Content $file -Raw
-            if ($html -notmatch 'styles/premium.css') {
-              $html = $html -replace '<link rel="stylesheet" href="styles/style.css" />', '<link rel="stylesheet" href="styles/style.css" />`r`n  <link rel="stylesheet" href="styles/premium.css" />'
+          node - <<'NODE'
+          const fs = require('fs');
+          for (const file of ['overlay.html', 'obs.html']) {
+            let html = fs.readFileSync(file, 'utf8');
+            if (!html.includes('styles/premium.css')) {
+              html = html.replace(
+                '<link rel="stylesheet" href="styles/style.css" />',
+                '<link rel="stylesheet" href="styles/style.css" />\n  <link rel="stylesheet" href="styles/premium.css" />'
+              );
             }
-            $html = $html -replace '<body class="theme-cyberpunk">', '<body class="theme-cyberpunk premium-shell">'
-            Set-Content -Path $file -Value $html -Encoding UTF8
+            html = html.replace(/<body([^>]*)>/i, (m, attrs) => {
+              if (/class=/i.test(attrs)) {
+                attrs = attrs.replace(/class="([^"]*)"/i, (_, classes) => `class="${classes} premium-shell"`);
+              } else {
+                attrs += ' class="premium-shell"';
+              }
+              return `<body${attrs}>`;
+            });
+            fs.writeFileSync(file, html, 'utf8');
           }
-          node -e "const fs=require('fs');const p=JSON.parse(fs.readFileSync('package.json','utf8'));p.version='2.4.0';fs.writeFileSync('package.json',JSON.stringify(p,null,2)+'\n')"
+          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          pkg.version = '2.4.0';
+          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          NODE
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
