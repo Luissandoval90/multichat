@@ -2,7 +2,6 @@ name: Build Multi Chat Overlay Pro
 
 on:
   push:
-    branches: [main]
     tags: ['v*']
   workflow_dispatch:
 
@@ -25,6 +24,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Clean invalid releases
+        shell: pwsh
+        run: |
+          $headers = @{
+            "Authorization" = "Bearer ${{ secrets.GITHUB_TOKEN }}"
+            "Accept" = "application/vnd.github+json"
+          }
+          try {
+            $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/Luissandoval90/multichat/releases" -Headers $headers
+            foreach ($rel in $releases) {
+              if ($rel.tag_name -eq 'main' -or $rel.name -eq 'Release main') {
+                Write-Host "Deleting invalid release $($rel.id)..."
+                Invoke-RestMethod -Uri "https://api.github.com/repos/Luissandoval90/multichat/releases/$($rel.id)" -Method Delete -Headers $headers
+              }
+            }
+          } catch {
+            Write-Host "Notice: $_"
+          }
+
       - name: Build and Publish with Electron-Builder
         run: npx electron-builder --win --publish always
         env:
@@ -37,7 +55,7 @@ jobs:
           $items = @('main.js','preload.js','overlay.html','obs.html','multichat.png','styles','src','platforms','package.json','package-lock.json','README.md','iniciar.bat')
           Compress-Archive -Path $items -DestinationPath 'MultiChat-Overlay-Pro-v2.4.0-source.zip' -Force
 
-      - name: Attach source ZIP and mark latest release
+      - name: Attach source ZIP and set latest release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
