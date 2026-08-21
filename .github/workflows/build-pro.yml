@@ -3,45 +3,18 @@ name: Build Multi Chat Overlay Pro
 on:
   push:
     branches: [main]
+    tags: ['v*']
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Apply premium UI layer
-        shell: pwsh
-        run: |
-          node - <<'NODE'
-          const fs = require('fs');
-          for (const file of ['overlay.html', 'obs.html']) {
-            let html = fs.readFileSync(file, 'utf8');
-            if (!html.includes('styles/premium.css')) {
-              html = html.replace(
-                '<link rel="stylesheet" href="styles/style.css" />',
-                '<link rel="stylesheet" href="styles/style.css" />\n  <link rel="stylesheet" href="styles/premium.css" />'
-              );
-            }
-            html = html.replace(/<body([^>]*)>/i, (m, attrs) => {
-              if (/class=/i.test(attrs)) {
-                attrs = attrs.replace(/class="([^"]*)"/i, (_, classes) => `class="${classes} premium-shell"`);
-              } else {
-                attrs += ' class="premium-shell"';
-              }
-              return `<body${attrs}>`;
-            });
-            fs.writeFileSync(file, html, 'utf8');
-          }
-          const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
-          pkg.version = '2.4.0';
-          fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
-          NODE
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -52,8 +25,10 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Windows package
+      - name: Build Windows binaries
         run: npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create source ZIP
         shell: pwsh
@@ -68,5 +43,23 @@ jobs:
           path: |
             dist/*.exe
             dist/*.blockmap
+            dist/latest.yml
             MultiChat-Overlay-Pro-v2.4.0-source.zip
           if-no-files-found: error
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/main'
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          files: |
+            dist/*.exe
+            dist/*.blockmap
+            dist/latest.yml
+            MultiChat-Overlay-Pro-v2.4.0-source.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
