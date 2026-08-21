@@ -387,6 +387,10 @@ function getConfigFilePath() {
 ipcMain.on('save-config-file', (_event, config) => {
   try {
     const filePath = getConfigFilePath();
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     fs.writeFileSync(filePath, JSON.stringify(config, null, 2), 'utf8');
     console.log('[main] Configuración guardada en archivo permanente:', filePath);
     broadcastToObs('config', config.options || {});

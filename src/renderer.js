@@ -449,14 +449,19 @@ function initUI() {
     }
   });
 
-  // Guardado instantáneo al escribir o cambiar cualquier opción
-  setupPanel.addEventListener('input', () => {
+  function autoSaveAllConfig() {
     const cfg = gatherConfigFromUI();
+    currentConfig = cfg;
     window.AppStorage.saveConfig(cfg);
-  });
-  setupPanel.addEventListener('change', () => {
-    const cfg = gatherConfigFromUI();
-    window.AppStorage.saveConfig(cfg);
+  }
+
+  // Guardado instantáneo global en cualquier entrada de texto, pegado o cambio
+  ['input', 'change', 'blur', 'keyup', 'paste'].forEach(evtType => {
+    document.addEventListener(evtType, (e) => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
+        autoSaveAllConfig();
+      }
+    });
   });
 
   // Cargar versión de la app
@@ -475,12 +480,25 @@ function initUI() {
     const card = document.getElementById(`card-${p}`);
     const sub = document.getElementById(`sub-${p}`);
 
+    if (input) {
+      input.addEventListener('input', () => {
+        if (input.value.trim().length > 0 && check && !check.checked) {
+          check.checked = true;
+          input.disabled = false;
+          if (card) card.classList.add('active');
+          if (sub) sub.classList.remove('hidden');
+        }
+        autoSaveAllConfig();
+      });
+    }
+
     if (check && input && card) {
       check.addEventListener('change', () => {
         input.disabled = !check.checked;
         card.classList.toggle('active', check.checked);
         if (sub) sub.classList.toggle('hidden', !check.checked);
         if (check.checked) input.focus();
+        autoSaveAllConfig();
       });
     }
   });
@@ -749,8 +767,10 @@ function populateVoiceSelect() {
 }
 
 function applyConfigToUI(config) {
+  if (!config) return;
+
   PLATFORMS.forEach(p => {
-    const pData = config.platforms[p] || {};
+    const pData = config.platforms?.[p] || {};
     const check = document.getElementById(`check-${p}`);
     const input = document.getElementById(`input-${p}`);
     const card = document.getElementById(`card-${p}`);
@@ -765,18 +785,14 @@ function applyConfigToUI(config) {
     }
   });
 
-  if (config.platforms.tiktok?.apiKey) {
-    const keyInput = document.getElementById('input-tiktok-key');
-    if (keyInput) keyInput.value = config.platforms.tiktok.apiKey;
-  }
-  if (config.platforms.twitch?.clientId) {
-    const cidInput = document.getElementById('input-twitch-client-id');
-    if (cidInput) cidInput.value = config.platforms.twitch.clientId;
-  }
-  if (config.platforms.twitch?.clientSecret) {
-    const secInput = document.getElementById('input-twitch-client-secret');
-    if (secInput) secInput.value = config.platforms.twitch.clientSecret;
-  }
+  const keyInput = document.getElementById('input-tiktok-key');
+  if (keyInput) keyInput.value = config.platforms?.tiktok?.apiKey || '';
+
+  const cidInput = document.getElementById('input-twitch-client-id');
+  if (cidInput) cidInput.value = config.platforms?.twitch?.clientId || '';
+
+  const secInput = document.getElementById('input-twitch-client-secret');
+  if (secInput) secInput.value = config.platforms?.twitch?.clientSecret || '';
 
   document.getElementById('opt-auto-connect').checked = !!config.options.autoConnect;
   document.getElementById('opt-follow-alerts').checked = !!config.options.followAlerts;
@@ -897,18 +913,18 @@ function gatherConfigFromUI() {
     const handle = input ? input.value.trim() : '';
 
     config.platforms[p] = {
-      enabled: check ? check.checked : false,
+      enabled: check ? check.checked : (handle.length > 0),
       handle: handle,
     };
   });
 
-  const tiktokKey = document.getElementById('input-tiktok-key')?.value.trim() || currentConfig?.platforms?.tiktok?.apiKey || '';
-  config.platforms.tiktok.apiKey = tiktokKey;
+  const tiktokKeyInput = document.getElementById('input-tiktok-key');
+  config.platforms.tiktok.apiKey = tiktokKeyInput ? tiktokKeyInput.value.trim() : (currentConfig?.platforms?.tiktok?.apiKey || '');
 
-  const twitchCid = document.getElementById('input-twitch-client-id')?.value.trim() || currentConfig?.platforms?.twitch?.clientId || '';
-  const twitchSec = document.getElementById('input-twitch-client-secret')?.value.trim() || currentConfig?.platforms?.twitch?.clientSecret || '';
-  config.platforms.twitch.clientId = twitchCid;
-  config.platforms.twitch.clientSecret = twitchSec;
+  const twitchCidInput = document.getElementById('input-twitch-client-id');
+  const twitchSecInput = document.getElementById('input-twitch-client-secret');
+  config.platforms.twitch.clientId = twitchCidInput ? twitchCidInput.value.trim() : (currentConfig?.platforms?.twitch?.clientId || '');
+  config.platforms.twitch.clientSecret = twitchSecInput ? twitchSecInput.value.trim() : (currentConfig?.platforms?.twitch?.clientSecret || '');
 
   return config;
 }

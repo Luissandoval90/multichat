@@ -82,6 +82,7 @@ function saveConfig(config) {
     if (window.overlayAPI && typeof window.overlayAPI.saveConfigFile === 'function') {
       window.overlayAPI.saveConfigFile(sanitized);
     }
+    console.log('[Storage] Config guardada con éxito (Redes & API Keys):', sanitized.platforms);
   } catch (err) {
     console.error('[Storage] Error guardando configuración:', err);
   }
