@@ -165,11 +165,6 @@ const ttsRateVal = document.getElementById('tts-rate-val');
 const ttsIncludeNickCheck = document.getElementById('tts-opt-include-nick');
 const ttsSkipUrlsCheck = document.getElementById('tts-opt-skip-urls');
 
-// SFX Comandos
-const optSfx = document.getElementById('opt-sfx');
-const sfxVolumeSlider = document.getElementById('sfx-volume-slider');
-const sfxVolVal = document.getElementById('sfx-vol-val');
-
 // OBS Modo
 const obsUrlInput = document.getElementById('obs-url-input');
 const btnCopyObs = document.getElementById('btn-copy-obs');
@@ -573,33 +568,6 @@ function initUI() {
     window.FollowAlerts.setFollowAlertsEnabled(e.target.checked);
   });
 
-  // SFX Comandos
-  if (optSfx) {
-    optSfx.addEventListener('change', (e) => {
-      window.AudioAlerts.setSfxEnabled(e.target.checked);
-    });
-  }
-  if (sfxVolumeSlider) {
-    sfxVolumeSlider.addEventListener('input', (e) => {
-      const val = parseInt(e.target.value, 10);
-      if (sfxVolVal) sfxVolVal.textContent = val + '%';
-      window.AudioAlerts.setSfxVolume(val / 100);
-    });
-  }
-
-  // Previsualización de badges SFX
-  document.querySelectorAll('.sfx-badge').forEach(badge => {
-    badge.addEventListener('click', () => {
-      const type = badge.getAttribute('data-sfx');
-      if (type === 'applause') window.AudioAlerts.playApplauseSound();
-      if (type === 'laugh') window.AudioAlerts.playLaughSound();
-      if (type === 'gg') window.AudioAlerts.playGgSound();
-      if (type === 'airhorn') window.AudioAlerts.playAirhornSound();
-      if (type === 'f') window.AudioAlerts.playFSound();
-      if (type === 'alert') window.AudioAlerts.playAlertSound();
-    });
-  });
-
   // TTS
   ttsOptCheck.addEventListener('change', (e) => {
     window.AppTTS.setTtsEnabled(e.target.checked);
@@ -844,19 +812,13 @@ function applyConfigToUI(config) {
   });
   window.AppTTS.setTtsPlatformsConfig(ttsPlats);
 
-  // SFX Comandos
-  if (optSfx) {
-    optSfx.checked = config.options.sfxEnabled !== false;
-    window.AudioAlerts.setSfxEnabled(optSfx.checked);
-  }
-  if (sfxVolumeSlider && config.options.sfxVolume !== undefined) {
-    const sfxPct = Math.round(config.options.sfxVolume * 100);
-    sfxVolumeSlider.value = sfxPct;
-    if (sfxVolVal) sfxVolVal.textContent = sfxPct + '%';
-    window.AudioAlerts.setSfxVolume(config.options.sfxVolume);
-  }
-
   // Apariencia
+  if (config.options.theme) {
+    setAppTheme(config.options.theme);
+  }
+  if (config.options.fontFamily) {
+    setAppFont(config.options.fontFamily);
+  }
   if (config.options.bgOpacity) {
     const opPct = Math.round(config.options.bgOpacity * 100);
     opacitySlider.value = opPct;
@@ -902,8 +864,6 @@ function gatherConfigFromUI() {
       autoConnect: document.getElementById('opt-auto-connect').checked,
       followAlerts: document.getElementById('opt-follow-alerts').checked,
       soundAlerts: document.getElementById('opt-sound-alerts').checked,
-      sfxEnabled: optSfx ? optSfx.checked : true,
-      sfxVolume: sfxVolumeSlider ? parseInt(sfxVolumeSlider.value, 10) / 100 : 0.75,
       theme: selectedTheme,
       fontFamily: selectedFont,
       ttsEnabled: ttsOptCheck.checked,
@@ -1034,8 +994,21 @@ window.overlayAPI.onPlatformStatus((data) => {
 });
 
 function updateLiveDot() {
-  const anyConnected = Array.from(statusBar.querySelectorAll('.status-badge')).some(b => b.classList.contains('connected'));
-  liveDot.classList.toggle('live', anyConnected);
+  const connectedBadges = Array.from(statusBar.querySelectorAll('.status-badge.connected'));
+  const anyConnected = connectedBadges.length > 0;
+  if (liveDot) liveDot.classList.toggle('live', anyConnected);
+  const liveStatusText = document.getElementById('live-status-text');
+  if (liveStatusText) {
+    if (anyConnected) {
+      liveStatusText.textContent = `En vivo (${connectedBadges.length})`;
+      liveStatusText.style.color = '#10b981';
+      liveStatusText.style.fontWeight = '700';
+    } else {
+      liveStatusText.textContent = 'Desconectado';
+      liveStatusText.style.color = 'var(--text-sub)';
+      liveStatusText.style.fontWeight = '500';
+    }
+  }
 }
 
 function formatNumber(num) {
@@ -1146,11 +1119,6 @@ window.overlayAPI.onChatMessage((data) => {
   if ((!optClipEnabled || optClipEnabled.checked) && /(?:^|\s)[!/.]?(clip|clipear|rec|grabar)\b/i.test(commentText)) {
     console.log('[Renderer] ¡Comando !clip detectado en el chat! Usuario:', data.nickname || data.userId, 'Comentario:', commentText);
     triggerClipCreation(data.nickname || data.userId);
-  }
-
-  // Procesar efectos de sonido SFX si contiene comando
-  if (window.AudioAlerts && typeof window.AudioAlerts.processChatSfxCommand === 'function') {
-    window.AudioAlerts.processChatSfxCommand(data.comment);
   }
 
   const filterBots = document.getElementById('opt-filter-bots')?.checked;

@@ -6,7 +6,7 @@
   <link rel="icon" type="image/png" href="multichat.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Inter:wght@500;700;800&family=Orbitron:wght@600;800&family=Outfit:wght@500;700;800&family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@600;800;900&family=Outfit:wght@400;500;600;700;800;900&family=Press+Start+2P&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles/style.css" />
   <link rel="stylesheet" href="styles/chat.css" />
   <link rel="stylesheet" href="styles/alerts.css" />
@@ -16,12 +16,13 @@
     <!-- Contenedor flotante para alertas de seguidores -->
     <div id="follower-alert-container"></div>
 
-    <!-- Banner Flotante de Actualización con Temporizador de 10s -->
+    <!-- Banner Flotante de Actualización con Temporizador -->
     <div id="update-banner-container" class="hidden">
       <div class="update-banner-header">
         <div class="update-banner-title">
-          <span>🚀 ¡Nueva versión disponible!</span>
-          <span id="update-version-tag" style="color:#a970ff; font-weight:800;">v2.0.2</span>
+          <svg class="icon-inline" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6.05 11a22.35 22.35 0 0 1-3.95 2z"/></svg>
+          <span>Nueva actualización disponible</span>
+          <span id="update-version-tag" class="badge-version">v2.4.0</span>
         </div>
         <div class="update-timer-text" id="update-timer-text">Reiniciando en 10s...</div>
       </div>
@@ -29,51 +30,91 @@
         <div class="update-progress-bar" id="update-progress-bar"></div>
       </div>
       <div class="update-banner-actions">
-        <button type="button" class="btn-restart-update" id="btn-restart-update">🔄 Reiniciar y Actualizar Ahora</button>
+        <button type="button" class="btn-restart-update" id="btn-restart-update">
+          <svg class="icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+          Reiniciar y Actualizar
+        </button>
         <button type="button" class="btn-dismiss-update" id="btn-dismiss-update">Más tarde</button>
       </div>
     </div>
 
-    <!-- Barra de Título (Titlebar) -->
+    <!-- Barra de Título (Titlebar Glass Pro) -->
     <div id="titlebar">
       <div class="brand">
-        <img src="multichat.png" class="brand-logo" alt="MultiChat" />
-        <span class="dot" id="live-dot"></span>
-        <span>Multi Chat Overlay</span>
+        <div class="brand-logo-wrapper">
+          <img src="multichat.png" class="brand-logo" alt="MultiChat" />
+          <div class="brand-glow"></div>
+        </div>
+        <div class="brand-text-col">
+          <span class="brand-name">MultiChat <span class="brand-badge">PRO</span></span>
+          <div class="live-status-row">
+            <span class="dot" id="live-dot"></span>
+            <span class="live-status-label" id="live-status-text">Desconectado</span>
+          </div>
+        </div>
       </div>
+
       <div class="controls">
-        <button id="toggle-hud-btn" title="Ocultar / Mostrar barra de estadísticas">👁</button>
-        <button id="test-alert-btn" title="Probar alerta de seguidor">★</button>
-        <button id="edit-btn" title="Configuración">⚙</button>
-        <button id="minimize-btn" title="Minimizar">–</button>
-        <button id="close-btn" class="close-btn" title="Cerrar">✕</button>
+        <button id="toggle-hud-btn" class="ctrl-btn" title="Ocultar / Mostrar HUD">
+          <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button id="test-alert-btn" class="ctrl-btn" title="Probar alerta de seguidor">
+          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button id="edit-btn" class="ctrl-btn" title="Configuración">
+          <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button id="minimize-btn" class="ctrl-btn" title="Minimizar">
+          <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <button id="close-btn" class="ctrl-btn close-btn" title="Cerrar">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
       </div>
     </div>
 
-    <!-- Barra HUD de Estadísticas Pro (Espectadores y Likes) -->
+    <!-- HUD de Estadísticas Flotante (Bento Counters) -->
     <div id="stats-bar">
       <div class="stats-group">
-        <div class="stat-pill total" id="stat-total-viewers">
-          <span>👥</span> <span id="total-viewers-count">0</span>
+        <div class="stat-pill total" id="stat-total-viewers" title="Total de espectadores en vivo">
+          <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span class="stat-label">Viendo:</span>
+          <span id="total-viewers-count" class="stat-num">0</span>
         </div>
         <div class="stats-group" id="platform-viewers-container"></div>
       </div>
       <div class="stats-group">
-        <div class="stat-pill likes" id="stat-likes">
-          <span>❤️</span> <span id="likes-count">0</span>
+        <div class="stat-pill likes" id="stat-likes" title="Me gustas recibidos">
+          <svg viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
+          <span id="likes-count" class="stat-num">0</span>
         </div>
       </div>
     </div>
 
-    <!-- Panel de Configuración Organizado por Pestañas (Tabs) -->
+    <!-- Panel de Configuración Organizado por Pestañas Segmentadas -->
     <div id="setup-panel">
-      <!-- Pestañas de Navegación -->
+      <!-- Pestañas de Navegación Segmentadas -->
       <div class="tab-header">
-        <button class="tab-btn active" data-tab="tab-accounts">🌐 Redes</button>
-        <button class="tab-btn" data-tab="tab-clips">🎬 Clips & Drive</button>
-        <button class="tab-btn" data-tab="tab-voice">🔊 Voz (TTS)</button>
-        <button class="tab-btn" data-tab="tab-appearance">🎨 Apariencia</button>
-        <button class="tab-btn" data-tab="tab-updates">🔔 Novedades</button>
+        <button class="tab-btn active" data-tab="tab-accounts">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+          <span>Redes</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-clips">
+          <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+          <span>Clips</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-voice">
+          <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+          <span>Voz (TTS)</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-appearance">
+          <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+          <span>Aspecto</span>
+        </button>
+        <button class="tab-btn" data-tab="tab-updates">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span>Novedades</span>
+        </button>
       </div>
 
       <!-- Pestaña 1: Cuentas y Redes -->
@@ -81,73 +122,116 @@
         <!-- TikTok -->
         <div class="platform-card" id="card-tiktok" style="--card-accent: var(--tiktok);">
           <div class="platform-main-row">
+            <div class="platform-left-info">
+              <span class="logo" id="logo-tiktok"></span>
+              <span class="platform-name">TikTok Live</span>
+            </div>
             <input type="checkbox" class="check" id="check-tiktok" />
-            <span class="logo" id="logo-tiktok"></span>
-            <input type="text" id="input-tiktok" placeholder="@usuario de TikTok" disabled />
+          </div>
+          <div class="platform-input-row">
+            <input type="text" id="input-tiktok" placeholder="@usuario de TikTok en vivo" disabled />
           </div>
           <div class="sub-config hidden" id="sub-tiktok">
-            <input type="text" id="input-tiktok-key" placeholder="Pega tu clave gratuita de tik.tools aquí" />
-            <a href="https://tik.tools/login" target="_blank" class="link-hint">👉 Obtener clave gratis en tik.tools (Entrar con Google) ↗</a>
+            <input type="text" id="input-tiktok-key" placeholder="Pega tu clave API gratuita de tik.tools aquí" />
+            <a href="https://tik.tools/login" target="_blank" class="link-hint">
+              <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Obtener clave gratis en tik.tools (Entrar con Google)
+            </a>
           </div>
         </div>
 
         <!-- Twitch -->
         <div class="platform-card" id="card-twitch" style="--card-accent: var(--twitch);">
           <div class="platform-main-row">
+            <div class="platform-left-info">
+              <span class="logo" id="logo-twitch"></span>
+              <span class="platform-name">Twitch</span>
+            </div>
             <input type="checkbox" class="check" id="check-twitch" />
-            <span class="logo" id="logo-twitch"></span>
-            <input type="text" id="input-twitch" placeholder="canal de Twitch" disabled />
+          </div>
+          <div class="platform-input-row">
+            <input type="text" id="input-twitch" placeholder="canal de Twitch (ej: ibai)" disabled />
           </div>
           <div class="sub-config hidden" id="sub-twitch">
             <input type="text" id="input-twitch-client-id" placeholder="Client ID (opcional para avatares)" />
             <input type="text" id="input-twitch-client-secret" placeholder="Client Secret (opcional)" />
-            <a href="https://dev.twitch.tv/console/apps/create" target="_blank" class="link-hint">Crear app gratis en Twitch ↗</a>
+            <a href="https://dev.twitch.tv/console/apps/create" target="_blank" class="link-hint">
+              <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Crear app gratis en Twitch Developer Portal
+            </a>
           </div>
         </div>
 
         <!-- Kick -->
         <div class="platform-card" id="card-kick" style="--card-accent: var(--kick);">
           <div class="platform-main-row">
+            <div class="platform-left-info">
+              <span class="logo" id="logo-kick"></span>
+              <span class="platform-name">Kick</span>
+            </div>
             <input type="checkbox" class="check" id="check-kick" />
-            <span class="logo" id="logo-kick"></span>
-            <input type="text" id="input-kick" placeholder="canal de Kick" disabled />
+          </div>
+          <div class="platform-input-row">
+            <input type="text" id="input-kick" placeholder="canal de Kick (ej: xqc)" disabled />
           </div>
         </div>
 
         <!-- YouTube -->
         <div class="platform-card" id="card-youtube" style="--card-accent: var(--youtube);">
           <div class="platform-main-row">
+            <div class="platform-left-info">
+              <span class="logo" id="logo-youtube"></span>
+              <span class="platform-name">YouTube Live</span>
+            </div>
             <input type="checkbox" class="check" id="check-youtube" />
-            <span class="logo" id="logo-youtube"></span>
-            <input type="text" id="input-youtube" placeholder="@canal o link de YouTube" disabled />
+          </div>
+          <div class="platform-input-row">
+            <input type="text" id="input-youtube" placeholder="@canal o URL del directo en YouTube" disabled />
           </div>
         </div>
 
         <!-- Modo OBS Studio / Streamlabs -->
-        <div class="config-group" style="margin-top: 4px;">
-          <div class="config-group-title">🌐 Modo OBS Studio / Streamlabs</div>
-          <div class="obs-copy-row">
-            <input type="text" id="obs-url-input" value="http://localhost:3750" readonly />
-            <button type="button" class="btn-copy-obs" id="btn-copy-obs">📋 Copiar Enlace</button>
+        <div class="config-group obs-group">
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            <span>OBS Studio & Streamlabs Browser Source</span>
           </div>
-          <div style="font-size:10px; color:#9ca3af; margin-top:2px;">
-            Pégalo como <b>"Fuente de Navegador" (Browser Source)</b> en OBS para mostrar el chat transparente en tu transmisión.
+          <div class="obs-copy-row">
+            <div class="obs-input-wrapper">
+              <input type="text" id="obs-url-input" value="http://localhost:3750" readonly />
+            </div>
+            <button type="button" class="btn-copy-obs" id="btn-copy-obs">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              <span>Copiar</span>
+            </button>
+          </div>
+          <div class="helper-text">
+            Pégalo como <b>"Fuente de Navegador"</b> en OBS para superponer el chat con fondo transparente en tu transmisión.
           </div>
         </div>
       </div>
 
-      <!-- Pestaña: Clips & Google Drive -->
+      <!-- Pestaña 2: Clips & Google Drive -->
       <div class="tab-content hidden" id="tab-clips">
         <div class="config-group">
-          <div class="config-group-title">Comando !clip en Vivo</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            <span>Grabador de Clips en Directo</span>
+          </div>
           <label class="opt-toggle">
+            <div class="toggle-text">
+              <span class="toggle-title">Comando !clip en el chat</span>
+              <span class="toggle-desc">Permite a tus espectadores y moderadores guardar clips escribiendo !clip</span>
+            </div>
             <input type="checkbox" id="opt-clip-enabled" checked />
-            <span>Permitir que el chat guarde clips escribiendo <b>!clip</b></span>
           </label>
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">Duración del Clip</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span>Duración del Clip</span>
+          </div>
           <div class="theme-selector-grid">
             <button type="button" class="theme-pill-btn active" data-clip-duration="30">⏱ 30 Segundos</button>
             <button type="button" class="theme-pill-btn" data-clip-duration="45">⏱ 45 Segundos</button>
@@ -157,82 +241,115 @@
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">☁️ Almacenamiento en Google Drive</div>
-          <div style="font-size:11px; color:#d1d5db; line-height:1.4;">
-            Los clips se suben automáticamente a la carpeta compartida de Google Drive:
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+            <span>Almacenamiento Cloud Google Drive</span>
           </div>
-          <div style="display:flex; gap:6px; margin-top:4px;">
-            <button type="button" class="btn-check-updates" id="btn-open-gdrive" style="flex:1; background:linear-gradient(135deg, #0284c7, #2563eb);">
-              📂 Abrir Carpeta de Google Drive ↗
+          <div class="helper-text">
+            Los videos capturados se sincronizan al instante en tu carpeta pública de Google Drive:
+          </div>
+          <div class="button-row">
+            <button type="button" class="btn-check-updates" id="btn-open-gdrive">
+              <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Abrir Carpeta en Google Drive
             </button>
             <button type="button" class="btn-test" id="btn-open-local-clips" title="Ver clips guardados en esta PC">
-              📁 PC Local
+              <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+              PC Local
             </button>
           </div>
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">Probar Generador de Clips</div>
-          <button type="button" class="btn-primary" id="btn-test-clip" style="background:linear-gradient(135deg, #f59e0b, #d97706);">
-            🎬 Probar y Crear Clip Ahora
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>Prueba de Grabación</span>
+          </div>
+          <button type="button" class="btn-primary" id="btn-test-clip">
+            <svg class="icon-inline" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+            Generar Clip de Prueba Ahora
           </button>
-          <div id="clip-status-text" style="font-size:10.5px; color:#9ca3af; text-align:center; margin-top:2px;"></div>
+          <div id="clip-status-text" class="status-helper-text"></div>
         </div>
       </div>
 
-      <!-- Pestaña 2: Voz y Audio (TTS) -->
+      <!-- Pestaña 3: Voz y Audio (TTS) -->
       <div class="tab-content hidden" id="tab-voice">
         <div class="config-group">
-          <div class="config-group-title">Lectura de Chat por Voz (TTS)</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+            <span>Lectura de Chat por Voz (TTS)</span>
+          </div>
           <label class="opt-toggle">
+            <div class="toggle-text">
+              <span class="toggle-title">Activar síntesis de voz</span>
+              <span class="toggle-desc">Escucha los mensajes del chat leídos en voz alta mientras juegas</span>
+            </div>
             <input type="checkbox" id="opt-tts" />
-            <span>Activar voz que lee los mensajes</span>
           </label>
         </div>
 
         <div class="config-group" id="tts-voice-options-group">
-          <div class="config-group-title">Selector de Voz del Sistema</div>
-          <div style="display: flex; gap: 6px;">
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+            <span>Voz de Windows</span>
+          </div>
+          <div class="select-with-btn">
             <select class="tts-select" id="tts-voice-select">
               <option value="">Cargando voces de Windows…</option>
             </select>
-            <button type="button" class="btn-test" id="btn-test-voice" title="Escuchar muestra">▶ Probar</button>
+            <button type="button" class="btn-test" id="btn-test-voice" title="Escuchar muestra">
+              <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              <span>Probar</span>
+            </button>
           </div>
 
-          <div class="config-group-title" style="margin-top: 4px;">Leer mensajes de:</div>
+          <div class="config-group-title" style="margin-top: 6px;">
+            <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <span>Leer mensajes de:</span>
+          </div>
           <div class="tts-platforms-grid">
             <label class="tts-pill-toggle">
+              <span style="color: var(--tiktok); font-weight:800;">TikTok</span>
               <input type="checkbox" id="tts-check-tiktok" checked />
-              <span style="color: var(--tiktok); font-weight:700;">TikTok</span>
             </label>
             <label class="tts-pill-toggle">
+              <span style="color: var(--twitch); font-weight:800;">Twitch</span>
               <input type="checkbox" id="tts-check-twitch" checked />
-              <span style="color: var(--twitch); font-weight:700;">Twitch</span>
             </label>
             <label class="tts-pill-toggle">
+              <span style="color: var(--kick); font-weight:800;">Kick</span>
               <input type="checkbox" id="tts-check-kick" checked />
-              <span style="color: var(--kick); font-weight:700;">Kick</span>
             </label>
             <label class="tts-pill-toggle">
+              <span style="color: var(--youtube); font-weight:800;">YouTube</span>
               <input type="checkbox" id="tts-check-youtube" checked />
-              <span style="color: var(--youtube); font-weight:700;">YouTube</span>
             </label>
           </div>
 
-          <div class="config-group-title" style="margin-top: 4px;">Estilo de Lectura (Fluidez)</div>
+          <div class="config-group-title" style="margin-top: 6px;">
+            <svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+            <span>Filtros y Fluidez</span>
+          </div>
           <label class="opt-toggle">
+            <div class="toggle-text">
+              <span class="toggle-title">Leer nombre de usuario</span>
+              <span class="toggle-desc">Menciona quién envió el mensaje antes de leerlo</span>
+            </div>
             <input type="checkbox" id="tts-opt-include-nick" checked />
-            <span>Leer nombre del usuario antes del mensaje</span>
           </label>
           <label class="opt-toggle">
+            <div class="toggle-text">
+              <span class="toggle-title">Omitir enlaces web</span>
+              <span class="toggle-desc">Evita spam de enlaces largos (http/https)</span>
+            </div>
             <input type="checkbox" id="tts-opt-skip-urls" checked />
-            <span>Omitir enlaces web para evitar spam</span>
           </label>
 
           <div class="slider-row">
             <div class="slider-header">
-              <span>Volumen de voz</span>
-              <span id="tts-vol-val">85%</span>
+              <span>Volumen de la voz</span>
+              <span id="tts-vol-val" class="slider-badge">85%</span>
             </div>
             <input type="range" id="tts-volume-slider" min="10" max="100" value="85" />
           </div>
@@ -240,49 +357,34 @@
           <div class="slider-row">
             <div class="slider-header">
               <span>Velocidad de habla</span>
-              <span id="tts-rate-val">1.05x</span>
+              <span id="tts-rate-val" class="slider-badge">1.05x</span>
             </div>
             <input type="range" id="tts-rate-slider" min="70" max="160" value="105" />
           </div>
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">Alertas Sonoras de Seguidores y Regalos</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span>Efectos de Sonido</span>
+          </div>
           <label class="opt-toggle">
-            <input type="checkbox" id="opt-sound-alerts" checked />
-            <span>Sonido de campana para nuevos seguidores y regalos</span>
-          </label>
-        </div>
-
-        <div class="config-group">
-          <div class="config-group-title">🔊 Comandos de Efectos de Sonido (!SFX)</div>
-          <label class="opt-toggle">
-            <input type="checkbox" id="opt-sfx" checked />
-            <span>Activar sonidos interactivos cuando escriben en el chat</span>
-          </label>
-          <div class="slider-row" style="margin-top: 4px;">
-            <div class="slider-header">
-              <span>Volumen de SFX</span>
-              <span id="sfx-vol-val">75%</span>
+            <div class="toggle-text">
+              <span class="toggle-title">Campana de nuevos seguidores</span>
+              <span class="toggle-desc">Sonido melódico instantáneo para follows y regalos</span>
             </div>
-            <input type="range" id="sfx-volume-slider" min="10" max="100" value="75" />
-          </div>
-          <div class="config-group-title" style="margin-top: 6px; font-size:10px;">Comandos disponibles (Clic para probar):</div>
-          <div class="sfx-badge-grid">
-            <span class="sfx-badge" data-sfx="applause" title="Probar sonido">👏 !aplausos</span>
-            <span class="sfx-badge" data-sfx="laugh" title="Probar sonido">😂 !risa</span>
-            <span class="sfx-badge" data-sfx="gg" title="Probar sonido">🎮 !gg</span>
-            <span class="sfx-badge" data-sfx="airhorn" title="Probar sonido">📢 !airhorn</span>
-            <span class="sfx-badge" data-sfx="f" title="Probar sonido">🥀 !f</span>
-            <span class="sfx-badge" data-sfx="alert" title="Probar sonido">🔔 !alerta</span>
-          </div>
+            <input type="checkbox" id="opt-sound-alerts" checked />
+          </label>
         </div>
       </div>
 
-      <!-- Pestaña 3: Apariencia y Temas (Skins) -->
+      <!-- Pestaña 4: Apariencia y Temas (Aspecto) -->
       <div class="tab-content hidden" id="tab-appearance">
         <div class="config-group">
-          <div class="config-group-title">Fuente Tipográfica (Estilo de Letras)</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            <span>Tipografía del Chat</span>
+          </div>
           <div class="font-selector-grid">
             <button type="button" class="font-pill-btn active" data-font="outfit">✨ Moderna (Outfit)</button>
             <button type="button" class="font-pill-btn font-preview-minecraft" data-font="minecraft">🎮 Minecraft Pixel</button>
@@ -293,99 +395,130 @@
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">Tema Visual (Skin)</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
+            <span>Tema Visual Glass</span>
+          </div>
           <div class="theme-selector-grid">
-            <button type="button" class="theme-pill-btn active" data-theme="cyberpunk">🟣 Cyberpunk</button>
-            <button type="button" class="theme-pill-btn" data-theme="minimal">🖤 Minimalista</button>
+            <button type="button" class="theme-pill-btn active" data-theme="cyberpunk">🟣 Cyberpunk Neon</button>
+            <button type="button" class="theme-pill-btn" data-theme="minimal">🖤 Dark Titanium</button>
             <button type="button" class="theme-pill-btn" data-theme="chroma">🌈 Chroma RGB</button>
-            <button type="button" class="theme-pill-btn" data-theme="glass">💎 Cristal Glass</button>
+            <button type="button" class="theme-pill-btn" data-theme="glass">💎 Cristal Ice</button>
           </div>
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">Fondo y Transparencia</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
+            <span>Transparencia & Vidrio</span>
+          </div>
           <div class="slider-row">
             <div class="slider-header">
               <span>Opacidad del fondo</span>
-              <span id="opacity-val">45%</span>
+              <span id="opacity-val" class="slider-badge">78%</span>
             </div>
-            <input type="range" id="opacity-slider" min="5" max="95" value="45" />
+            <input type="range" id="opacity-slider" min="10" max="95" value="78" />
           </div>
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">Texto y Espaciado de Chat</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+            <span>Dimensiones del Chat</span>
+          </div>
           <div class="slider-row">
             <div class="slider-header">
-              <span>Tamaño del texto</span>
-              <span id="font-size-val">13.5px</span>
+              <span>Tamaño de fuente</span>
+              <span id="font-size-val" class="slider-badge">13.5px</span>
             </div>
             <input type="range" id="font-size-slider" min="10" max="22" step="0.5" value="13.5" />
           </div>
-          <div class="slider-row" style="margin-top: 4px;">
+          <div class="slider-row" style="margin-top: 6px;">
             <div class="slider-header">
               <span>Espacio entre mensajes</span>
-              <span id="msg-spacing-val">6px</span>
+              <span id="msg-spacing-val" class="slider-badge">6px</span>
             </div>
             <input type="range" id="msg-spacing-slider" min="1" max="20" step="1" value="6" />
           </div>
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">Alertas y Filtros</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span>Preferencias del Sistema</span>
+          </div>
           <label class="opt-toggle">
+            <div class="toggle-text">
+              <span class="toggle-title">Tarjeta animada de seguidor</span>
+              <span class="toggle-desc">Muestra una tarjeta holográfica cuando alguien te sigue</span>
+            </div>
             <input type="checkbox" id="opt-follow-alerts" checked />
-            <span>Mostrar tarjeta animada de nuevo seguidor</span>
           </label>
           <label class="opt-toggle">
+            <div class="toggle-text">
+              <span class="toggle-title">Filtrar comandos de bots</span>
+              <span class="toggle-desc">Oculta mensajes como !ban, /help, !points</span>
+            </div>
             <input type="checkbox" id="opt-filter-bots" />
-            <span>Ocultar comandos de bots (!ban, /help, etc.)</span>
           </label>
           <label class="opt-toggle">
+            <div class="toggle-text">
+              <span class="toggle-title">Auto-conectar al iniciar</span>
+              <span class="toggle-desc">Conecta todas las redes guardadas al abrir el programa</span>
+            </div>
             <input type="checkbox" id="opt-auto-connect" checked />
-            <span>Conectar automáticamente al abrir el programa</span>
           </label>
         </div>
       </div>
 
-      <!-- Pestaña 4: Novedades y Notificaciones -->
+      <!-- Pestaña 5: Novedades y Notificaciones -->
       <div class="tab-content hidden" id="tab-updates">
         <div class="config-group">
-          <div class="config-group-title">Estado del Programa</div>
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <span style="font-size:12px; font-weight:700;">Multi Chat Overlay</span>
-              <span id="app-version-label" style="font-size:11px; color:#a970ff; font-weight:800; margin-left:4px;">v2.1.1</span>
-            </div>
-            <button type="button" class="btn-check-updates" id="btn-check-updates">🔍 Buscar Actualización</button>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            <span>Estado y Versión</span>
           </div>
-          <div id="update-status-msg" style="font-size:11px; color:#9ca3af; margin-top:4px;">
-            El programa se actualiza automáticamente con tus publicaciones de GitHub.
+          <div class="version-banner">
+            <div>
+              <div style="font-size:13px; font-weight:800; color:#fff;">Multi Chat Overlay Pro</div>
+              <div id="app-version-label" class="badge-version-pill">v2.4.0 · Producción</div>
+            </div>
+            <button type="button" class="btn-check-updates" id="btn-check-updates">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Buscar Actualizaciones
+            </button>
+          </div>
+          <div id="update-status-msg" class="helper-text" style="margin-top: 6px;">
+            El programa se sincroniza de forma segura y automática con GitHub Releases.
           </div>
         </div>
 
         <div class="config-group">
-          <div class="config-group-title">Novedades y Registro de Cambios</div>
+          <div class="config-group-title">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            <span>Historial de Versiones</span>
+          </div>
           <div class="notifications-log-box" id="notifications-log">
-            <b>v2.3.0:</b><br>
-            • 🎬 Comando !clip en vivo: graba clips MP4 y los sube automáticamente a Google Drive<br>
-            • ☁️ Almacenamiento central en Google Drive con enlace compartible seguro<br>
-            • 🔤 5 Fuentes tipográficas en vivo (🎮 Minecraft Pixel, ✨ Moderna, 🚀 Cyber, 🧸 Kawaii, ⚡ Clásica)<br>
-            • 💎 Rediseño visual artesanal Glassmorphism 3.0 de alta gama<br>
+            <b>v2.4.0 — Tri-Tone Obsidian & Platform Suite:</b><br>
+            • 🖤 Sistema Tri-Tone: Bordes negros (#000000), fondo Negro Glass translúcido y blanco al interactuar<br>
+            • 🟩🟪🟥🔴 Colores dinámicos al interactuar con el chat (Kick verde lima, Twitch púrpura, TikTok rosa, YouTube rojo)<br>
+            • 🎛️ Menú de configuración Studio Suite 6.0 rediseñado con íconos vectoriales Lucide<br>
+            • 🌐 Barra de estado de redes transparente flotante<br>
+            • ⌨️ Barra de atajos limpia con funcionamiento de teclado permanente<br>
             <br>
-            <b>v2.2.0:</b><br>
-            • 📌 Fijar mensajes destacados arriba con botón de desanclar<br>
-            • 🔊 Comandos interactivos de audio (!aplausos, !risa, !gg, !airhorn, !f, !alerta)<br>
-            • 🌐 Servidor local integrado para OBS Studio Browser Source (http://localhost:3750)<br>
-            • 🎨 Logo oficial multichat.png integrado en ventana y barra de título<br>
-            • 💾 Doble persistencia permanente de usuarios y tokens en disco
+            <b>v2.3.0:</b><br>
+            • 🎬 Grabador inteligente de clips en vivo y sincronización con Google Drive<br>
+            • 🔤 5 Tipografías y 4 Temas visuales reactivos en vivo
           </div>
         </div>
       </div>
 
       <!-- Botón de Conexión en Footer -->
       <div class="actions-footer">
-        <button id="connect-btn" class="btn-primary">Guardar y Conectar</button>
+        <button id="connect-btn" class="btn-primary">
+          <svg class="icon-inline" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+          <span>Guardar y Conectar</span>
+        </button>
       </div>
     </div>
 
@@ -403,7 +536,9 @@
 
     <!-- Barra de Atajos -->
     <div id="hint-bar">
-      Ctrl+Alt+T clic-a-través · Ctrl+Alt+↑↓ opacidad · Ctrl+Alt+←→ mover
+      <span class="hotkey-pill">Ctrl+Alt+T</span> Clic-a-través &nbsp;·&nbsp;
+      <span class="hotkey-pill">Ctrl+Alt+↑↓</span> Opacidad &nbsp;·&nbsp;
+      <span class="hotkey-pill">Ctrl+Alt+←→</span> Mover
     </div>
   </div>
 
