@@ -346,27 +346,36 @@ async function initScreenRollingBuffer() {
   }
 }
 
-async function triggerClipCreation(requestedBy = 'Streamer') {
+async function triggerClipCreation(requestedBy = 'Streamer', sourcePlatform = null) {
   if (!window.overlayAPI || !window.overlayAPI.createClip) return;
+
+  const cfg = (window.AppStorage && typeof window.AppStorage.loadConfig === 'function') 
+    ? window.AppStorage.loadConfig() 
+    : currentConfig;
   
-  if (clipStatusText) clipStatusText.textContent = '🎬 Descargando clip del live y subiendo a Google Drive…';
+  // Determinar la plataforma correcta del mensaje
+  let platform = sourcePlatform;
+  if (!platform) {
+    if (cfg?.platforms?.tiktok?.enabled && cfg?.platforms?.tiktok?.handle) platform = 'tiktok';
+    else if (cfg?.platforms?.twitch?.enabled && cfg?.platforms?.twitch?.handle) platform = 'twitch';
+    else if (cfg?.platforms?.kick?.enabled && cfg?.platforms?.kick?.handle) platform = 'kick';
+    else if (cfg?.platforms?.youtube?.enabled && cfg?.platforms?.youtube?.handle) platform = 'youtube';
+    else platform = 'tiktok';
+  }
 
-  const tiktokInput = document.getElementById('input-tiktok');
-  const twitchInput = document.getElementById('input-twitch');
-  const streamerName = (tiktokInput && tiktokInput.value.trim()) || 
-                       currentConfig?.platforms?.tiktok?.handle || 
-                       (twitchInput && twitchInput.value.trim()) || 
-                       currentConfig?.platforms?.twitch?.handle || 
+  const streamerName = cfg?.platforms?.[platform]?.handle || 
+                       document.getElementById(`input-${platform}`)?.value?.trim() || 
                        'Streamer';
-
-  const platform = (tiktokInput && tiktokInput.value.trim()) ? 'tiktok' : 
-                   ((twitchInput && twitchInput.value.trim()) ? 'twitch' : 'tiktok');
 
   const durationBtns = document.querySelectorAll('[data-clip-duration]');
   let chosenDuration = 30;
   durationBtns.forEach(btn => {
-    if (btn.classList.contains('active')) chosenDuration = parseInt(btn.getAttribute('data-clip-duration'), 10) || 30;
+    if (btn.classList.contains('active')) {
+      chosenDuration = parseInt(btn.getAttribute('data-clip-duration'), 10) || 30;
+    }
   });
+
+  if (clipStatusText) clipStatusText.textContent = `🎬 Grabando clip para @${requestedBy} (${chosenDuration}s)…`;
 
   const res = await window.overlayAPI.createClip({
     streamerName,
@@ -376,10 +385,11 @@ async function triggerClipCreation(requestedBy = 'Streamer') {
   });
 
   if (res && res.success) {
-    if (clipStatusText) clipStatusText.textContent = `✅ Clip guardado exitosamente en tu Google Drive`;
+    if (clipStatusText) clipStatusText.textContent = `✅ ¡Clip de @${requestedBy} guardado en Google Drive!`;
     setTimeout(() => { if (clipStatusText) clipStatusText.textContent = ''; }, 5000);
   } else if (res && res.cooldown) {
     if (clipStatusText) clipStatusText.textContent = `⏳ ${res.message}`;
+    addSimpleMessage(`⏳ @${requestedBy}: ${res.message}`, 'system');
   } else {
     if (clipStatusText) clipStatusText.textContent = `⚠ ${res ? res.error : 'Error al crear clip'}`;
   }
@@ -1113,12 +1123,13 @@ function avatarHtml(data) {
 
 // Chat
 window.overlayAPI.onChatMessage((data) => {
-  // Detectar comando !clip para guardar video en Google Drive
+  // Detectar comando !clip en cualquier red social y para cualquier espectador
   const optClipEnabled = document.getElementById('opt-clip-enabled');
   const commentText = (data.comment || '').trim();
   if ((!optClipEnabled || optClipEnabled.checked) && /(?:^|\s)[!/.]?(clip|clipear|rec|grabar)\b/i.test(commentText)) {
-    console.log('[Renderer] ¡Comando !clip detectado en el chat! Usuario:', data.nickname || data.userId, 'Comentario:', commentText);
-    triggerClipCreation(data.nickname || data.userId);
+    const requester = data.nickname || data.userId || 'Espectador';
+    console.log(`[Renderer] ¡Comando !clip detectado de @${requester} en ${data.platform}! Comentario:`, commentText);
+    triggerClipCreation(requester, data.platform);
   }
 
   const filterBots = document.getElementById('opt-filter-bots')?.checked;

@@ -12,7 +12,7 @@ const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzZzePfDrKh
 const FOLDER_VIEW_URL = 'https://drive.google.com/drive/folders/1oT4GlKx1E5hRMcbrq6qGpdrNHuc_5MPH';
 
 let lastClipTime = 0;
-const CLIP_COOLDOWN_MS = 25000; // 25 segundos de cooldown entre clips
+const CLIP_COOLDOWN_MS = 5000; // 5 segundos de cooldown entre clips para que cualquier espectador pueda clipear sin esperas largas
 
 function getClipsDirectory() {
   let baseDir = '';
