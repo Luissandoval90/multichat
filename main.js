@@ -55,6 +55,15 @@ function getAutoUpdater() {
       safeSend('update-status', { status: 'not-available', message: `✅ ¡Tienes la última versión instalada (v${app.getVersion()})!` });
     });
 
+    autoUpdater.on('download-progress', (progressObj) => {
+      const percent = Math.round(progressObj.percent || 0);
+      safeSend('update-status', {
+        status: 'downloading',
+        percent: percent,
+        message: `🚀 Descargando actualización: ${percent}%…`
+      });
+    });
+
     autoUpdater.on('update-downloaded', (info) => {
       safeSend('update-downloaded', {
         version: info.version,

@@ -25,10 +25,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build Windows binaries
-        run: npm run dist
+      - name: Build and Publish with Electron-Builder
+        run: npx electron-builder --win --publish always
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create source ZIP
         shell: pwsh
@@ -36,18 +37,7 @@ jobs:
           $items = @('main.js','preload.js','overlay.html','obs.html','multichat.png','styles','src','platforms','package.json','package-lock.json','README.md','iniciar.bat')
           Compress-Archive -Path $items -DestinationPath 'MultiChat-Overlay-Pro-v2.4.0-source.zip' -Force
 
-      - name: Upload Windows artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: MultiChat-Overlay-Pro-v2.4.0-Windows
-          path: |
-            dist/*.exe
-            dist/*.blockmap
-            dist/latest.yml
-            MultiChat-Overlay-Pro-v2.4.0-source.zip
-          if-no-files-found: error
-
-      - name: Publish GitHub Release
+      - name: Attach source ZIP and mark latest release
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/v')
         with:
@@ -56,11 +46,7 @@ jobs:
           draft: false
           prerelease: false
           make_latest: true
-          generate_release_notes: true
           files: |
-            dist/*.exe
-            dist/*.blockmap
-            dist/latest.yml
             MultiChat-Overlay-Pro-v2.4.0-source.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
