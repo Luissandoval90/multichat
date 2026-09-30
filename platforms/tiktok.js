@@ -3,7 +3,40 @@
 
 const { TikTokLive } = require('@tiktool/live');
 
-const MAX_RECONNECT_DELAY_MS = 30000;
+const https = require('https');
+
+function fetchTtwid() {
+  return new Promise((resolve) => {
+    try {
+      const req = https.get('https://www.tiktok.com/live', {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
+        },
+        timeout: 4000,
+      }, (res) => {
+        const cookies = [res.headers['set-cookie'] || []].flat();
+        for (const sc of cookies) {
+          if (typeof sc === 'string' && sc.includes('ttwid=')) {
+            const match = sc.match(/ttwid=([^;]+)/);
+            if (match && match[1]) {
+              console.log('[TikTok] Cookie de sesión ttwid obtenida con éxito');
+              return resolve(match[1]);
+            }
+          }
+        }
+        resolve(null);
+      });
+      req.on('error', () => resolve(null));
+      req.on('timeout', () => { req.destroy(); resolve(null); });
+    } catch(e) {
+      resolve(null);
+    }
+  });
+}
+
+const MAX_RECONNECT_DELAY_MS = 60000;
 
 function connect(username, callbacks, options = {}) {
   let client = null;
@@ -12,9 +45,9 @@ function connect(username, callbacks, options = {}) {
   let reconnectAttempt = 0;
   let stopped = false;
 
-  function scheduleReconnect() {
+  function scheduleReconnect(delayOverride = null) {
     if (stopped || !currentUsername || reconnectTimer) return;
-    const delay = Math.min(2000 * Math.pow(1.5, reconnectAttempt), MAX_RECONNECT_DELAY_MS);
+    const delay = delayOverride || Math.min(3000 * Math.pow(1.5, reconnectAttempt), MAX_RECONNECT_DELAY_MS);
     reconnectAttempt++;
     reconnectTimer = setTimeout(() => {
       reconnectTimer = null;
@@ -49,7 +82,7 @@ function connect(username, callbacks, options = {}) {
     });
   }
 
-  function start() {
+  async function start() {
     console.log('[TikTok] Iniciando conexión para usuario:', currentUsername);
 
     const apiKey = (options.tiktoolApiKey || '').trim();
@@ -70,11 +103,17 @@ function connect(username, callbacks, options = {}) {
     }
 
     try {
-      client = new TikTokLive({
+      const ttwid = await fetchTtwid();
+      const liveOptions = {
         uniqueId: currentUsername,
         apiKey: apiKey,
         autoReconnect: false,
-      });
+      };
+      if (ttwid) {
+        liveOptions.sessionId = ttwid;
+      }
+
+      client = new TikTokLive(liveOptions);
 
       client.on('connected', () => {
         console.log('[TikTok] Conectado exitosamente. Room ID:', client.roomId);
@@ -85,7 +124,7 @@ function connect(username, callbacks, options = {}) {
       client.on('disconnected', (code, reason) => {
         if (stopped) return;
         console.warn('[TikTok] Desconectado:', code, reason);
-        callbacks.onStatus({ connected: false, error: 'TikTok desconectado, reintentando…' });
+        callbacks.onStatus({ connected: false, error: 'Desconectado, reintentando…' });
         if (callbacks.onViewers) {
           callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
         }
@@ -95,17 +134,28 @@ function connect(username, callbacks, options = {}) {
       client.on('error', (err) => {
         console.error('[TikTok] ERROR:', err);
         const msg = err.message || String(err);
-        let friendlyMsg = 'TikTok: ' + msg;
-        if (msg.includes('LIVE has ended')) {
-          friendlyMsg = 'El usuario no está en vivo en TikTok';
+        let friendlyMsg = msg;
+        let isQuota = false;
+
+        if (msg.includes('Failed to obtain session cookie')) {
+          friendlyMsg = 'Límite de solicitudes de TikTool alcanzado. Revisa tu cuenta en tik.tools';
+          isQuota = true;
+        } else if (msg.includes('LIVE has ended') || msg.includes('not currently live')) {
+          friendlyMsg = `@${currentUsername} no está transmitiendo en vivo ahora`;
         } else if (msg.includes('Invalid API key') || msg.includes('Unauthorized') || msg.includes('401')) {
-          friendlyMsg = 'Clave de TikTool inválida. Revisa en Ajustes ⚙';
+          friendlyMsg = 'Clave de TikTool inválida o expirada. Revisa en Ajustes ⚙';
+          isQuota = true;
+        } else if (msg.includes('429') || msg.includes('rate limit')) {
+          friendlyMsg = 'Límite diario de TikTool alcanzado. Espera el reinicio';
+          isQuota = true;
         }
+
         callbacks.onStatus({ connected: false, error: friendlyMsg });
         if (callbacks.onViewers) {
           callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
         }
-        scheduleReconnect();
+        // Si es por cuota diaria agotada, pausar reintentos por 60 segundos para evitar saturación
+        scheduleReconnect(isQuota ? 60000 : null);
       });
 
       // Chat estándar

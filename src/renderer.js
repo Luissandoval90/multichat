@@ -1011,7 +1011,8 @@ window.overlayAPI.onPlatformStatus((data) => {
     badge.innerHTML = `${iconMarkup(data.platform)}<span>${meta.label}: En vivo</span>`;
   } else {
     badge.className = 'status-badge error';
-    badge.innerHTML = `${iconMarkup(data.platform)}<span>${meta.label}: ${data.error || 'Desconectado'}</span>`;
+    const cleanError = (data.error || 'Desconectado').replace(new RegExp(`^${meta.label}:\\s*`, 'i'), '');
+    badge.innerHTML = `${iconMarkup(data.platform)}<span>${meta.label}: ${cleanError}</span>`;
     viewersMap.set(data.platform, 0);
     updateViewersDisplay();
   }
