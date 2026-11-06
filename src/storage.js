@@ -16,7 +16,7 @@ const DEFAULT_CONFIG = {
     soundVolume: 0.7,
     sfxEnabled: true,
     sfxVolume: 0.75,
-    theme: 'cyberpunk',
+    theme: 'obsidian',
     fontFamily: 'outfit',
     ttsEnabled: false,
     ttsVoice: '',

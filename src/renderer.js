@@ -669,32 +669,45 @@ function initUI() {
 }
 
 function setAppTheme(theme) {
-  const allThemes = ['cyberpunk', 'minimal', 'chroma', 'glass'];
+  const themeMap = {
+    cyberpunk: 'obsidian',
+    minimal: 'matte',
+    chroma: 'contrast',
+    glass: 'clear',
+  };
+  const normalizedTheme = themeMap[theme] || theme || 'obsidian';
+
+  const allThemes = ['obsidian', 'matte', 'contrast', 'clear', 'cyberpunk', 'minimal', 'chroma', 'glass'];
   allThemes.forEach(t => document.body.classList.remove(`theme-${t}`));
-  document.body.classList.add(`theme-${theme}`);
+  document.body.classList.add(`theme-${normalizedTheme}`);
 
   const themeBtns = document.querySelectorAll('.theme-pill-btn');
   themeBtns.forEach(b => {
-    b.classList.toggle('active', b.getAttribute('data-theme') === theme);
+    b.classList.toggle('active', b.getAttribute('data-theme') === normalizedTheme);
   });
   if (currentConfig && currentConfig.options) {
-    currentConfig.options.theme = theme;
+    currentConfig.options.theme = normalizedTheme;
     window.AppStorage.saveConfig(currentConfig);
   }
 }
 
 function setAppFont(font) {
+  const fontMap = {
+    cyber: 'outfit',
+  };
+  const normalizedFont = fontMap[font] || font || 'outfit';
+
   const allFonts = ['outfit', 'minecraft', 'cyber', 'kawaii', 'classic'];
   allFonts.forEach(f => document.body.classList.remove(`font-${f}`));
-  document.body.classList.add(`font-${font}`);
+  document.body.classList.add(`font-${normalizedFont}`);
 
   const fontBtns = document.querySelectorAll('.font-pill-btn');
   fontBtns.forEach(b => {
-    b.classList.toggle('active', b.getAttribute('data-font') === font);
+    b.classList.toggle('active', b.getAttribute('data-font') === normalizedFont);
   });
 
   if (currentConfig && currentConfig.options) {
-    currentConfig.options.fontFamily = font;
+    currentConfig.options.fontFamily = normalizedFont;
     window.AppStorage.saveConfig(currentConfig);
   }
 }

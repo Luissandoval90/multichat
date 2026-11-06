@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Multi Chat Overlay Pro</title>
+  <title>MultiChat</title>
   <link rel="icon" type="image/png" href="multichat.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="styles/chat.css" />
   <link rel="stylesheet" href="styles/alerts.css" />
 </head>
-<body class="theme-cyberpunk">
+<body class="theme-obsidian">
   <div id="app">
     <!-- Contenedor flotante para alertas de seguidores -->
     <div id="follower-alert-container"></div>
@@ -22,7 +22,7 @@
         <div class="update-banner-title">
           <svg class="icon-inline" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6.05 11a22.35 22.35 0 0 1-3.95 2z"/></svg>
           <span>Nueva actualización disponible</span>
-          <span id="update-version-tag" class="badge-version">v2.4.1</span>
+          <span id="update-version-tag" class="badge-version">v2.4.2</span>
         </div>
         <div class="update-timer-text" id="update-timer-text">Reiniciando en 10s...</div>
       </div>
@@ -43,10 +43,10 @@
       <div class="brand">
         <div class="brand-logo-wrapper">
           <img src="multichat.png" class="brand-logo" alt="MultiChat" />
-          <div class="brand-glow"></div>
+          
         </div>
         <div class="brand-text-col">
-          <span class="brand-name">MultiChat <span class="brand-badge">PRO</span></span>
+          <span class="brand-name">MultiChat</span>
           <div class="live-status-row">
             <span class="dot" id="live-dot"></span>
             <span class="live-status-label" id="live-status-text">Desconectado</span>
@@ -109,11 +109,11 @@
         </button>
         <button class="tab-btn" data-tab="tab-appearance">
           <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-          <span>Aspecto</span>
+          <span>Diseño</span>
         </button>
         <button class="tab-btn" data-tab="tab-updates">
           <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span>Novedades</span>
+          <span>Versión</span>
         </button>
       </div>
 
@@ -386,11 +386,10 @@
             <span>Tipografía del Chat</span>
           </div>
           <div class="font-selector-grid">
-            <button type="button" class="font-pill-btn active" data-font="outfit">✨ Moderna (Outfit)</button>
-            <button type="button" class="font-pill-btn font-preview-minecraft" data-font="minecraft">🎮 Minecraft Pixel</button>
-            <button type="button" class="font-pill-btn font-preview-cyber" data-font="cyber">🚀 Cyber Gamer</button>
-            <button type="button" class="font-pill-btn font-preview-kawaii" data-font="kawaii">🧸 Kawaii (Fredoka)</button>
-            <button type="button" class="font-pill-btn font-preview-classic" data-font="classic">⚡ Clásica (Inter)</button>
+            <button type="button" class="font-pill-btn active" data-font="outfit">Outfit (Moderna)</button>
+            <button type="button" class="font-pill-btn font-preview-classic" data-font="classic">Inter (Estándar)</button>
+            <button type="button" class="font-pill-btn font-preview-minecraft" data-font="minecraft">Pixel (Retro 8-Bit)</button>
+            <button type="button" class="font-pill-btn font-preview-kawaii" data-font="kawaii">Fredoka (Redonda)</button>
           </div>
         </div>
 
@@ -400,10 +399,10 @@
             <span>Tema Visual Glass</span>
           </div>
           <div class="theme-selector-grid">
-            <button type="button" class="theme-pill-btn active" data-theme="cyberpunk">🟣 Cyberpunk Neon</button>
-            <button type="button" class="theme-pill-btn" data-theme="minimal">🖤 Dark Titanium</button>
-            <button type="button" class="theme-pill-btn" data-theme="chroma">🌈 Chroma RGB</button>
-            <button type="button" class="theme-pill-btn" data-theme="glass">💎 Cristal Ice</button>
+            <button type="button" class="theme-pill-btn active" data-theme="obsidian">Obsidian Glass</button>
+            <button type="button" class="theme-pill-btn" data-theme="matte">Negro Mate</button>
+            <button type="button" class="theme-pill-btn" data-theme="contrast">Alto Contraste</button>
+            <button type="button" class="theme-pill-btn" data-theme="clear">Ultra Transparente</button>
           </div>
         </div>
 
@@ -450,7 +449,7 @@
           <label class="opt-toggle">
             <div class="toggle-text">
               <span class="toggle-title">Tarjeta animada de seguidor</span>
-              <span class="toggle-desc">Muestra una tarjeta holográfica cuando alguien te sigue</span>
+              <span class="toggle-desc">Muestra una alerta en pantalla cuando alguien te sigue</span>
             </div>
             <input type="checkbox" id="opt-follow-alerts" checked />
           </label>
@@ -480,8 +479,8 @@
           </div>
           <div class="version-banner">
             <div>
-              <div style="font-size:13px; font-weight:800; color:#fff;">Multi Chat Overlay Pro</div>
-              <div id="app-version-label" class="badge-version-pill">v2.4.1 · Producción</div>
+              <div style="font-size:13px; font-weight:800; color:#fff;">MultiChat</div>
+              <div id="app-version-label" class="badge-version-pill">v2.4.2</div>
             </div>
             <button type="button" class="btn-check-updates" id="btn-check-updates">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -499,17 +498,12 @@
             <span>Historial de Versiones</span>
           </div>
           <div class="notifications-log-box" id="notifications-log">
-            <b>v2.4.1 — Multi-User Clips & Auto-Updater Patch:</b><br>
-            • 🎬 Comando !clip habilitado al 100% para cualquier espectador o moderador en TikTok, Twitch, Kick y YouTube<br>
-            • ⚡ Cooldown optimizado a 5 segundos con notificaciones visuales y sonoras en vivo<br>
-            • 🖤 Sistema Tri-Tone: Bordes negros (#000000), fondo Negro Glass translúcido y blanco al interactuar<br>
-            • 🟩🟪🟥🔴 Colores dinámicos al interactuar con el chat (Kick verde lima, Twitch púrpura, TikTok rosa, YouTube rojo)<br>
-            • 🎛️ Menú de configuración Studio Suite 6.0 rediseñado con íconos vectoriales Lucide<br>
-            • 🌐 Barra de estado de redes transparente flotante<br>
-            <br>
-            <b>v2.3.0:</b><br>
-            • 🎬 Grabador inteligente de clips en vivo y sincronización con Google Drive<br>
-            • 🔤 5 Tipografías y 4 Temas visuales reactivos en vivo
+            <b>v2.4.2 — Interfaz Limpia & Logo Oficial:</b><br>
+            • 🎨 Logotipo oficial MultiChat con icono de diálogo 'M' y distintivos de redes<br>
+            • 🖤 Sistema de 3 colores: Bordes negros (#000000), Negro Glass translúcido y Blanco para interactuar<br>
+            • 🟩🟪🟥🔴 Color auténtico por red al pasar el cursor (Kick verde, Twitch morado, TikTok rosa, YouTube rojo)<br>
+            • 🎬 Captura de clips rápida y directa en Google Drive y local<br>
+            • ⚡ Diseño funcional, limpio y sin elementos innecesarios
           </div>
         </div>
       </div>

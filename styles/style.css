@@ -76,29 +76,33 @@ body.font-outfit,    body.font-outfit *    { font-family: 'Outfit', 'Plus Jakart
 body.font-minecraft { font-size: 11px; }
 body.font-minecraft .msg { line-height: 1.65; }
 
-/* ─── Dynamic Theme Skins ────────────────────────────────────────────────── */
-body.theme-cyberpunk {
-  --bg-black-glass:     rgba(4, 2, 10, calc(var(--bg-opacity) * 0.94));
-  --surface-glass-1:    rgba(18, 10, 30, 0.78);
-  --surface-glass-2:    rgba(32, 16, 52, 0.88);
+/* ─── Dynamic Theme Skins (Sin tintes de IA, 100% Obsidian Negro Glass) ─── */
+body.theme-obsidian, body.theme-cyberpunk {
+  --bg-black-glass:     rgba(0, 0, 0, calc(var(--bg-opacity) * 0.70));
+  --surface-glass-1:    rgba(12, 12, 14, 0.65);
+  --surface-glass-2:    rgba(20, 20, 24, 0.85);
+  --surface-panel:      rgba(10, 10, 12, 0.92);
 }
 
-body.theme-minimal {
-  --bg-black-glass:     rgba(0, 0, 0, calc(var(--bg-opacity) * 0.96));
-  --surface-glass-1:    rgba(12, 12, 12, 0.80);
-  --surface-glass-2:    rgba(22, 22, 22, 0.90);
+body.theme-matte, body.theme-minimal {
+  --bg-black-glass:     rgba(10, 10, 12, calc(var(--bg-opacity) * 0.95));
+  --surface-glass-1:    rgba(18, 18, 20, 0.88);
+  --surface-glass-2:    rgba(26, 26, 30, 0.96);
+  --surface-panel:      rgba(14, 14, 16, 0.96);
 }
 
-body.theme-chroma {
-  --bg-black-glass:     rgba(2, 4, 8, calc(var(--bg-opacity) * 0.94));
-  --surface-glass-1:    rgba(10, 16, 30, 0.78);
-  --surface-glass-2:    rgba(18, 28, 50, 0.88);
+body.theme-contrast, body.theme-chroma {
+  --bg-black-glass:     rgba(0, 0, 0, 0.92);
+  --surface-glass-1:    rgba(14, 14, 16, 0.94);
+  --surface-glass-2:    rgba(22, 22, 26, 0.98);
+  --surface-panel:      rgba(0, 0, 0, 0.98);
 }
 
-body.theme-glass {
-  --bg-black-glass:     rgba(0, 0, 0, calc(var(--bg-opacity) * 0.65));
-  --surface-glass-1:    rgba(20, 20, 20, 0.55);
-  --surface-glass-2:    rgba(35, 35, 35, 0.70);
+body.theme-clear, body.theme-glass {
+  --bg-black-glass:     rgba(0, 0, 0, calc(var(--bg-opacity) * 0.40));
+  --surface-glass-1:    rgba(8, 8, 10, 0.45);
+  --surface-glass-2:    rgba(16, 16, 18, 0.65);
+  --surface-panel:      rgba(8, 8, 10, 0.75);
 }
 
 /* ─── Global Reset ───────────────────────────────────────────────────────── */
