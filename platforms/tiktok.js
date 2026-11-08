@@ -38,6 +38,29 @@ function fetchTtwid() {
 
 const MAX_RECONNECT_DELAY_MS = 60000;
 
+function parseTikTokError(err, username) {
+  const msg = (err && err.message) || String(err || '');
+  const clean = (username || '').replace(/^@/, '');
+  let friendlyMsg = msg;
+  let delay = null;
+
+  if (msg.includes('not currently live') || msg.includes('LIVE has ended') || msg.includes('offline') || msg.includes('Room not found')) {
+    friendlyMsg = `@${clean} no está en vivo ahora`;
+    delay = 30000; // Si no está en vivo, esperar 30s antes de reintentar
+  } else if (msg.includes('Failed to obtain session cookie')) {
+    friendlyMsg = 'Límite diario de TikTool alcanzado. Espera el reinicio';
+    delay = 60000;
+  } else if (msg.includes('Invalid API key') || msg.includes('Unauthorized') || msg.includes('401')) {
+    friendlyMsg = 'Clave de TikTool inválida. Revisa en Ajustes ⚙';
+    delay = 60000;
+  } else if (msg.includes('429') || msg.includes('rate limit')) {
+    friendlyMsg = 'Límite diario de TikTool alcanzado. Espera el reinicio';
+    delay = 60000;
+  }
+
+  return { friendlyMsg, delay };
+}
+
 function connect(username, callbacks, options = {}) {
   let client = null;
   let currentUsername = username.replace(/^@/, '').trim();
@@ -133,29 +156,12 @@ function connect(username, callbacks, options = {}) {
 
       client.on('error', (err) => {
         console.error('[TikTok] ERROR:', err);
-        const msg = err.message || String(err);
-        let friendlyMsg = msg;
-        let isQuota = false;
-
-        if (msg.includes('Failed to obtain session cookie')) {
-          friendlyMsg = 'Límite de solicitudes de TikTool alcanzado. Revisa tu cuenta en tik.tools';
-          isQuota = true;
-        } else if (msg.includes('LIVE has ended') || msg.includes('not currently live')) {
-          friendlyMsg = `@${currentUsername} no está transmitiendo en vivo ahora`;
-        } else if (msg.includes('Invalid API key') || msg.includes('Unauthorized') || msg.includes('401')) {
-          friendlyMsg = 'Clave de TikTool inválida o expirada. Revisa en Ajustes ⚙';
-          isQuota = true;
-        } else if (msg.includes('429') || msg.includes('rate limit')) {
-          friendlyMsg = 'Límite diario de TikTool alcanzado. Espera el reinicio';
-          isQuota = true;
-        }
-
+        const { friendlyMsg, delay } = parseTikTokError(err, currentUsername);
         callbacks.onStatus({ connected: false, error: friendlyMsg });
         if (callbacks.onViewers) {
           callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
         }
-        // Si es por cuota diaria agotada, pausar reintentos por 60 segundos para evitar saturación
-        scheduleReconnect(isQuota ? 60000 : null);
+        scheduleReconnect(delay);
       });
 
       // Chat estándar
@@ -277,18 +283,12 @@ function connect(username, callbacks, options = {}) {
 
       client.connect().catch(err => {
         console.error('[TikTok] connect() error:', err);
-        const msg = err.message || String(err);
-        let friendlyMsg = 'TikTok: ' + msg;
-        if (msg.includes('LIVE has ended')) {
-          friendlyMsg = 'El usuario no está en vivo en TikTok';
-        } else if (msg.includes('Invalid API key') || msg.includes('Unauthorized') || msg.includes('401')) {
-          friendlyMsg = 'Clave de TikTool inválida. Revisa en Ajustes ⚙';
-        }
+        const { friendlyMsg, delay } = parseTikTokError(err, currentUsername);
         callbacks.onStatus({ connected: false, error: friendlyMsg });
         if (callbacks.onViewers) {
           callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
         }
-        scheduleReconnect();
+        scheduleReconnect(delay);
       });
 
     } catch (err) {

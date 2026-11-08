@@ -987,7 +987,14 @@ function handleConnect(isAuto = false) {
   statusBar.innerHTML = '';
   Object.keys(statusLines).forEach(k => delete statusLines[k]);
 
-  addSimpleMessage('Conectando a ' + requests.map(r => PLATFORM_META[r.platform].label).join(' + ') + '…', 'system');
+  const connectingText = 'Conectando a ' + requests.map(r => PLATFORM_META[r.platform].label).join(' + ') + '…';
+  const lastMsg = chatContainer.lastElementChild;
+  if (lastMsg && lastMsg.classList.contains('system') && lastMsg.textContent.includes('Conectando a')) {
+    const textEl = lastMsg.querySelector('.system-text') || lastMsg;
+    textEl.textContent = connectingText;
+  } else {
+    addSimpleMessage(connectingText, 'system');
+  }
 
   window.overlayAPI.connect(requests);
   setupPanel.classList.add('hidden');
