@@ -22,7 +22,7 @@ El paquete ZIP preparado contiene únicamente los archivos de la extensión. La 
 
 `npm test -- --screenshots`
 
-`node node_modules/electron-builder/cli.js --win portable --publish never --config.compression=store --config.directories.output=dist/2.6.1`
+`node node_modules/electron-builder/cli.js --win portable --publish never --config.compression=store --config.directories.output=dist/2.6.2`
 
 La extensión se copia fuera de ASAR y el botón de la aplicación la exporta a una carpeta estable de datos del usuario. Los archivos de datos personales quedan fuera del instalador.
 

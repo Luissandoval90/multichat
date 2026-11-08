@@ -1,5 +1,7 @@
 # MultiChat
 
+Versión 2.6.2: publicación con comando de pruebas compatible con Node 20 en Windows.
+
 Versión 2.6.1: detección de canciones ya en reproducción, enlaces de álbum y transición automática de la cola. Para actualizar la extensión existente, recárgala desde brave://extensions y recarga también Spotify.
 
 Versión 2.6.0: conexión individual de Twitch desde un botón, sin claves para el usuario; enlace de Brave con aprobación dentro de MultiChat; aviso claro para canales sin puntos. La preparación del distribuidor se describe en [DISTRIBUCION.md](DISTRIBUCION.md) y el uso en [MUSICA.md](MUSICA.md).
@@ -12,7 +14,7 @@ La interfaz de escritorio usa navegación lateral, controles en escala de grises
 
 Para abrir el proyecto: `npm start`. Para comprobar la interfaz sin conectar cuentas ni grabar la pantalla: `npm test`. Las capturas de revisión se generan con `npm test -- --screenshots`.
 
-La compilación de esta revisión se encuentra en `dist/2.6.1`. Para volver a generarla sin publicar: `npm run dist -- --publish never --config.directories.output=dist/2.6.1`.
+La compilación de esta revisión se encuentra en `dist/2.6.2`. Para volver a generarla sin publicar: `npm run dist -- --publish never --config.directories.output=dist/2.6.2`.
 
 
 App de escritorio (Electron) para streamers y creadores de contenido que unifica en **una sola ventana transparente siempre visible** el chat y eventos en vivo de **TikTok, Twitch, Kick y YouTube** simultáneamente.

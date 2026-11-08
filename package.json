@@ -1,6 +1,6 @@
 {
   "name": "multi-chat-overlay",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "Overlay profesional de chat en vivo con clips, alertas y sincronización OBS para TikTok, Twitch, Kick y YouTube",
   "main": "main.js",
   "author": "Luis Sandoval",
@@ -8,7 +8,7 @@
     "start": "electron .",
     "dist": "electron-builder --win",
     "release": "electron-builder --win --publish always",
-    "test": "node --test tests/music*.test.cjs && electron tests/spotify-regression.cjs && electron tests/ui-smoke.cjs"
+    "test": "node --test tests/music.test.cjs tests/music-bridge.test.cjs tests/music-service.test.cjs tests/music-twitch.test.cjs && electron tests/spotify-regression.cjs && electron tests/ui-smoke.cjs"
   },
   "keywords": [
     "multichat",

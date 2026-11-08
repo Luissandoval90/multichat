@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "MultiChat · Música en Brave",
-  "version": "2.6.1",
+  "version": "2.6.2",
   "description": "Recibe pedidos de canciones desde tu MultiChat y usa los controles de tu Spotify web.",
   "minimum_chrome_version": "116",
   "permissions": [
