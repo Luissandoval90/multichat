@@ -1,6 +1,10 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('overlayAPI', {
+  getMusicState: () => ipcRenderer.invoke('music-get-state'),
+  musicAction: (type, data) => ipcRenderer.invoke('music-action', type, data),
+  openMusicExtension: () => ipcRenderer.invoke('music-open-extension'),
+  onMusicState: callback => ipcRenderer.on('music-state', (_event, state) => callback(state)),
   // Conexión y control de ventana
   connect: (requests) => ipcRenderer.send('connect-request', requests),
   disconnectAll: () => ipcRenderer.send('disconnect-all'),

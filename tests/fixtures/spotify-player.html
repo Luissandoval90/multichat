@@ -1,0 +1,11 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body data-advancing="no">
+<main><a href="https://open.spotify.com/artist/0123456789012345678901">An artist is not a song</a><a href="https://open.spotify.com/track/0123456789012345678901">La flaca</a><button data-testid="play-button" aria-label="Reproducir La flaca">Reproducir</button></main>
+<aside data-testid="now-playing-widget"><a href="https://open.spotify.com/track/2222222222222222222222">Previous song</a></aside>
+<span data-testid="playback-position">0:00</span><span data-testid="playback-duration">0:06</span><button data-testid="control-button-playpause" aria-label="Reproducir">Play</button>
+<script>
+document.querySelector('main button').onclick=()=>{
+ const link=document.querySelector('aside a');link.href='https://open.spotify.com/track/0123456789012345678901';link.textContent='La flaca';
+ const button=document.querySelector('[data-testid="control-button-playpause"]');button.setAttribute('aria-label','Pausar');
+ let seconds=0;const timer=setInterval(()=>{if(document.body.dataset.advancing!=='yes')return;seconds++;document.querySelector('[data-testid="playback-position"]').textContent='0:0'+seconds;if(seconds===6){button.setAttribute('aria-label','Reproducir');clearInterval(timer);}},500);
+};
+</script></body></html>

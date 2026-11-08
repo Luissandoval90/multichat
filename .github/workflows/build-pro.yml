@@ -24,24 +24,8 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Clean invalid releases
-        shell: pwsh
-        run: |
-          $headers = @{
-            "Authorization" = "Bearer ${{ secrets.GITHUB_TOKEN }}"
-            "Accept" = "application/vnd.github+json"
-          }
-          try {
-            $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/Luissandoval90/multichat/releases" -Headers $headers
-            foreach ($rel in $releases) {
-              if ($rel.tag_name -eq 'main' -or $rel.name -eq 'Release main') {
-                Write-Host "Deleting invalid release $($rel.id)..."
-                Invoke-RestMethod -Uri "https://api.github.com/repos/Luissandoval90/multichat/releases/$($rel.id)" -Method Delete -Headers $headers
-              }
-            }
-          } catch {
-            Write-Host "Notice: $_"
-          }
+      - name: Test application and browser extension
+        run: npm test -- --screenshots
 
       - name: Build and Publish with Electron-Builder
         run: npx electron-builder --win --publish always
@@ -49,11 +33,13 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create source ZIP
+      - name: Create source and extension ZIPs
         shell: pwsh
         run: |
-          $items = @('main.js','preload.js','overlay.html','obs.html','multichat.png','styles','src','platforms','package.json','package-lock.json','README.md','iniciar.bat')
-          Compress-Archive -Path $items -DestinationPath 'MultiChat-Overlay-Pro-v2.4.0-source.zip' -Force
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $items = @('main.js','preload.js','overlay.html','obs.html','multichat.png','styles','src','platforms','browser-extension','tests','package.json','package-lock.json','README.md','MUSICA.md','DISTRIBUCION.md','iniciar.bat')
+          Compress-Archive -Path $items -DestinationPath "MultiChat-v$version-source.zip" -Force
+          Compress-Archive -Path 'browser-extension/*' -DestinationPath "MultiChat-Spotify-v$version.zip" -Force
 
       - name: Attach source ZIP and set latest release
         uses: softprops/action-gh-release@v2
@@ -65,6 +51,7 @@ jobs:
           prerelease: false
           make_latest: true
           files: |
-            MultiChat-Overlay-Pro-v2.4.0-source.zip
+            MultiChat-v*-source.zip
+            MultiChat-Spotify-v*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

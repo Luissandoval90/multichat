@@ -3,3 +3,6 @@ dist/
 *.log
 *.exe
 .DS_Store
+
+output/
+.playwright-cli/

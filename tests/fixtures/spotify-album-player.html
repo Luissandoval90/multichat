@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"></head><body>
+<main><h1>La flaca</h1><button data-testid="play-button" aria-label="Pausar La flaca">Pausar</button></main>
+<footer><div data-testid="now-playing-widget"><a data-testid="context-item-link" href="https://open.spotify.com/album/1111111111111111111111?highlight=spotify%3Atrack%3A0123456789012345678901">La flaca</a><a href="https://open.spotify.com/artist/1111111111111111111111">Jarabe de Palo</a></div>
+<span data-testid="playback-position">0:05</span><span data-testid="playback-duration">0:40</span><button data-testid="control-button-playpause" aria-label="Pausar">Pausar</button></footer>
+<script>
+let seconds=5;window.fixtureTimer=setInterval(()=>{if(document.body.dataset.manual==='yes')return;seconds++;document.querySelector('[data-testid="playback-position"]').textContent='0:'+String(seconds).padStart(2,'0');},400);
+document.querySelector('main button').onclick=()=>{document.body.dataset.clicked='yes';};
+</script></body></html>

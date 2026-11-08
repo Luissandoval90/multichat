@@ -17,7 +17,7 @@ const DEFAULT_CONFIG = {
     sfxEnabled: true,
     sfxVolume: 0.75,
     theme: 'obsidian',
-    fontFamily: 'outfit',
+    fontFamily: 'classic',
     ttsEnabled: false,
     ttsVoice: '',
     ttsVolume: 0.85,
@@ -31,7 +31,7 @@ const DEFAULT_CONFIG = {
       youtube: true,
     },
     filterBotCommands: false,
-    bgOpacity: 0.45,
+    bgOpacity: 0.78,
     fontSize: 13.5,
     msgSpacing: 6,
     clipEnabled: true,
@@ -82,7 +82,7 @@ function saveConfig(config) {
     if (window.overlayAPI && typeof window.overlayAPI.saveConfigFile === 'function') {
       window.overlayAPI.saveConfigFile(sanitized);
     }
-    console.log('[Storage] Config guardada con éxito (Redes & API Keys):', sanitized.platforms);
+    console.log('[Storage] Configuración guardada.');
   } catch (err) {
     console.error('[Storage] Error guardando configuración:', err);
   }

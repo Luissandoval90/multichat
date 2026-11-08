@@ -42,7 +42,7 @@ function processQueue() {
     avatarHtml = `<div class="avatar-fallback" style="background:var(--${data.platform || 'accent'},#888)">${initial}</div>`;
   }
 
-  const platformLabel = (data.platform || 'Live').toUpperCase();
+  const platformLabel = ({ tiktok: 'TikTok', twitch: 'Twitch', kick: 'Kick', youtube: 'YouTube' })[data.platform] || 'tu canal';
 
   card.innerHTML = `
     <div class="follower-avatar-wrapper">
@@ -50,7 +50,7 @@ function processQueue() {
     </div>
     <div class="follower-info">
       <div class="follower-badge-row">
-        <span class="follower-label">★ ¡NUEVO SEGUIDOR EN ${platformLabel}!</span>
+        <span class="follower-label">Nuevo seguidor en ${platformLabel}</span>
       </div>
       <div class="follower-name">${escapeHtml(data.nickname || data.userId || 'Usuario')}</div>
     </div>

@@ -421,7 +421,7 @@ function initUI() {
   });
 
   // Selector de Temas Visuales (Skins)
-  const themeBtns = document.querySelectorAll('.theme-pill-btn');
+  const themeBtns = document.querySelectorAll('[data-theme]');
   themeBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const theme = btn.getAttribute('data-theme');
@@ -530,10 +530,10 @@ function initUI() {
     btnCopyObs.addEventListener('click', () => {
       const url = obsUrlInput ? obsUrlInput.value : 'http://localhost:3750';
       navigator.clipboard.writeText(url).then(() => {
-        btnCopyObs.textContent = '✓ ¡Copiado!';
+        btnCopyObs.textContent = 'Copiado';
         btnCopyObs.classList.add('copied');
         setTimeout(() => {
-          btnCopyObs.textContent = '📋 Copiar Enlace';
+          btnCopyObs.textContent = 'Copiar';
           btnCopyObs.classList.remove('copied');
         }, 2200);
       }).catch(() => {
@@ -566,6 +566,7 @@ function initUI() {
     btn.addEventListener('click', () => {
       clipDurationBtns.forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      autoSaveAllConfig();
     });
   });
 
@@ -681,7 +682,7 @@ function setAppTheme(theme) {
   allThemes.forEach(t => document.body.classList.remove(`theme-${t}`));
   document.body.classList.add(`theme-${normalizedTheme}`);
 
-  const themeBtns = document.querySelectorAll('.theme-pill-btn');
+  const themeBtns = document.querySelectorAll('[data-theme]');
   themeBtns.forEach(b => {
     b.classList.toggle('active', b.getAttribute('data-theme') === normalizedTheme);
   });
@@ -811,6 +812,9 @@ function applyConfigToUI(config) {
   document.getElementById('opt-follow-alerts').checked = !!config.options.followAlerts;
   document.getElementById('opt-sound-alerts').checked = !!config.options.soundAlerts;
   document.getElementById('opt-filter-bots').checked = !!config.options.filterBotCommands;
+  document.querySelectorAll('[data-clip-duration]').forEach(btn => {
+    btn.classList.toggle('active', Number(btn.dataset.clipDuration) === (Number(config.options.clipDuration) || 30));
+  });
 
   // Tema y Fuente
   const currentTheme = config.options.theme || 'cyberpunk';
@@ -891,7 +895,7 @@ function gatherConfigFromUI() {
     ttsPlatformsObj[p] = tCheck ? tCheck.checked : true;
   });
 
-  const activeThemeBtn = document.querySelector('.theme-pill-btn.active');
+  const activeThemeBtn = document.querySelector('[data-theme].active');
   const selectedTheme = activeThemeBtn ? activeThemeBtn.getAttribute('data-theme') : 'cyberpunk';
 
   const activeFontBtn = document.querySelector('.font-pill-btn.active');
@@ -913,6 +917,7 @@ function gatherConfigFromUI() {
       ttsRate: parseInt(ttsRateSlider.value, 10) / 100,
       ttsPlatforms: ttsPlatformsObj,
       filterBotCommands: document.getElementById('opt-filter-bots').checked,
+      clipDuration: Number(document.querySelector('[data-clip-duration].active')?.dataset.clipDuration || 30),
       bgOpacity: parseInt(opacitySlider.value, 10) / 100,
       fontSize: parseFloat(fontSizeSlider.value) || 13.5,
       msgSpacing: parseInt(msgSpacingSlider.value, 10) || 6,
@@ -1048,7 +1053,7 @@ function updateLiveDot() {
   if (liveStatusText) {
     if (anyConnected) {
       liveStatusText.textContent = `En vivo (${connectedBadges.length})`;
-      liveStatusText.style.color = '#10b981';
+      liveStatusText.style.color = '#c2d4b8';
       liveStatusText.style.fontWeight = '700';
     } else {
       liveStatusText.textContent = 'Desconectado';
@@ -1188,7 +1193,7 @@ window.overlayAPI.onChatMessage((data) => {
 
   window.AppTTS.speakMessage(data);
 
-  const commentHtml = buildCommentHtml(data.comment, data.emotes);
+  const commentHtml = buildCommentHtml(data.comment, data.emotes).replace(/^: /, '');
   const div = document.createElement('div');
   div.className = `msg platform-${data.platform}`;
 
@@ -1200,14 +1205,14 @@ window.overlayAPI.onChatMessage((data) => {
     ? `<img class="avatar" src="${knownAvatar}" alt="" loading="lazy" />`
     : avatarHtml(data).replace('class="avatar placeholder"', `class="avatar placeholder avatar-pending" data-user-key="${escapeAttr(userKey)}"`);
 
-  div.innerHTML = `${avatar}<span class="body">${platformTag(data.platform)}<span class="nick"${nickStyle}>${escapeHtml(data.nickname || data.userId)}</span>${commentHtml}</span>`;
+  div.innerHTML = `${avatar}<span class="body"><span class="message-header">${platformTag(data.platform)}<span class="nick"${nickStyle}>${escapeHtml(data.nickname || data.userId)}</span></span><span class="message-text">${commentHtml}</span></span>`;
 
   // Botón para Fijar Mensaje (Pin)
   const pinBtn = document.createElement('button');
   pinBtn.type = 'button';
   pinBtn.className = 'pin-btn';
   pinBtn.title = 'Fijar este mensaje arriba';
-  pinBtn.innerHTML = '📌';
+  pinBtn.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m16 3 5 5-4 2-3 5-2-2-6 6-1-1 6-6-2-2 5-3Z"/></svg>'; pinBtn.setAttribute('aria-label', 'Fijar mensaje');
   pinBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     setPinnedMessage(data);
@@ -1239,10 +1244,7 @@ window.overlayAPI.onShareMessage((data) => {
 
 // Join
 window.overlayAPI.onJoinMessage((data) => {
-  const div = document.createElement('div');
-  div.className = `msg join platform-${data.platform}`;
-  div.innerHTML = `<span class="body">${platformTag(data.platform)}<span class="nick">${escapeHtml(data.nickname || data.userId)}</span> <span class="join-text">se unió</span></span>`;
-  addMessageNode(div);
+  window.ChatPresence.renderJoin(data, chatContainer, platformTag, addMessageNode);
 });
 
 // Regalos en Español con Imágenes HD y Diamantes

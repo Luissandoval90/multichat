@@ -1,9 +1,12 @@
-const { app, BrowserWindow, ipcMain, globalShortcut, screen, shell, desktopCapturer, session } = require('electron');
+const { app, BrowserWindow, ipcMain, globalShortcut, screen, shell, desktopCapturer, session, safeStorage } = require('electron');
 const path = require('path');
 const http = require('http');
 const fs = require('fs');
+const { pathToFileURL } = require('url');
 const { WebSocketServer, WebSocket } = require('ws');
 const clipper = require('./src/clipper');
+const { MusicService } = require('./src/music/service');
+let musicService = null;
 
 let mainWindow = null;
 let clickThrough = false;
@@ -197,6 +200,15 @@ function createWindow() {
     },
   });
 
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    if (url === pathToFileURL(path.join(__dirname, 'overlay.html')).href) return;
+    event.preventDefault();
+    if (/^https?:\/\//i.test(url)) shell.openExternal(url);
+  });
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
@@ -486,7 +498,24 @@ ipcMain.on('open-external-url', (_event, url) => {
   if (url) shell.openExternal(url);
 });
 
+function checkMusicSender(event) {
+  if (!mainWindow || event.sender.id !== mainWindow.webContents.id || event.senderFrame?.url !== pathToFileURL(path.join(__dirname, 'overlay.html')).href || !musicService) throw new Error('Música no está disponible en esta ventana.');
+}
+ipcMain.handle('music-get-state', event => { checkMusicSender(event); return musicService.state(); });
+ipcMain.handle('music-action', async (event, type, data) => { checkMusicSender(event); return musicService.action(type, data); });
+ipcMain.handle('music-open-extension', async event => {
+  checkMusicSender(event);
+  const source = app.isPackaged ? path.join(process.resourcesPath, 'spotify-bridge') : path.join(__dirname, 'browser-extension');
+  const target = path.join(app.getPath('userData'), 'spotify-bridge');
+  fs.mkdirSync(target, { recursive: true });
+  fs.cpSync(source, target, { recursive: true });
+  const error = await shell.openPath(target); if (error) throw new Error(error);
+  return true;
+});
+
 app.whenReady().then(() => {
+  musicService = new MusicService({ directory: app.getPath('userData'), safeStorage, openExternal: url => shell.openExternal(url), onChange: state => safeSend('music-state', state) });
+  musicService.start().catch(error => musicService.report(error));
   createWindow();
   startScreenFrameRecorder();
 });
@@ -501,6 +530,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', () => {
+  musicService?.close();
   disconnectAll();
   globalShortcut.unregisterAll();
   if (obsServer) {

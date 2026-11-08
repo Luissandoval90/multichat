@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MultiChat</title>
   <link rel="icon" type="image/png" href="multichat.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -22,7 +23,7 @@
         <div class="update-banner-title">
           <svg class="icon-inline" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6.05 11a22.35 22.35 0 0 1-3.95 2z"/></svg>
           <span>Nueva actualización disponible</span>
-          <span id="update-version-tag" class="badge-version">v2.4.2</span>
+          <span id="update-version-tag" class="badge-version">v2.6.1</span>
         </div>
         <div class="update-timer-text" id="update-timer-text">Reiniciando en 10s...</div>
       </div>
@@ -32,7 +33,7 @@
       <div class="update-banner-actions">
         <button type="button" class="btn-restart-update" id="btn-restart-update">
           <svg class="icon-sm" viewBox="0 0 24 24"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-          Reiniciar y Actualizar
+          Reiniciar y actualizar
         </button>
         <button type="button" class="btn-dismiss-update" id="btn-dismiss-update">Más tarde</button>
       </div>
@@ -42,7 +43,7 @@
     <div id="titlebar">
       <div class="brand">
         <div class="brand-logo-wrapper">
-          <img src="multichat.png" class="brand-logo" alt="MultiChat" />
+          <svg class="brand-mark" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6 4V6a2 2 0 0 1 2-2Z"/><path d="M7 9h10M7 13h6"/></svg>
           
         </div>
         <div class="brand-text-col">
@@ -55,19 +56,19 @@
       </div>
 
       <div class="controls">
-        <button id="toggle-hud-btn" class="ctrl-btn" title="Ocultar / Mostrar HUD">
+        <button id="toggle-hud-btn" class="ctrl-btn" aria-label="Mostrar u ocultar estadísticas" title="Mostrar u ocultar estadísticas">
           <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
-        <button id="test-alert-btn" class="ctrl-btn" title="Probar alerta de seguidor">
+        <button id="test-alert-btn" class="ctrl-btn" aria-label="Probar alerta de seguidor" title="Probar alerta de seguidor">
           <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
         </button>
-        <button id="edit-btn" class="ctrl-btn" title="Configuración">
+        <button id="edit-btn" class="ctrl-btn" aria-label="Ajustes" title="Ajustes">
           <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
-        <button id="minimize-btn" class="ctrl-btn" title="Minimizar">
+        <button id="minimize-btn" class="ctrl-btn" aria-label="Minimizar" title="Minimizar">
           <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
         </button>
-        <button id="close-btn" class="ctrl-btn close-btn" title="Cerrar">
+        <button id="close-btn" class="ctrl-btn close-btn" aria-label="Cerrar" title="Cerrar">
           <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
@@ -78,7 +79,7 @@
       <div class="stats-group">
         <div class="stat-pill total" id="stat-total-viewers" title="Total de espectadores en vivo">
           <svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-          <span class="stat-label">Viendo:</span>
+          <span class="stat-label">Espectadores</span>
           <span id="total-viewers-count" class="stat-num">0</span>
         </div>
         <div class="stats-group" id="platform-viewers-container"></div>
@@ -97,7 +98,7 @@
       <div class="tab-header">
         <button class="tab-btn active" data-tab="tab-accounts">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
-          <span>Redes</span>
+          <span>Canales</span>
         </button>
         <button class="tab-btn" data-tab="tab-clips">
           <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
@@ -105,20 +106,22 @@
         </button>
         <button class="tab-btn" data-tab="tab-voice">
           <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
-          <span>Voz (TTS)</span>
+          <span>Voz</span>
         </button>
+        <button class="tab-btn" data-tab="tab-music"><svg viewBox="0 0 24 24"><path d="M9 18V5l12-2v13M9 8l12-2"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg><span>Música</span></button>
         <button class="tab-btn" data-tab="tab-appearance">
           <svg viewBox="0 0 24 24"><circle cx="13.5" cy="6.5" r=".5"/><circle cx="17.5" cy="10.5" r=".5"/><circle cx="8.5" cy="7.5" r=".5"/><circle cx="6.5" cy="12.5" r=".5"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-          <span>Diseño</span>
+          <span>Apariencia</span>
         </button>
         <button class="tab-btn" data-tab="tab-updates">
           <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-          <span>Versión</span>
+          <span>Acerca de</span>
         </button>
       </div>
 
       <!-- Pestaña 1: Cuentas y Redes -->
       <div class="tab-content" id="tab-accounts">
+        <header class="section-heading"><h1>Canales</h1><p>Elige las plataformas que quieres reunir en tu chat.</p></header>
         <!-- TikTok -->
         <div class="platform-card" id="card-tiktok" style="--card-accent: var(--tiktok);">
           <div class="platform-main-row">
@@ -126,16 +129,16 @@
               <span class="logo" id="logo-tiktok"></span>
               <span class="platform-name">TikTok Live</span>
             </div>
-            <input type="checkbox" class="check" id="check-tiktok" />
+            <input type="checkbox" class="check" id="check-tiktok" aria-label="Activar TikTok" />
           </div>
           <div class="platform-input-row">
-            <input type="text" id="input-tiktok" placeholder="@usuario de TikTok en vivo" disabled />
+            <input type="text" id="input-tiktok" aria-label="Canal de tiktok" placeholder="@usuario" disabled />
           </div>
           <div class="sub-config hidden" id="sub-tiktok">
-            <input type="text" id="input-tiktok-key" placeholder="Pega tu clave API gratuita de tik.tools aquí" />
+            <input type="password" id="input-tiktok-key" aria-label="Clave de tik.tools" placeholder="Clave de tik.tools" />
             <a href="https://tik.tools/login" target="_blank" class="link-hint">
               <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              Obtener clave gratis en tik.tools (Entrar con Google)
+              Obtener clave en tik.tools
             </a>
           </div>
         </div>
@@ -147,17 +150,17 @@
               <span class="logo" id="logo-twitch"></span>
               <span class="platform-name">Twitch</span>
             </div>
-            <input type="checkbox" class="check" id="check-twitch" />
+            <input type="checkbox" class="check" id="check-twitch" aria-label="Activar Twitch" />
           </div>
           <div class="platform-input-row">
-            <input type="text" id="input-twitch" placeholder="canal de Twitch (ej: ibai)" disabled />
+            <input type="text" id="input-twitch" aria-label="Canal de twitch" placeholder="Nombre del canal" disabled />
           </div>
           <div class="sub-config hidden" id="sub-twitch">
-            <input type="text" id="input-twitch-client-id" placeholder="Client ID (opcional para avatares)" />
-            <input type="text" id="input-twitch-client-secret" placeholder="Client Secret (opcional)" />
+            <input type="text" id="input-twitch-client-id" aria-label="Client ID de Twitch" placeholder="Client ID (opcional para avatares)" />
+            <input type="password" id="input-twitch-client-secret" aria-label="Client Secret de Twitch" placeholder="Client Secret (opcional)" />
             <a href="https://dev.twitch.tv/console/apps/create" target="_blank" class="link-hint">
               <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              Crear app gratis en Twitch Developer Portal
+              Obtener credenciales de Twitch
             </a>
           </div>
         </div>
@@ -169,10 +172,10 @@
               <span class="logo" id="logo-kick"></span>
               <span class="platform-name">Kick</span>
             </div>
-            <input type="checkbox" class="check" id="check-kick" />
+            <input type="checkbox" class="check" id="check-kick" aria-label="Activar Kick" />
           </div>
           <div class="platform-input-row">
-            <input type="text" id="input-kick" placeholder="canal de Kick (ej: xqc)" disabled />
+            <input type="text" id="input-kick" aria-label="Canal de kick" placeholder="Nombre del canal" disabled />
           </div>
         </div>
 
@@ -183,10 +186,10 @@
               <span class="logo" id="logo-youtube"></span>
               <span class="platform-name">YouTube Live</span>
             </div>
-            <input type="checkbox" class="check" id="check-youtube" />
+            <input type="checkbox" class="check" id="check-youtube" aria-label="Activar YouTube" />
           </div>
           <div class="platform-input-row">
-            <input type="text" id="input-youtube" placeholder="@canal o URL del directo en YouTube" disabled />
+            <input type="text" id="input-youtube" aria-label="Canal de youtube" placeholder="@canal o enlace del directo" disabled />
           </div>
         </div>
 
@@ -194,11 +197,11 @@
         <div class="config-group obs-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-            <span>OBS Studio & Streamlabs Browser Source</span>
+            <span>Chat en OBS y Streamlabs</span>
           </div>
           <div class="obs-copy-row">
             <div class="obs-input-wrapper">
-              <input type="text" id="obs-url-input" value="http://localhost:3750" readonly />
+              <input type="text" id="obs-url-input" aria-label="Enlace para OBS" value="http://localhost:3750" readonly />
             </div>
             <button type="button" class="btn-copy-obs" id="btn-copy-obs">
               <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
@@ -213,10 +216,11 @@
 
       <!-- Pestaña 2: Clips & Google Drive -->
       <div class="tab-content hidden" id="tab-clips">
+        <header class="section-heading"><h1>Clips</h1><p>Configura la captura y consulta tus grabaciones.</p></header>
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-            <span>Grabador de Clips en Directo</span>
+            <span>Captura de clips</span>
           </div>
           <label class="opt-toggle">
             <div class="toggle-text">
@@ -230,32 +234,32 @@
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            <span>Duración del Clip</span>
+            <span>Duración</span>
           </div>
           <div class="theme-selector-grid">
-            <button type="button" class="theme-pill-btn active" data-clip-duration="30">⏱ 30 Segundos</button>
-            <button type="button" class="theme-pill-btn" data-clip-duration="45">⏱ 45 Segundos</button>
-            <button type="button" class="theme-pill-btn" data-clip-duration="60">⏱ 60 Segundos</button>
-            <button type="button" class="theme-pill-btn" data-clip-duration="15">⏱ 15 Segundos</button>
+            <button type="button" class="theme-pill-btn active" data-clip-duration="30">30 segundos</button>
+            <button type="button" class="theme-pill-btn" data-clip-duration="45">45 segundos</button>
+            <button type="button" class="theme-pill-btn" data-clip-duration="60">60 segundos</button>
+            <button type="button" class="theme-pill-btn" data-clip-duration="15">15 segundos</button>
           </div>
         </div>
 
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-            <span>Almacenamiento Cloud Google Drive</span>
+            <span>Google Drive</span>
           </div>
           <div class="helper-text">
-            Los videos capturados se sincronizan al instante en tu carpeta pública de Google Drive:
+            Abre la carpeta de destino para consultar tus clips.
           </div>
           <div class="button-row">
             <button type="button" class="btn-check-updates" id="btn-open-gdrive">
               <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              Abrir Carpeta en Google Drive
+              Abrir Google Drive
             </button>
-            <button type="button" class="btn-test" id="btn-open-local-clips" title="Ver clips guardados en esta PC">
+            <button type="button" class="btn-test" id="btn-open-local-clips" aria-label="Ver clips guardados en esta PC" title="Ver clips guardados en esta PC">
               <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-              PC Local
+              Carpeta local
             </button>
           </div>
         </div>
@@ -263,11 +267,11 @@
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            <span>Prueba de Grabación</span>
+            <span>Comprobar captura</span>
           </div>
           <button type="button" class="btn-primary" id="btn-test-clip">
             <svg class="icon-inline" viewBox="0 0 24 24"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
-            Generar Clip de Prueba Ahora
+            Crear clip de prueba
           </button>
           <div id="clip-status-text" class="status-helper-text"></div>
         </div>
@@ -275,14 +279,15 @@
 
       <!-- Pestaña 3: Voz y Audio (TTS) -->
       <div class="tab-content hidden" id="tab-voice">
+        <header class="section-heading"><h1>Voz y sonidos</h1><p>Escucha el chat mientras sigues con tu transmisión.</p></header>
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
-            <span>Lectura de Chat por Voz (TTS)</span>
+            <span>Lectura de mensajes</span>
           </div>
           <label class="opt-toggle">
             <div class="toggle-text">
-              <span class="toggle-title">Activar síntesis de voz</span>
+              <span class="toggle-title">Leer mensajes en voz alta</span>
               <span class="toggle-desc">Escucha los mensajes del chat leídos en voz alta mientras juegas</span>
             </div>
             <input type="checkbox" id="opt-tts" />
@@ -295,10 +300,10 @@
             <span>Voz de Windows</span>
           </div>
           <div class="select-with-btn">
-            <select class="tts-select" id="tts-voice-select">
+            <select class="tts-select" id="tts-voice-select" aria-label="Voz de Windows">
               <option value="">Cargando voces de Windows…</option>
             </select>
-            <button type="button" class="btn-test" id="btn-test-voice" title="Escuchar muestra">
+            <button type="button" class="btn-test" id="btn-test-voice" aria-label="Escuchar muestra" title="Escuchar muestra">
               <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               <span>Probar</span>
             </button>
@@ -329,7 +334,7 @@
 
           <div class="config-group-title" style="margin-top: 6px;">
             <svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
-            <span>Filtros y Fluidez</span>
+            <span>Opciones de lectura</span>
           </div>
           <label class="opt-toggle">
             <div class="toggle-text">
@@ -351,7 +356,7 @@
               <span>Volumen de la voz</span>
               <span id="tts-vol-val" class="slider-badge">85%</span>
             </div>
-            <input type="range" id="tts-volume-slider" min="10" max="100" value="85" />
+            <input type="range" id="tts-volume-slider" aria-label="Volumen de la voz" min="10" max="100" value="85" />
           </div>
 
           <div class="slider-row">
@@ -359,19 +364,19 @@
               <span>Velocidad de habla</span>
               <span id="tts-rate-val" class="slider-badge">1.05x</span>
             </div>
-            <input type="range" id="tts-rate-slider" min="70" max="160" value="105" />
+            <input type="range" id="tts-rate-slider" aria-label="Velocidad de habla" min="70" max="160" value="105" />
           </div>
         </div>
 
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <span>Efectos de Sonido</span>
+            <span>Sonidos</span>
           </div>
           <label class="opt-toggle">
             <div class="toggle-text">
-              <span class="toggle-title">Campana de nuevos seguidores</span>
-              <span class="toggle-desc">Sonido melódico instantáneo para follows y regalos</span>
+              <span class="toggle-title">Sonido de nuevos seguidores</span>
+              <span class="toggle-desc">Reproduce un aviso al recibir seguidores y regalos</span>
             </div>
             <input type="checkbox" id="opt-sound-alerts" checked />
           </label>
@@ -380,64 +385,65 @@
 
       <!-- Pestaña 4: Apariencia y Temas (Aspecto) -->
       <div class="tab-content hidden" id="tab-appearance">
+        <header class="section-heading"><h1>Apariencia</h1><p>Ajusta la lectura y el fondo de tu chat.</p></header>
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
-            <span>Tipografía del Chat</span>
+            <span>Tipografía del chat</span>
           </div>
           <div class="font-selector-grid">
-            <button type="button" class="font-pill-btn active" data-font="outfit">Outfit (Moderna)</button>
-            <button type="button" class="font-pill-btn font-preview-classic" data-font="classic">Inter (Estándar)</button>
-            <button type="button" class="font-pill-btn font-preview-minecraft" data-font="minecraft">Pixel (Retro 8-Bit)</button>
-            <button type="button" class="font-pill-btn font-preview-kawaii" data-font="kawaii">Fredoka (Redonda)</button>
+            <button type="button" class="font-pill-btn active" data-font="outfit">Outfit</button>
+            <button type="button" class="font-pill-btn font-preview-classic" data-font="classic">Sistema</button>
+            <button type="button" class="font-pill-btn font-preview-minecraft" data-font="minecraft">Monoespaciada</button>
+            <button type="button" class="font-pill-btn font-preview-kawaii" data-font="kawaii">Fredoka</button>
           </div>
         </div>
 
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24"/><path d="m14.83 9.17 4.24-4.24"/><path d="m14.83 14.83 4.24 4.24"/><path d="m9.17 14.83-4.24 4.24"/></svg>
-            <span>Tema Visual Glass</span>
+            <span>Fondo</span>
           </div>
           <div class="theme-selector-grid">
-            <button type="button" class="theme-pill-btn active" data-theme="obsidian">Obsidian Glass</button>
-            <button type="button" class="theme-pill-btn" data-theme="matte">Negro Mate</button>
-            <button type="button" class="theme-pill-btn" data-theme="contrast">Alto Contraste</button>
-            <button type="button" class="theme-pill-btn" data-theme="clear">Ultra Transparente</button>
+            <button type="button" class="theme-pill-btn active" data-theme="obsidian">Carbón</button>
+            <button type="button" class="theme-pill-btn" data-theme="matte">Gris sólido</button>
+            <button type="button" class="theme-pill-btn" data-theme="contrast">Alto contraste</button>
+            <button type="button" class="theme-pill-btn" data-theme="clear">Transparente</button>
           </div>
         </div>
 
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/></svg>
-            <span>Transparencia & Vidrio</span>
+            <span>Transparencia</span>
           </div>
           <div class="slider-row">
             <div class="slider-header">
               <span>Opacidad del fondo</span>
               <span id="opacity-val" class="slider-badge">78%</span>
             </div>
-            <input type="range" id="opacity-slider" min="10" max="95" value="78" />
+            <input type="range" id="opacity-slider" aria-label="Opacidad del fondo" min="10" max="95" value="78" />
           </div>
         </div>
 
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><line x1="21" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
-            <span>Dimensiones del Chat</span>
+            <span>Lectura del chat</span>
           </div>
           <div class="slider-row">
             <div class="slider-header">
               <span>Tamaño de fuente</span>
               <span id="font-size-val" class="slider-badge">13.5px</span>
             </div>
-            <input type="range" id="font-size-slider" min="10" max="22" step="0.5" value="13.5" />
+            <input type="range" id="font-size-slider" aria-label="Tamaño de fuente" min="10" max="22" step="0.5" value="13.5" />
           </div>
           <div class="slider-row" style="margin-top: 6px;">
             <div class="slider-header">
               <span>Espacio entre mensajes</span>
               <span id="msg-spacing-val" class="slider-badge">6px</span>
             </div>
-            <input type="range" id="msg-spacing-slider" min="1" max="20" step="1" value="6" />
+            <input type="range" id="msg-spacing-slider" aria-label="Espacio entre mensajes" min="1" max="20" step="1" value="6" />
           </div>
         </div>
 
@@ -472,47 +478,69 @@
 
       <!-- Pestaña 5: Novedades y Notificaciones -->
       <div class="tab-content hidden" id="tab-updates">
+        <header class="section-heading"><h1>Acerca de MultiChat</h1><p>Versión instalada y actualizaciones.</p></header>
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-            <span>Estado y Versión</span>
+            <span>Versión instalada</span>
           </div>
           <div class="version-banner">
             <div>
               <div style="font-size:13px; font-weight:800; color:#fff;">MultiChat</div>
-              <div id="app-version-label" class="badge-version-pill">v2.4.2</div>
+              <div id="app-version-label" class="badge-version-pill">v2.6.1</div>
             </div>
             <button type="button" class="btn-check-updates" id="btn-check-updates">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-              Buscar Actualizaciones
+              Buscar actualizaciones
             </button>
           </div>
           <div id="update-status-msg" class="helper-text" style="margin-top: 6px;">
-            El programa se sincroniza de forma segura y automática con GitHub Releases.
+            Las actualizaciones se consultan en GitHub.
           </div>
         </div>
 
         <div class="config-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-            <span>Historial de Versiones</span>
+            <span>Cambios de la interfaz</span>
           </div>
-          <div class="notifications-log-box" id="notifications-log">
-            <b>v2.4.2 — Interfaz Limpia & Logo Oficial:</b><br>
-            • 🎨 Logotipo oficial MultiChat con icono de diálogo 'M' y distintivos de redes<br>
-            • 🖤 Sistema de 3 colores: Bordes negros (#000000), Negro Glass translúcido y Blanco para interactuar<br>
-            • 🟩🟪🟥🔴 Color auténtico por red al pasar el cursor (Kick verde, Twitch morado, TikTok rosa, YouTube rojo)<br>
-            • 🎬 Captura de clips rápida y directa en Google Drive y local<br>
-            • ⚡ Diseño funcional, limpio y sin elementos innecesarios
-          </div>
+          <div class="notifications-log-box" id="notifications-log">Navegación lateral y ajustes organizados por sección.<br>Mensajes con mayor legibilidad y distintivos discretos por plataforma.<br>Controles de conexión siempre visibles.</div>
         </div>
+        <details class="shortcut-help"><summary>Atajos de teclado</summary><dl><dt><kbd>Ctrl + Alt + T</kbd></dt><dd>Pasar clics al juego</dd><dt><kbd>Ctrl + Alt + ↑ ↓</kbd></dt><dd>Ajustar opacidad</dd><dt><kbd>Ctrl + Alt + ← →</kbd></dt><dd>Mover la ventana</dd></dl></details>
       </div>
 
+      <section class="tab-content hidden" id="tab-music">
+        <header class="section-heading"><h1>Música por puntos</h1><p>Conecta tu canal y Spotify. Tu comunidad pide canciones por 500 puntos.</p></header>
+        <p id="music-status" class="helper-text" role="status">Conecta tus cuentas para empezar.</p>
+        <div class="config-group music-connect-step">
+          <div class="music-step-heading"><span class="music-step-number">1</span><div><h2>Conecta Twitch</h2><span id="music-twitch-status">Sin conectar</span></div></div>
+          <p class="helper-text">Cada creador autoriza su propia cuenta. No necesitas crear aplicaciones ni pegar claves.</p>
+          <div class="button-row"><button type="button" class="btn-check-updates" id="music-login">Conectar Twitch</button></div>
+          <div id="music-authorization" class="hidden music-approval"><p>Confirma la conexión en la página de Twitch que se abrió. Si te pide un código:</p><strong id="music-user-code"></strong><div class="button-row"><button type="button" class="btn-test" id="music-copy-auth-code">Copiar código</button><button type="button" class="btn-test" id="music-open-auth">Abrir Twitch</button><button type="button" class="btn-test" id="music-cancel-login">Cancelar</button></div><p>El dueño del canal también puede autorizar desde su teléfono en twitch.tv/activate.</p></div>
+          <p id="music-points-notice" class="helper-text hidden">Los canjes oficiales requieren un canal Afiliado o Partner. Puedes probar Spotify aunque tu cuenta no tenga puntos.</p>
+        </div>
+        <div class="config-group music-connect-step">
+          <div class="music-step-heading"><span class="music-step-number">2</span><div><h2>Vincula Spotify</h2><span id="music-browser-status">Sin vincular</span></div></div>
+          <p class="helper-text">Abre Spotify en Brave y pulsa Conectar Spotify en la extensión de MultiChat.</p>
+          <details id="music-install-help" class="music-help"><summary>Instalar la extensión por primera vez</summary><p class="helper-text">Pulsa Abrir carpeta. En brave://extensions activa Modo de desarrollador, pulsa Cargar descomprimida y elige esa carpeta. Después abre Spotify y pulsa el icono de MultiChat.</p><div class="button-row"><button type="button" class="btn-test" id="music-open-extension">Abrir carpeta de extensión</button></div></details>
+          <div id="music-browser-pairing" class="hidden music-approval"><p>La extensión solicita conectarse. Comprueba que muestra el mismo número:</p><strong id="music-browser-code"></strong><div class="button-row"><button type="button" class="btn-check-updates" id="music-approve-browser">Vincular Spotify</button></div></div>
+        </div>
+        <div class="config-group music-connect-step">
+          <div class="music-step-heading"><span class="music-step-number">3</span><div><h2>Activa los pedidos</h2><span>Nombre de canción y artista</span></div></div>
+          <label class="music-cost-label" for="music-cost">Puntos por canción</label><input id="music-cost" type="number" min="1" max="1000000" value="500">
+          <div class="button-row"><button type="button" class="btn-check-updates" id="music-create-reward">Crear recompensa</button></div>
+          <label class="opt-toggle"><span class="toggle-text"><span class="toggle-title">Recibir canjes</span><span class="toggle-desc">Hasta 30 pedidos en cola y 3 por espectador.</span></span><input type="checkbox" id="music-enabled"></label>
+        </div>
+        <div class="config-group"><div class="config-group-title">Prueba sin gastar puntos</div><label class="sr-only" for="music-test-query">Canción y artista</label><input type="text" id="music-test-query" placeholder="La flaca - Jarabe de Palo" maxlength="160"><div class="button-row"><button type="button" class="btn-test" id="music-test">Probar canción</button><button type="button" class="btn-test" id="music-pause">Pausar cola</button></div><p class="helper-text">Reproduce algo manualmente una vez en Spotify. La conexión con cuentas gratuitas está en pruebas y depende de los controles que permita Spotify.</p></div>
+        <div class="config-group"><div class="config-group-title">Pedido actual</div><div id="music-current" class="music-current">Sin pedidos en reproducción.</div><div class="button-row"><button type="button" class="btn-test" id="music-retry">Reintentar</button><button type="button" class="btn-test" id="music-skip">Omitir pedido</button></div></div>
+        <div class="config-group"><div class="config-group-title">Siguientes canciones <span id="music-queue-count">0</span></div><p class="helper-text">La siguiente canción empieza automáticamente al terminar la actual. Si un pedido necesita atención, resuélvelo o pulsa Siguiente pedido para continuar.</p><ol id="music-queue" class="music-queue"></ol></div>
+      </section>
       <!-- Botón de Conexión en Footer -->
       <div class="actions-footer">
+        <span class="save-note">Los ajustes se guardan al cambiarlos.</span>
         <button id="connect-btn" class="btn-primary">
           <svg class="icon-inline" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-          <span>Guardar y Conectar</span>
+          <span>Guardar y conectar</span>
         </button>
       </div>
     </div>
@@ -529,12 +557,6 @@
     <!-- Flujo de Mensajes del Chat -->
     <div id="chat-container"></div>
 
-    <!-- Barra de Atajos -->
-    <div id="hint-bar">
-      <span class="hotkey-pill">Ctrl+Alt+T</span> Clic-a-través &nbsp;·&nbsp;
-      <span class="hotkey-pill">Ctrl+Alt+↑↓</span> Opacidad &nbsp;·&nbsp;
-      <span class="hotkey-pill">Ctrl+Alt+←→</span> Mover
-    </div>
   </div>
 
   <!-- Scripts modulares -->
@@ -542,6 +564,8 @@
   <script src="src/storage.js"></script>
   <script src="src/tts.js"></script>
   <script src="src/alerts.js"></script>
+  <script src="src/chat-presence.js"></script>
   <script src="src/renderer.js"></script>
+  <script src="src/music-ui.js"></script>
 </body>
 </html>

@@ -1,0 +1,32 @@
+{
+  "manifest_version": 3,
+  "name": "MultiChat · Música en Brave",
+  "version": "2.6.1",
+  "description": "Recibe pedidos de canciones desde tu MultiChat y usa los controles de tu Spotify web.",
+  "minimum_chrome_version": "116",
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "host_permissions": [
+    "https://open.spotify.com/*",
+    "http://127.0.0.1:3752/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://open.spotify.com/*"
+      ],
+      "js": [
+        "spotify.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}

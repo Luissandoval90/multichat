@@ -54,6 +54,7 @@
 
   <script src="src/audio.js"></script>
   <script src="src/alerts.js"></script>
+  <script src="src/chat-presence.js"></script>
   <script>
     const chatContainer = document.getElementById('chat-container');
     const pinnedContainer = document.getElementById('pinned-message-container');
@@ -104,7 +105,7 @@
     function renderChatMessage(data) {
       const div = document.createElement('div');
       div.className = `msg platform-${data.platform}`;
-      div.innerHTML = `${avatarHtml(data)}<span class="body">${platformTag(data.platform)}<span class="nick">${escapeHtml(data.nickname || data.userId)}</span>: ${escapeHtml(data.comment)}</span>`;
+      div.innerHTML = `${avatarHtml(data)}<span class="body"><span class="message-header">${platformTag(data.platform)}<span class="nick">${escapeHtml(data.nickname || data.userId)}</span></span><span class="message-text">${escapeHtml(data.comment)}</span></span>`;
       addMessageNode(div);
     }
 
@@ -132,10 +133,7 @@
     }
 
     function renderJoinMessage(data) {
-      const div = document.createElement('div');
-      div.className = `msg join platform-${data.platform}`;
-      div.innerHTML = `<span class="body">${platformTag(data.platform)}<span class="nick">${escapeHtml(data.nickname || data.userId)}</span> <span class="join-text">se unió</span></span>`;
-      addMessageNode(div);
+      window.ChatPresence.renderJoin(data, chatContainer, platformTag, addMessageNode);
     }
 
     function renderClipMessage(data) {

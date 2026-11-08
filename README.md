@@ -1,4 +1,19 @@
-# Multi Chat Overlay Pro
+# MultiChat
+
+Versión 2.6.1: detección de canciones ya en reproducción, enlaces de álbum y transición automática de la cola. Para actualizar la extensión existente, recárgala desde brave://extensions y recarga también Spotify.
+
+Versión 2.6.0: conexión individual de Twitch desde un botón, sin claves para el usuario; enlace de Brave con aprobación dentro de MultiChat; aviso claro para canales sin puntos. La preparación del distribuidor se describe en [DISTRIBUCION.md](DISTRIBUCION.md) y el uso en [MUSICA.md](MUSICA.md).
+
+Versión 2.5.0: pedidos de canciones por nombre con una recompensa de Twitch de 500 puntos y extensión local para Spotify web en Brave. La reproducción con cuenta gratuita es experimental y requiere probarla en tu sesión. Consulta [MUSICA.md](MUSICA.md) para vincular las cuentas y la extensión.
+
+Versión 2.4.3: chat sin barra inferior de atajos, entradas consecutivas agrupadas por plataforma durante 15 segundos y nombres separados del texto. Los atajos se pueden consultar en Acerca de.
+
+La interfaz de escritorio usa navegación lateral, controles en escala de grises y mensajes con distintivos discretos. Los ajustes de apariencia, voz, clips y canales conservan sus funciones.
+
+Para abrir el proyecto: `npm start`. Para comprobar la interfaz sin conectar cuentas ni grabar la pantalla: `npm test`. Las capturas de revisión se generan con `npm test -- --screenshots`.
+
+La compilación de esta revisión se encuentra en `dist/2.6.1`. Para volver a generarla sin publicar: `npm run dist -- --publish never --config.directories.output=dist/2.6.1`.
+
 
 App de escritorio (Electron) para streamers y creadores de contenido que unifica en **una sola ventana transparente siempre visible** el chat y eventos en vivo de **TikTok, Twitch, Kick y YouTube** simultáneamente.
 
