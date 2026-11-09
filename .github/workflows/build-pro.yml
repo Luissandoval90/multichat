@@ -30,6 +30,19 @@ jobs:
       - name: Test application and browser extension
         run: npm run prepare:piper && npm test -- --screenshots
 
+      - name: Prepare a single GitHub release before parallel uploads
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
+          $tag = "v$version"
+          gh release view $tag --repo $env:GITHUB_REPOSITORY *> $null
+          if ($LASTEXITCODE -ne 0) {
+            gh release create $tag --repo $env:GITHUB_REPOSITORY --draft --title "MultiChat $version" --generate-notes --target $env:GITHUB_SHA
+          }
+          if ($LASTEXITCODE -ne 0) { throw 'Unable to prepare the GitHub release' }
+
       - name: Build and Publish with Electron-Builder
         run: npx electron-builder --win --publish always
         env:
