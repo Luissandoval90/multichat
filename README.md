@@ -1,5 +1,23 @@
 # MultiChat
 
+Versión 3.1.0: vista compacta sin barra de búsqueda, filtros ni controles de pausa. Cabecera con el logo original y ajustes, minimizar y cerrar. Los estados de conexión se muestran en avisos de 4,5 segundos; un directo terminado o una conexión perdida produce una alerta sonora una sola vez por cambio de estado, respetando los ajustes de sonido.
+
+Insignias de roles e imágenes originales recibidas por cada conexión; las insignias globales de creador, moderador y VIP de Twitch se incluyen localmente. No se consulta un catálogo de insignias por mensaje y se eliminan las búsquedas de avatares por usuario de Twitch. Los regalos conservan nombre, imagen, sticker e importe originales cuando el evento los entrega; no se inventan imágenes ni valores ni se activa el catálogo de pago de Euler.
+
+Twitch anónimo confirma el acceso al chat, que puede seguir conectado con el canal fuera de directo. Solo se anuncia «en vivo» cuando la plataforma confirma el estado (TikTok, YouTube y los datos de estado ya disponibles de Kick/Twitch). No se añaden consultas para averiguar ese estado. La conexión inicial y las reconexiones de TikTok siguen usando la firma de Euler; mostrar las imágenes recibidas no hace consultas al catálogo de Euler.
+
+Versión 3.0.0: actualiza Electron y las dependencias (0 avisos conocidos en npm audit durante esta revisión), endurece los mensajes y el acceso local de OBS, añade búsqueda con acentos, filtro por plataforma, pausa con contador, vuelta al directo y limpieza de vista. El historial visible, los avatares y las colas tienen límites. La captura de clips se detiene al desactivarla y evita duplicarse.
+
+Para abrir la revisión local: dist/3.1.0. Las pruebas incluyen chat, contenido malicioso, OBS, control de acceso IPC, restauración de ajustes, Piper, Spotify y Twitch. Se corrige que la inicialización pudiera sobrescribir ajustes del disco antes de cargarlos. npm audit revisa dependencias npm conocidas; no equivale a una garantía de ausencia de fallos.
+
+Versión 2.8.0: voz Piper Claude, español de México, incluida en la aplicación. Funciona sin internet, claves ni cuotas. En Voz, selecciona Claude y pulsa Probar; activa Leer mensajes para el chat. Se mantienen las voces de Windows, filtros por plataforma, volumen y velocidad. Consulta [PIPER.md](PIPER.md) para preparar y compilar el motor local.
+
+Versión 2.7.1: corrige la conexión con claves Community de Euler Stream. Se elimina la consulta opcional del catálogo extendido de regalos, que requiere Business; los eventos normales de regalos se mantienen. Verificado con una conexión real. Si Euler rechaza una consulta de pago, se muestra la causa y se detienen los reintentos.
+
+Versión 2.7.0: conexión de TikTok mediante Euler Stream, con mensajes, emotes, regalos, seguidores, entradas, compartidos y contadores de audiencia. En Canales, marca TikTok, escribe tu usuario y pega tu clave del [panel de Euler Stream](https://www.eulerstream.com/dashboard). Pulsa Guardar y Conectar. La clave anterior de tik.tools no sirve para Euler y no se reutiliza. Tus demás ajustes se conservan.
+
+Las reconexiones usan una espera progresiva; si el directo termina se vuelve a comprobar después de 30 segundos. Una clave rechazada requiere corregirla antes de reconectar. Los límites de solicitudes respetan el plazo de reintento comunicado por Euler. Esto no garantiza una conexión ininterrumpida: depende de TikTok y del proveedor. La comprobación con una cuenta y directo reales requiere introducir una clave válida en la aplicación.
+
 Versión 2.6.2: publicación con comando de pruebas compatible con Node 20 en Windows.
 
 Versión 2.6.1: detección de canciones ya en reproducción, enlaces de álbum y transición automática de la cola. Para actualizar la extensión existente, recárgala desde brave://extensions y recarga también Spotify.
@@ -14,7 +32,7 @@ La interfaz de escritorio usa navegación lateral, controles en escala de grises
 
 Para abrir el proyecto: `npm start`. Para comprobar la interfaz sin conectar cuentas ni grabar la pantalla: `npm test`. Las capturas de revisión se generan con `npm test -- --screenshots`.
 
-La compilación de esta revisión se encuentra en `dist/2.6.2`. Para volver a generarla sin publicar: `npm run dist -- --publish never --config.directories.output=dist/2.6.2`.
+La compilación de esta revisión se encuentra en `dist/3.1.0`. Para volver a generarla sin publicar: `npm run dist -- --publish never --config.directories.output=dist/3.1.0`.
 
 
 App de escritorio (Electron) para streamers y creadores de contenido que unifica en **una sola ventana transparente siempre visible** el chat y eventos en vivo de **TikTok, Twitch, Kick y YouTube** simultáneamente.
@@ -28,7 +46,7 @@ App de escritorio (Electron) para streamers y creadores de contenido que unifica
   - Muestra la foto de perfil (avatar), el nombre del seguidor y la insignia de la plataforma.
   - **Sonido de alerta (chime)** nítido y claro generado en tiempo real.
 - ⚡ **Auto-Conexión y Guardado Automático**:
-  - Guarda automáticamente tus canales, usuarios, claves de API (TikTool / Twitch) y preferencias.
+  - Guarda automáticamente tus canales, usuarios, clave de Euler Stream y preferencias.
   - Al abrir el programa, se conecta de inmediato a todas tus redes sin tener que reescribir nada.
 - 📺 **Multi-Plataforma 4 en 1**:
   - **TikTok Live**: Chat, emotes, regalos reales y eventos de follow.

@@ -1,6 +1,8 @@
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('overlayAPI', {
+  synthesizeSpeech: data => ipcRenderer.invoke('tts-synthesize', data),
+  cancelSpeech: () => ipcRenderer.send('tts-cancel'),
   getMusicState: () => ipcRenderer.invoke('music-get-state'),
   musicAction: (type, data) => ipcRenderer.invoke('music-action', type, data),
   openMusicExtension: () => ipcRenderer.invoke('music-open-extension'),

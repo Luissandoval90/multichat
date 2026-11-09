@@ -56,7 +56,7 @@ function connect(input, callbacks, options = {}) {
       liveChat.on('start', (liveId) => {
         console.log('[YouTube] Conectado exitosamente al directo:', liveId);
         reconnectAttempt = 0;
-        callbacks.onStatus({ connected: true });
+        callbacks.onStatus({ connected: true, live: true });
       });
 
       liveChat.on('chat', (chatItem) => {
@@ -93,23 +93,28 @@ function connect(input, callbacks, options = {}) {
             userId: author.channelId || nickname,
             nickname: nickname,
             avatarUrl: avatarUrl,
-            giftName: `SuperChat ${chatItem.superchat.amount}`,
-            giftImageUrl: null,
+            giftName: chatItem.superchat.sticker ? 'Super Sticker' : 'Super Chat',
+            giftImageUrl: chatItem.superchat.sticker?.url || null,
+            amount: chatItem.superchat.amount,
             repeatCount: 1,
             comment: comment,
           });
+          return;
         }
 
         callbacks.onChat({
           platform: 'youtube',
+          messageId: chatItem.id,
           userId: author.channelId || nickname,
           nickname: nickname,
           comment: comment,
           avatarUrl: avatarUrl,
           emotes: emotes,
-          isOwner: author.isOwner,
-          isModerator: author.isModerator,
-          isVerified: author.isVerified,
+          isOwner: chatItem.isOwner,
+          isModerator: chatItem.isModerator,
+          isVerified: chatItem.isVerified,
+          isMembership: chatItem.isMembership,
+          badges: author.badge?.thumbnail?.url ? [{ imageUrl: author.badge.thumbnail.url, label: author.badge.label }] : [],
         });
       });
 

@@ -18,14 +18,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
         run: npm ci
 
+      - name: Check known dependency vulnerabilities
+        run: npm audit --audit-level=moderate
+
       - name: Test application and browser extension
-        run: npm test -- --screenshots
+        run: npm run prepare:piper && npm test -- --screenshots
 
       - name: Build and Publish with Electron-Builder
         run: npx electron-builder --win --publish always
@@ -37,7 +40,7 @@ jobs:
         shell: pwsh
         run: |
           $version = (Get-Content package.json -Raw | ConvertFrom-Json).version
-          $items = @('main.js','preload.js','overlay.html','obs.html','multichat.png','styles','src','platforms','browser-extension','tests','package.json','package-lock.json','README.md','MUSICA.md','DISTRIBUCION.md','iniciar.bat')
+          $items = @('main.js','preload.js','overlay.html','obs.html','multichat.png','styles','assets','src','platforms','browser-extension','tests','scripts','package.json','package-lock.json','README.md','PIPER.md','MUSICA.md','DISTRIBUCION.md','iniciar.bat')
           Compress-Archive -Path $items -DestinationPath "MultiChat-v$version-source.zip" -Force
           Compress-Archive -Path 'browser-extension/*' -DestinationPath "MultiChat-Spotify-v$version.zip" -Force
 

@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain, session, safeStorage } = require('electron');
 const { MusicService } = require('../src/music/service');
+const { PiperService } = require('../src/piper');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
@@ -11,21 +12,44 @@ app.setPath('userData', profile);
 app.disableHardwareAcceleration();
 app.whenReady().then(async () => {
   const errors = [];
-  session.defaultSession.webRequest.onBeforeRequest({ urls: ['https://*/*', 'http://*/*'] }, (_, done) => done({ cancel: true }));
+  const connectionRequests = [];
+  ipcMain.on('connect-request', (_, requests) => connectionRequests.push(requests));
+  session.defaultSession.webRequest.onBeforeRequest({ urls: ['https://*/*', 'http://*/*', 'ws://*/*', 'wss://*/*'] }, (_, done) => done({ cancel: true }));
   session.defaultSession.setPermissionCheckHandler((_, permission) => permission !== 'display-capture');
   session.defaultSession.setPermissionRequestHandler((_, permission, done) => done(permission !== 'display-capture'));
   ipcMain.handle('load-config-file', () => null);
   ipcMain.handle('get-app-version', () => app.getVersion());
   ipcMain.handle('get-desktop-sources', () => []);
   const win = new BrowserWindow({ show: false, width: 430, height: 660, webPreferences: { preload: path.join(__dirname, '../preload.js'), contextIsolation: true, nodeIntegration: false, backgroundThrottling: false } });
-  win.webContents.on('console-message', (_, level, message) => { if (level === 3 && !message.includes('ERR_BLOCKED_BY_CLIENT')) errors.push(message); });
+  win.webContents.on('console-message', (_event, ...args) => { const details = args[0] && typeof args[0] === 'object' ? args[0] : { level: args[0], message: args[1] }; if ((details.level === 3 || details.level === 'error') && !details.message.includes('ERR_BLOCKED_BY_CLIENT')) errors.push(details.message); });
   const run = code => win.webContents.executeJavaScript(code);
+  const piper = new PiperService({ directory: path.join(__dirname, '../vendor/piper/piper') });
+  let synthesisStarted = false, synthesisFinished = false;
+  ipcMain.handle('tts-synthesize', async (_, data) => { synthesisStarted = true; const result = await piper.synthesize(data); synthesisFinished = true; return result; });
+  ipcMain.on('tts-cancel', () => piper.cancel());
   const music = new MusicService({ directory: profile, safeStorage, openExternal: () => { throw new Error('External login is disabled during tests'); }, onChange: state => win.webContents.send('music-state',state) });
   ipcMain.handle('music-get-state', () => music.state());
   ipcMain.handle('music-action', (_, type, data) => music.action(type, data));
   try {
     await win.loadFile(path.join(__dirname, '../overlay.html'));
     await run('window.AppStorage.loadAsyncConfig()');
+    assert.equal(await run(`Array.from(document.getElementById('tts-voice-select').options).some(option=>option.value === 'piper:es_MX-claude-high')`), true);
+    await run(`window.originalAudio = window.Audio; window.piperPlayback = false; window.Audio = function(src) { this.pause=()=>{}; this.play=async()=>{ window.piperPlayback = src.startsWith('data:audio/wav;base64,UklGR'); queueMicrotask(()=>this.onended?.()); }; }; document.getElementById('tts-voice-select').value='piper:es_MX-claude-high'; document.getElementById('tts-voice-select').dispatchEvent(new Event('change')); document.getElementById('btn-test-voice').click()`);
+    for (let attempt = 0; attempt < 180 && !await run('window.piperPlayback'); attempt++) await run('new Promise(r=>setTimeout(r,200))');
+    assert.equal(await run('window.piperPlayback'), true, JSON.stringify({ synthesisStarted, synthesisFinished, active: Boolean(piper.active), renderer: await run(`({status:document.getElementById('tts-status').textContent,voice:selectedVoiceURI,generation:speechGeneration,busy:piperBusy,queued:speechQueue.length})`) }));
+    await run('window.Audio = window.originalAudio; true');
+    console.log('PASS: Claude es-MX appears, saves and produces offline speech through preload');
+    await run('window.initialTestConfig = window.AppStorage.loadConfig()');
+    await run(`document.getElementById('input-tiktok-key').value = 'test-euler-key'`);
+    assert.equal(await run('gatherConfigFromUI().platforms.tiktok.eulerApiKey'), 'test-euler-key');
+    await run(`applyConfigToUI({platforms:{tiktok:{enabled:false,handle:'example',eulerApiKey:'restored-euler-key'}},options:{}})`);
+    assert.equal(await run(`document.getElementById('input-tiktok-key').value`), 'restored-euler-key');
+    assert.equal(await run(`document.querySelector('a[href="https://www.eulerstream.com/dashboard"]').textContent.includes('Euler Stream')`), true);
+    await run(`document.getElementById('check-tiktok').checked = true; document.getElementById('input-tiktok').value = 'example'; handleConnect()`);
+    await run('new Promise(r=>setTimeout(r,50))');
+    assert.equal(connectionRequests.at(-1)?.find(request => request.platform === 'tiktok')?.options?.eulerApiKey, 'restored-euler-key');
+    await run(`document.getElementById('check-tiktok').checked = false; document.getElementById('connect-btn').disabled = false; document.getElementById('setup-panel').classList.remove('hidden')`);
+    await run(`window.AppStorage.saveConfig(window.initialTestConfig); applyConfigToUI(window.initialTestConfig)`);
     await run(`document.querySelector('[data-theme="matte"]').click(); document.querySelector('[data-clip-duration="45"]').click();`);
     assert.equal(await run('gatherConfigFromUI().options.theme'), 'matte', 'Selecting clip duration must preserve the selected theme');
     await run(`setAppTheme('contrast')`);
@@ -89,6 +113,37 @@ app.whenReady().then(async () => {
     assert.equal(await run(`Math.abs(document.getElementById('chat-container').getBoundingClientRect().bottom - document.getElementById('app').getBoundingClientRect().bottom) < 3`), true, 'Chat must use the space previously occupied by the shortcut footer');
     await run(`document.getElementById('setup-panel').classList.remove('hidden')`);
     console.log('PASS: arrivals are grouped safely and the chat extends to the bottom');
+    assert.equal(await run(`!!document.getElementById('chat-toolbar')`), false, 'Chat toolbar must be removed');
+    assert.equal(await run(`document.querySelector('#titlebar img.brand-logo')?.getAttribute('src')`), 'multichat.png');
+    assert.equal(await run(`document.getElementById('titlebar').getBoundingClientRect().height <= 48`), true);
+    await run(`window.offlineSoundCount=0;window.savedConnectionSound=window.AudioAlerts.playConnectionLostSound;window.AudioAlerts.playConnectionLostSound=()=>window.offlineSoundCount++;true`);
+    win.webContents.send('platform-status', { platform: 'tiktok', connected: true, live: true });
+    await run('new Promise(r=>setTimeout(r,50))');
+    assert.equal(await run(`document.getElementById('connection-notices').textContent.includes('TikTok está en vivo')`), true);
+    assert.equal(await run(`document.getElementById('titlebar').textContent.includes('En vivo')`), false);
+    win.webContents.send('platform-status', { platform: 'tiktok', connected: false, live: false });
+    win.webContents.send('platform-status', { platform: 'tiktok', connected: false, live: false });
+    await run('new Promise(r=>setTimeout(r,50))');
+    assert.equal(await run('window.offlineSoundCount'), 1, 'Repeated retries must not repeat the offline sound');
+    await run('new Promise(r=>setTimeout(r,4700))');
+    assert.equal(await run(`document.querySelectorAll('.connection-toast').length`), 0, 'Connection notices must disappear');
+    await run('window.AudioAlerts.playConnectionLostSound=window.savedConnectionSound;true');
+    win.webContents.send('chat-message', { platform:'twitch', nickname:'Moderador', comment:'Mensaje de prueba', badges:{moderator:'1'} });
+    win.webContents.send('gift-message', { platform:'tiktok', nickname:'Usuario', giftName:'Lion' });
+    await run('new Promise(r=>setTimeout(r,80))');
+    assert.equal(await run(`document.querySelector('#chat-container img.native-badge')?.getAttribute('src')`), 'assets/badges/twitch-moderator.png');
+    assert.equal(await run(`document.querySelector('#chat-container .gift .gift-name-tag').textContent`), 'Lion');
+    assert.equal(await run(`document.querySelectorAll('#chat-container .gift .gift-icon,#chat-container .gift .diamond-badge').length`), 0, 'Do not invent a missing gift image or price');
+    const themeSurfaces=[];
+    for (const theme of ['obsidian','matte','contrast','clear']) { await run(`setAppTheme('${theme}')`); themeSurfaces.push(await run(`getComputedStyle(document.body).getPropertyValue('--chat-surface')`)); }
+    assert.equal(new Set(themeSurfaces).size, 4, 'Each theme must have a distinct message surface');
+    await run(`setAppTheme('obsidian')`);
+    await run(`document.getElementById('chat-container').replaceChildren()`);
+    assert.equal(await run(`document.getElementById('chat-container').children.length`), 0);
+    win.webContents.send('chat-message', { platform: 'tiktok', nickname: '<img src=x>', userId: 'security-check', comment: '<script>alert(1)</script>', avatarUrl: 'https://invalid.test/" onerror="window.chatInjected=true', emotes: [{ index: 0, url: 'https://invalid.test/" onerror="window.chatInjected=true', alt: '" onerror="window.chatInjected=true' }] });
+    await run('new Promise(r=>setTimeout(r,80))');
+    assert.equal(await run(`document.querySelectorAll('#chat-container [onerror],#chat-container script').length`), 0, 'Chat media and emotes must not inject event handlers or scripts');
+    await run(`document.getElementById('chat-container').replaceChildren()`);
     assert.deepEqual(errors, [], 'Renderer must load without JavaScript errors');
     if (process.argv.includes('--screenshots')) {
       const output = path.join(__dirname, '../output/playwright');
@@ -100,9 +155,10 @@ app.whenReady().then(async () => {
       await run('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))');
       fs.writeFileSync(path.join(output, 'music-430.png'), (await win.webContents.capturePage()).toPNG());
       await run(`document.getElementById('edit-btn').click()`);
-      win.webContents.send('chat-message', { platform: 'twitch', nickname: 'Andrea', userId: 'andrea', comment: 'Se escucha perfecto. ¡Buen directo!' });
+      fs.writeFileSync(path.join(output, 'chat-font.json'), await run(`JSON.stringify({body:getComputedStyle(document.body).fontFamily,chat:getComputedStyle(document.getElementById('chat-container')).fontFamily,fontSize:getComputedStyle(document.getElementById('chat-container')).fontSize,custom:getComputedStyle(document.body).getPropertyValue('--font-current'),size:getComputedStyle(document.body).getPropertyValue('--font-size')})`));
+      win.webContents.send('chat-message', { platform: 'twitch', nickname: 'Andrea', userId: 'andrea', comment: 'Se escucha perfecto. ¡Buen directo!', badges: {moderator:'1'} });
       win.webContents.send('chat-message', { platform: 'kick', nickname: 'Marcos', userId: 'marcos', comment: '¿A qué hora empieza la siguiente partida?' });
-      win.webContents.send('chat-message', { platform: 'youtube', nickname: 'Valeria', userId: 'valeria', comment: 'Saludos desde Lima' });
+      win.webContents.send('chat-message', { platform: 'youtube', nickname: 'Valeria', userId: 'valeria', comment: 'Saludos desde Lima', isOwner:true });
       await run('new Promise(r => setTimeout(r, 250))');
       assert.equal(await run(`document.querySelectorAll('#chat-container .msg').length`), 3);
       await run(`document.querySelector('#chat-container .pin-btn').click()`);
@@ -116,6 +172,12 @@ app.whenReady().then(async () => {
       await run('new Promise(r => setTimeout(r, 100))');
       await run('new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)))');
       fs.writeFileSync(path.join(output, 'chat-430.png'), (await win.webContents.capturePage()).toPNG());
+      for (const theme of ['obsidian','matte','contrast','clear']) {
+        await run(`setAppTheme('${theme}')`);
+        await run('new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)))');
+        fs.writeFileSync(path.join(output, `chat-${theme}.png`), (await win.webContents.capturePage()).toPNG());
+      }
+      await run(`setAppTheme('obsidian')`);
       for (const width of [360, 760]) {
         win.setSize(width, 760);
         await run(`document.getElementById('setup-panel').classList.remove('hidden'); document.querySelector('[data-tab="tab-accounts"]').click(); document.getElementById('tab-accounts').scrollTop = 0`);

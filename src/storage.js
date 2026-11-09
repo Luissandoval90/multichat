@@ -4,7 +4,7 @@ const STORAGE_KEY = 'multichat_overlay_config_v2';
 
 const DEFAULT_CONFIG = {
   platforms: {
-    tiktok: { enabled: false, handle: '', apiKey: '' },
+    tiktok: { enabled: false, handle: '', eulerApiKey: '' },
     twitch: { enabled: false, handle: '', clientId: '', clientSecret: '' },
     kick: { enabled: false, handle: '' },
     youtube: { enabled: false, handle: '' },
@@ -19,7 +19,7 @@ const DEFAULT_CONFIG = {
     theme: 'obsidian',
     fontFamily: 'classic',
     ttsEnabled: false,
-    ttsVoice: '',
+    ttsVoice: 'piper:es_MX-claude-high',
     ttsVolume: 0.85,
     ttsRate: 1.05,
     ttsIncludeNickname: true,
@@ -43,9 +43,10 @@ const DEFAULT_CONFIG = {
 
 function sanitizeConfig(parsed) {
   if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_CONFIG };
+  const { apiKey: legacyTikToolKey, ...tiktok } = parsed.platforms?.tiktok || {};
   return {
     platforms: {
-      tiktok: { ...DEFAULT_CONFIG.platforms.tiktok, ...(parsed.platforms?.tiktok || {}) },
+      tiktok: { ...DEFAULT_CONFIG.platforms.tiktok, ...tiktok },
       twitch: { ...DEFAULT_CONFIG.platforms.twitch, ...(parsed.platforms?.twitch || {}) },
       kick: { ...DEFAULT_CONFIG.platforms.kick, ...(parsed.platforms?.kick || {}) },
       youtube: { ...DEFAULT_CONFIG.platforms.youtube, ...(parsed.platforms?.youtube || {}) },

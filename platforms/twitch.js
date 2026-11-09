@@ -6,8 +6,6 @@ const tmi = require('tmi.js');
 const https = require('https');
 
 let cachedAppToken = null;
-const avatarCache = new Map();
-const pendingAvatarLookups = new Map();
 
 function httpsRequestJson(urlStr, { method = 'GET', headers = {}, body = null } = {}) {
   return new Promise((resolve, reject) => {
@@ -59,32 +57,6 @@ async function getAppAccessToken(clientId, clientSecret) {
   return cachedAppToken.token;
 }
 
-async function fetchAvatarUrl(login, clientId, clientSecret) {
-  const key = login.toLowerCase();
-  if (avatarCache.has(key)) return avatarCache.get(key);
-  if (pendingAvatarLookups.has(key)) return pendingAvatarLookups.get(key);
-
-  const lookup = (async () => {
-    try {
-      const token = await getAppAccessToken(clientId, clientSecret);
-      const data = await httpsRequestJson(`https://api.twitch.tv/helix/users?login=${encodeURIComponent(key)}`, {
-        headers: { 'Client-Id': clientId, 'Authorization': `Bearer ${token}` },
-      });
-      const url = data.data?.[0]?.profile_image_url || null;
-      avatarCache.set(key, url);
-      return url;
-    } catch {
-      avatarCache.set(key, null);
-      return null;
-    } finally {
-      pendingAvatarLookups.delete(key);
-    }
-  })();
-
-  pendingAvatarLookups.set(key, lookup);
-  return lookup;
-}
-
 function connect(channel, callbacks, options = {}) {
   const hasCredentials = !!(options.twitchClientId && options.twitchClientSecret);
   const cleanChannel = channel.toLowerCase().replace(/^#/, '');
@@ -99,6 +71,7 @@ function connect(channel, callbacks, options = {}) {
         headers: { 'Client-Id': options.twitchClientId, 'Authorization': `Bearer ${token}` },
       });
       const viewers = data?.data?.[0]?.viewer_count || 0;
+      callbacks.onStatus({ connected: true, live: Boolean(data?.data?.length) });
       if (callbacks.onViewers) {
         callbacks.onViewers({ platform: 'twitch', viewers });
       }
@@ -123,14 +96,7 @@ function connect(channel, callbacks, options = {}) {
     callbacks.onStatus({ connected: false, error: 'Twitch desconectado: ' + (reason || 'reintentando…') });
   });
 
-  function emitChatWithAvatar(username, payload) {
-    callbacks.onChat(payload);
-    if (!hasCredentials) return;
-
-    fetchAvatarUrl(username, options.twitchClientId, options.twitchClientSecret).then(avatarUrl => {
-      if (avatarUrl) callbacks.onChat({ ...payload, avatarUrl, _avatarUpdate: true });
-    });
-  }
+  function emitChatWithAvatar(_username, payload) { callbacks.onChat(payload); }
 
   client.on('message', (ch, tags, message, self) => {
     if (self) return;
@@ -152,6 +118,7 @@ function connect(channel, callbacks, options = {}) {
 
     emitChatWithAvatar(tags.username, {
       platform: 'twitch',
+      messageId: tags.id,
       userId: tags['user-id'] || tags.username,
       nickname: tags['display-name'] || tags.username,
       comment: message,

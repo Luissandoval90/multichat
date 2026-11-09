@@ -1,6 +1,7 @@
 // Keep bursts of arrivals readable in both the desktop overlay and OBS.
 window.ChatPresence = {
   renderJoin(data, container, platformTag, append) {
+    data = { ...data, platform: window.SafeContent.platform(data.platform) };
     const now = Date.now();
     const previous = container.lastElementChild;
     const canGroup = previous?.classList.contains('join') &&

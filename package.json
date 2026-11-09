@@ -1,14 +1,15 @@
 {
   "name": "multi-chat-overlay",
-  "version": "2.6.2",
+  "version": "3.1.0",
   "description": "Overlay profesional de chat en vivo con clips, alertas y sincronización OBS para TikTok, Twitch, Kick y YouTube",
   "main": "main.js",
   "author": "Luis Sandoval",
   "scripts": {
     "start": "electron .",
-    "dist": "electron-builder --win",
-    "release": "electron-builder --win --publish always",
-    "test": "node --test tests/music.test.cjs tests/music-bridge.test.cjs tests/music-service.test.cjs tests/music-twitch.test.cjs && electron tests/spotify-regression.cjs && electron tests/ui-smoke.cjs"
+    "prepare:piper": "node scripts/prepare-piper.cjs",
+    "dist": "npm run prepare:piper && electron-builder --win",
+    "release": "npm run prepare:piper && electron-builder --win --publish always",
+    "test": "node --test tests/platform-details.test.cjs tests/chat-presentation.test.cjs tests/safe-content.test.cjs tests/obs-server.test.cjs tests/ipc-security.test.cjs tests/capture-policy.test.cjs tests/chat-tools.test.cjs tests/piper.test.cjs tests/tts.test.cjs tests/tiktok.test.cjs tests/music.test.cjs tests/music-bridge.test.cjs tests/music-service.test.cjs tests/music-twitch.test.cjs && node tests/piper-runtime.cjs && electron tests/tiktok-runtime.cjs && electron tests/spotify-regression.cjs && electron tests/main-runtime.cjs && electron tests/ui-smoke.cjs"
   },
   "keywords": [
     "multichat",
@@ -22,8 +23,7 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "@tiktool/live": "2.12.1",
-    "electron-updater": "^6.8.9",
+    "electron-updater": "6.8.11",
     "tiktok-live-connector": "^2.4.3",
     "tiktok-live-recorder": "^1.0.4",
     "tmi.js": "1.8.5",
@@ -31,12 +31,11 @@
     "youtube-chat": "^2.2.0"
   },
   "devDependencies": {
-    "@noble/hashes": "1.7.1",
-    "electron": "33.4.11",
-    "electron-builder": "^25.1.8"
+    "electron": "45.2.3",
+    "electron-builder": "26.18.0"
   },
   "overrides": {
-    "@noble/hashes": "1.7.1"
+    "minimatch@>=7": "11.0.1"
   },
   "build": {
     "appId": "com.luissandoval.multichatoverlay",
@@ -57,6 +56,7 @@
       "obs.html",
       "multichat.png",
       "styles/**/*",
+      "assets/**/*",
       "src/**/*",
       "platforms/**/*",
       "package.json",
@@ -92,6 +92,10 @@
       "createStartMenuShortcut": true
     },
     "extraResources": [
+      {
+        "from": "vendor/piper/piper",
+        "to": "piper"
+      },
       {
         "from": "browser-extension",
         "to": "spotify-bridge"

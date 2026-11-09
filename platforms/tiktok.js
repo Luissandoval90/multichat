@@ -1,318 +1,152 @@
-// Conexión oficial al chat en vivo y eventos de TikTok usando @tiktool/live.
-// Expone: connect(username, callbacks, options) -> { disconnect() }
-
-const { TikTokLive } = require('@tiktool/live');
-
-const https = require('https');
-
-function fetchTtwid() {
-  return new Promise((resolve) => {
-    try {
-      const req = https.get('https://www.tiktok.com/live', {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
-        },
-        timeout: 4000,
-      }, (res) => {
-        const cookies = [res.headers['set-cookie'] || []].flat();
-        for (const sc of cookies) {
-          if (typeof sc === 'string' && sc.includes('ttwid=')) {
-            const match = sc.match(/ttwid=([^;]+)/);
-            if (match && match[1]) {
-              console.log('[TikTok] Cookie de sesión ttwid obtenida con éxito');
-              return resolve(match[1]);
-            }
-          }
-        }
-        resolve(null);
-      });
-      req.on('error', () => resolve(null));
-      req.on('timeout', () => { req.destroy(); resolve(null); });
-    } catch(e) {
-      resolve(null);
-    }
-  });
+// Euler Stream signs new TikTok LIVE connections.
+async function createEulerClient(handle, options) {
+  const sdk = await import('tiktok-live-connector');
+  sdk.SignConfig.cachedInstance = undefined;
+  return new sdk.TikTokLiveConnection(handle, options);
 }
-
-const MAX_RECONNECT_DELAY_MS = 60000;
-
-function parseTikTokError(err, username) {
-  const msg = (err && err.message) || String(err || '');
-  const clean = (username || '').replace(/^@/, '');
-  let friendlyMsg = msg;
-  let delay = null;
-
-  if (msg.includes('not currently live') || msg.includes('LIVE has ended') || msg.includes('offline') || msg.includes('Room not found')) {
-    friendlyMsg = `@${clean} no está en vivo ahora`;
-    delay = 30000; // Si no está en vivo, esperar 30s antes de reintentar
-  } else if (msg.includes('Failed to obtain session cookie')) {
-    friendlyMsg = 'Límite diario de TikTool alcanzado. Espera el reinicio';
-    delay = 60000;
-  } else if (msg.includes('Invalid API key') || msg.includes('Unauthorized') || msg.includes('401')) {
-    friendlyMsg = 'Clave de TikTool inválida. Revisa en Ajustes ⚙';
-    delay = 60000;
-  } else if (msg.includes('429') || msg.includes('rate limit')) {
-    friendlyMsg = 'Límite diario de TikTool alcanzado. Espera el reinicio';
-    delay = 60000;
-  }
-
-  return { friendlyMsg, delay };
+function imageUrl(image) {
+  if (typeof image === 'string') return image;
+  return image?.urlList?.[0] || image?.url?.[0] || image?.imageUrl || null;
 }
-
-function connect(username, callbacks, options = {}) {
-  let client = null;
-  let currentUsername = username.replace(/^@/, '').trim();
-  let reconnectTimer = null;
-  let reconnectAttempt = 0;
-  let stopped = false;
-
-  function scheduleReconnect(delayOverride = null) {
-    if (stopped || !currentUsername || reconnectTimer) return;
-    const delay = delayOverride || Math.min(3000 * Math.pow(1.5, reconnectAttempt), MAX_RECONNECT_DELAY_MS);
-    reconnectAttempt++;
-    reconnectTimer = setTimeout(() => {
-      reconnectTimer = null;
-      if (!stopped) start();
-    }, delay);
-  }
-
-  function emitFollow(user) {
-    if (!user) return;
-    console.log('[TikTok] ¡Nuevo seguidor!', user.nickname || user.uniqueId);
-    if (callbacks.onFollow) {
-      callbacks.onFollow({
-        platform: 'tiktok',
-        userId: user.uniqueId || user.id || 'tiktok_user',
-        nickname: user.nickname || user.uniqueId || 'Usuario de TikTok',
-        avatarUrl: user.profilePicture || user.avatarLargeUrl || null,
-      });
-    }
-  }
-
-  function handleLikeEvent(event) {
-    if (!event || !callbacks.onLike) return;
-    const total = Number(event.totalLikes) || Number(event.totalLikeCount) || Number(event.total) || 0;
-    const delta = Number(event.likeCount) || Number(event.count) || 1;
-
-    callbacks.onLike({
-      platform: 'tiktok',
-      userId: event.user?.uniqueId || event.user?.id,
-      nickname: event.user?.nickname || event.user?.uniqueId,
-      likeCount: delta,
-      totalLikes: total,
-    });
-  }
-
-  async function start() {
-    console.log('[TikTok] Iniciando conexión para usuario:', currentUsername);
-
-    const apiKey = (options.tiktoolApiKey || '').trim();
-
-    if (!apiKey) {
-      callbacks.onStatus({ 
-        connected: false, 
-        error: 'Requiere tu clave gratis de tik.tools en Ajustes ⚙' 
-      });
-      return;
-    }
-
-    if (client) {
-      try {
-        client.removeAllListeners();
-        client.disconnect();
-      } catch (e) {}
-    }
-
-    try {
-      const ttwid = await fetchTtwid();
-      const liveOptions = {
-        uniqueId: currentUsername,
-        apiKey: apiKey,
-        autoReconnect: false,
-      };
-      if (ttwid) {
-        liveOptions.sessionId = ttwid;
-      }
-
-      client = new TikTokLive(liveOptions);
-
-      client.on('connected', () => {
-        console.log('[TikTok] Conectado exitosamente. Room ID:', client.roomId);
-        reconnectAttempt = 0;
-        callbacks.onStatus({ connected: true });
-      });
-
-      client.on('disconnected', (code, reason) => {
-        if (stopped) return;
-        console.warn('[TikTok] Desconectado:', code, reason);
-        callbacks.onStatus({ connected: false, error: 'Desconectado, reintentando…' });
-        if (callbacks.onViewers) {
-          callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
-        }
-        scheduleReconnect();
-      });
-
-      client.on('error', (err) => {
-        console.error('[TikTok] ERROR:', err);
-        const { friendlyMsg, delay } = parseTikTokError(err, currentUsername);
-        callbacks.onStatus({ connected: false, error: friendlyMsg });
-        if (callbacks.onViewers) {
-          callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
-        }
-        scheduleReconnect(delay);
-      });
-
-      // Chat estándar
-      client.on('chat', (event) => {
-        callbacks.onChat({
-          platform: 'tiktok',
-          userId: event.user?.uniqueId || event.user?.id,
-          nickname: event.user?.nickname || event.user?.uniqueId,
-          comment: event.comment,
-          avatarUrl: event.user?.profilePicture || event.user?.avatarLargeUrl,
-          emotes: (event.emotes || []).map(e => ({
-            index: e.placeInComment,
-            url: e.imageUrl,
-          })),
-        });
-      });
-
-      // Chat solo con emotes
-      client.on('emoteChat', (event) => {
-        callbacks.onChat({
-          platform: 'tiktok',
-          userId: event.user?.uniqueId || event.user?.id,
-          nickname: event.user?.nickname || event.user?.uniqueId,
-          comment: '',
-          avatarUrl: event.user?.profilePicture || event.user?.avatarLargeUrl,
-          emotes: event.emoteUrl ? [{ index: 0, url: event.emoteUrl }] : [],
-        });
-      });
-
-      // Likes en tiempo real y contador total
-      client.on('like', (event) => {
-        handleLikeEvent(event);
-      });
-
-      client.on('event', (event) => {
-        if (event && event.type === 'like') {
-          handleLikeEvent(event);
-        }
-      });
-
-      // Espectadores en vivo (Viewer count continuo)
-      client.on('roomUserSeq', (event) => {
-        const count = event.viewerCount || event.totalViewers || 0;
-        if (callbacks.onViewers) {
-          callbacks.onViewers({
-            platform: 'tiktok',
-            viewers: count,
-          });
-        }
-      });
-
-      // Eventos sociales (Seguidores y Compartidos)
-      client.on('social', (event) => {
-        if (event.action === 'share') {
-          if (callbacks.onShare) {
-            callbacks.onShare({
-              platform: 'tiktok',
-              userId: event.user?.uniqueId || event.user?.id,
-              nickname: event.user?.nickname || event.user?.uniqueId,
-              avatarUrl: event.user?.profilePicture || event.user?.avatarLargeUrl || null,
-            });
-          }
-        } else if (event.action === 'follow' || !event.action) {
-          emitFollow(event.user);
-        }
-      });
-
-      // Usuario entra o sigue
-      client.on('member', (event) => {
-        if (event.action === 2) {
-          emitFollow(event.user);
-        } else if (event.action === 3 && callbacks.onShare) {
-          callbacks.onShare({
-            platform: 'tiktok',
-            userId: event.user?.uniqueId || event.user?.id,
-            nickname: event.user?.nickname || event.user?.uniqueId,
-          });
-        } else if (callbacks.onJoin) {
-          callbacks.onJoin({
-            platform: 'tiktok',
-            userId: event.user?.uniqueId || event.user?.id,
-            nickname: event.user?.nickname || event.user?.uniqueId,
-          });
-        }
-      });
-
-      // Follow directo
-      client.on('follow', (event) => {
-        emitFollow(event.user || event);
-      });
-
-      // Regalos con diamantes, imagen HD y cantidad de combo
-      client.on('gift', (event) => {
-        if (event.giftType !== 1 || event.repeatEnd) {
-          const imgUrl = event.giftImageUrl || 
-            event.giftPictureUrl || 
-            event.giftDetails?.giftImage?.urlList?.[0] || 
-            event.gift?.image?.urlList?.[0] || 
-            event.giftIconUrl || 
-            null;
-
-          const diamonds = event.diamondCount || 
-            event.giftDetails?.diamondCount || 
-            event.gift?.diamond_count || 
-            0;
-
-          callbacks.onGift({
-            platform: 'tiktok',
-            userId: event.user?.uniqueId || event.user?.id,
-            nickname: event.user?.nickname || event.user?.uniqueId,
-            avatarUrl: event.user?.profilePicture || event.user?.avatarLargeUrl,
-            giftName: event.giftName || event.describe || 'Regalo',
-            giftImageUrl: imgUrl,
-            diamondCount: diamonds,
-            repeatCount: event.repeatCount || 1,
-          });
-        }
-      });
-
-      client.connect().catch(err => {
-        console.error('[TikTok] connect() error:', err);
-        const { friendlyMsg, delay } = parseTikTokError(err, currentUsername);
-        callbacks.onStatus({ connected: false, error: friendlyMsg });
-        if (callbacks.onViewers) {
-          callbacks.onViewers({ platform: 'tiktok', viewers: 0 });
-        }
-        scheduleReconnect(delay);
-      });
-
-    } catch (err) {
-      console.error('[TikTok] Falló inicialización:', err);
-      callbacks.onStatus({ connected: false, error: 'TikTok: ' + (err.message || String(err)) });
-      scheduleReconnect();
-    }
-  }
-
-  start();
-
+function userFields(user = {}) {
+  const badges = [
+    ...(user.badgeList || []).map(badge => ({
+      imageUrl: imageUrl(badge.image?.image || badge.combine?.icon),
+      label: badge.combine?.str || badge.combine?.text?.defaultPattern || 'Insignia TikTok',
+      text: badge.combine?.str || '',
+    })),
+    ...(user.badgeImageList || []).map(image => ({ imageUrl: imageUrl(image), label: 'Insignia TikTok' })),
+  ].filter(badge => badge.imageUrl).slice(0, 12);
   return {
-    disconnect() {
-      stopped = true;
-      currentUsername = null;
-      if (reconnectTimer) clearTimeout(reconnectTimer);
-      if (client) {
-        try {
-          client.removeAllListeners();
-          client.disconnect();
-        } catch (e) {}
-      }
-    },
+    platform: 'tiktok',
+    userId: String(user.displayId || user.uniqueId || user.idStr || user.id || 'tiktok_user'),
+    nickname: user.nickname || user.displayId || user.uniqueId || 'Usuario de TikTok',
+    avatarUrl: imageUrl(user.avatarLarge) || imageUrl(user.avatarThumb) || user.profilePicture || null,
+    ...(user.userAttr?.isAdmin ? { isModerator: true } : {}),
+    ...(user.userAttr?.isSuperAdmin || user.userAttr?.isChannelAdmin ? { isAdmin: true } : {}),
+    ...(user.verified ? { isVerified: true } : {}),
+    ...(badges.length ? { badges } : {}),
   };
 }
-
-module.exports = { connect };
+function classifyError(error, handle) {
+  const err = error?.exception || error?.cause || error || {};
+  const message = String(err.message || error?.info || '').toLowerCase();
+  const status = Number(err.statusCode || err.response?.statusCode || err.status);
+  if (/requires a business plan|premium feature|requires.*paid.*plan/.test(message)) {
+    return { error: 'Euler rechazó una consulta que requiere el plan Business. Actualiza MultiChat para usar la conexión gratuita.', stop: true };
+  }
+  if (status === 401 || status === 403 || /invalid.*(key|api)|unauthorized|forbidden|authentication/.test(message)) {
+    return { error: 'Clave de Euler Stream inválida o sin permisos. Revísala en Canales.', stop: true };
+  }
+  if (status === 429 || /rate.?limit|quota/.test(message)) {
+    const delay = Math.max(60000, Number(err.retryAfter) || Number(err.resetTime) - Date.now() || 0);
+    return { error: 'Límite de Euler Stream alcanzado. Se reintentará cuando haya solicitudes disponibles.', delay };
+  }
+  if (/not.*live|offline|room.*not.*found|live.*ended/.test(message)) {
+    return { error: `@${handle} no está en vivo ahora. Se comprobará de nuevo.`, delay: 30000, live: false };
+  }
+  // Upstream error URLs can contain credentials; display only known messages.
+  return { error: 'No se pudo conectar con TikTok. Reintentando…' };
+}
+function createConnector({ createClient = createEulerClient, setTimeout: schedule = setTimeout, clearTimeout: cancel = clearTimeout } = {}) {
+  function connect(username, callbacks = {}, options = {}) {
+    const handle = String(username || '').replace(/^@/, '').trim();
+    const key = String(options.eulerApiKey || '').trim();
+    let client, timer, attempt = 0, stopped = false, generation = 0;
+    const emit = (name, data) => callbacks[name]?.(data);
+    const resetViewers = () => emit('onViewers', { platform: 'tiktok', viewers: 0 });
+    function dispose(candidate) {
+      if (!candidate) return;
+      candidate.removeAllListeners();
+      candidate.on('error', () => {});
+      try { Promise.resolve(candidate.disconnect()).catch(() => {}); } catch {}
+    }
+    function retry(delay) {
+      if (stopped || timer) return;
+      const wait = delay ?? Math.min(3000 * 1.5 ** attempt++, 60000);
+      timer = schedule(() => { timer = null; start(); }, wait);
+    }
+    function fail(err) {
+      const result = classifyError(err, handle);
+      generation++;
+      dispose(client); client = null;
+      emit('onStatus', { connected: false, error: result.error, ...(result.live === false ? { live: false } : {}) });
+      resetViewers();
+      if (result.stop) {
+        stopped = true;
+        if (timer) { cancel(timer); timer = null; }
+      } else retry(result.delay);
+    }
+    async function start() {
+      if (stopped) return;
+      if (!key || !handle) {
+        emit('onStatus', { connected: false, error: !key ? 'Añade tu clave de Euler Stream en Canales.' : 'Añade tu usuario de TikTok en Canales.' });
+        return;
+      }
+      const current = ++generation;
+      dispose(client); client = null;
+      try {
+        const candidate = await createClient(handle, {
+          signApiKey: key, authenticateWs: false,
+          // The extended catalogue uses Euler's Business-only signing endpoint.
+          // Regular LIVE gift events already contain gift details.
+          enableExtendedGiftInfo: false, processInitialData: false,
+        });
+        if (stopped || current !== generation) { dispose(candidate); return; }
+        client = candidate;
+        const on = (event, handler) => candidate.on(event, data => {
+          if (!stopped && current === generation) handler(data || {});
+        });
+        on('connected', () => { attempt = 0; emit('onStatus', { connected: true, live: true }); });
+        on('error', fail);
+        on('disconnected', () => fail(new Error('disconnected')));
+        on('streamEnd', () => fail(new Error('LIVE ended')));
+        on('chat', event => emit('onChat', {
+          ...(event.userIdentity?.isAnchor ? { isOwner: true } : {}),
+          ...(event.userIdentity?.isModeratorOfAnchor ? { isModerator: true } : {}),
+          ...(event.userIdentity?.isSubscriberOfAnchor ? { isSubscriber: true } : {}),
+          ...(event.common?.msgId ? { messageId: String(event.common.msgId) } : {}),
+          ...userFields(event.user), comment: event.content || event.comment || '',
+          emotes: (event.emotes || []).map(emote => ({
+            index: Number(emote.placeInComment || 0),
+            url: imageUrl(emote.emote?.image) || emote.imageUrl,
+          })).filter(emote => emote.url),
+        }));
+        on('emote', event => emit('onChat', {
+          ...userFields(event.user), comment: '',
+          emotes: (event.emoteList || []).map(emote => ({ index: 0, url: imageUrl(emote.image) })).filter(emote => emote.url),
+        }));
+        for (const [event, callback] of [['follow', 'onFollow'], ['share', 'onShare'], ['member', 'onJoin']]) {
+          on(event, data => emit(callback, userFields(data.user)));
+        }
+        on('like', event => emit('onLike', {
+          ...userFields(event.user), likeCount: Number(event.count ?? event.likeCount ?? 1),
+          totalLikes: Number(event.total ?? event.totalLikeCount ?? 0),
+        }));
+        on('roomUser', event => emit('onViewers', { platform: 'tiktok', viewers: Number(event.total ?? event.viewerCount ?? 0) }));
+        on('gift', event => {
+          const gift = event.giftDetails || event.extendedGiftInfo || {};
+          if (Number(gift.giftType ?? event.giftType ?? gift.gift_type) === 1 && !Number(event.repeatEnd)) return;
+          emit('onGift', {
+            ...userFields(event.user), giftName: gift.name || gift.giftName || event.giftName || 'Regalo',
+            giftImageUrl: imageUrl(gift.giftImage || gift.image) || event.giftImageUrl || null,
+            diamondCount: Number(gift.diamondCount ?? gift.diamond_count ?? event.diamondCount ?? 0),
+            repeatCount: Number(event.repeatCount || 1),
+          });
+        });
+        await candidate.connect();
+        if (stopped || current !== generation) dispose(candidate);
+      } catch (err) {
+        if (!stopped && current === generation) fail(err);
+      }
+    }
+    start();
+    return { disconnect() {
+      stopped = true; generation++;
+      if (timer) { cancel(timer); timer = null; }
+      dispose(client); client = null;
+    } };
+  }
+  return { connect };
+}
+module.exports = { ...createConnector(), createConnector };

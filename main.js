@@ -6,6 +6,18 @@ const { pathToFileURL } = require('url');
 const { WebSocketServer, WebSocket } = require('ws');
 const clipper = require('./src/clipper');
 const { MusicService } = require('./src/music/service');
+
+const { isTrustedSender } = require('./src/ipc-security');
+const { CapturePolicy } = require('./src/capture-policy');
+const capturePolicy = new CapturePolicy();
+function trustedEvent(event) { return isTrustedSender(event, mainWindow, pathToFileURL(path.join(__dirname, 'overlay.html')).href); }
+function onTrusted(channel, listener) { ipcMain.on(channel, (event, ...args) => { if (trustedEvent(event)) listener(event, ...args); }); }
+function handleTrusted(channel, listener) { ipcMain.handle(channel, (event, ...args) => { if (!trustedEvent(event)) throw new Error('Esta acción solo está disponible en MultiChat.'); return listener(event, ...args); }); }
+
+const { PiperService } = require('./src/piper');
+const piper = new PiperService({ directory: app.isPackaged ? path.join(process.resourcesPath, 'piper') : path.join(__dirname, 'vendor/piper/piper') });
+handleTrusted('tts-synthesize', (_event, data) => piper.synthesize(data));
+onTrusted('tts-cancel', () => piper.cancel());
 let musicService = null;
 
 let mainWindow = null;
@@ -113,48 +125,10 @@ function broadcastToObs(type, data) {
 function startObsServer() {
   if (obsServer) return;
 
-  obsServer = http.createServer((req, res) => {
-    const parsedUrl = new URL(req.url, `http://localhost:${OBS_PORT}`);
-    let pathname = parsedUrl.pathname;
+  const { createObsHandler, allowObsClient } = require('./src/obs-server');
+  obsServer = http.createServer(createObsHandler(__dirname, OBS_PORT));
 
-    if (pathname === '/' || pathname === '/obs' || pathname === '/index.html') {
-      pathname = '/obs.html';
-    }
-
-    const safePath = path.normalize(path.join(__dirname, pathname));
-    if (!safePath.startsWith(__dirname)) {
-      res.writeHead(403);
-      res.end('Acceso denegado');
-      return;
-    }
-
-    fs.readFile(safePath, (err, data) => {
-      if (err) {
-        res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
-        res.end('Archivo no encontrado');
-        return;
-      }
-
-      const ext = path.extname(safePath).toLowerCase();
-      const mimeTypes = {
-        '.html': 'text/html; charset=utf-8',
-        '.css': 'text/css; charset=utf-8',
-        '.js': 'application/javascript; charset=utf-8',
-        '.json': 'application/json; charset=utf-8',
-        '.png': 'image/png',
-        '.jpg': 'image/jpeg',
-        '.svg': 'image/svg+xml',
-      };
-
-      res.writeHead(200, {
-        'Content-Type': mimeTypes[ext] || 'application/octet-stream',
-        'Access-Control-Allow-Origin': '*',
-      });
-      res.end(data);
-    });
-  });
-
-  obsWss = new WebSocketServer({ server: obsServer, path: '/ws' });
+  obsWss = new WebSocketServer({ server: obsServer, path: '/ws', maxPayload: 16384, verifyClient: info => allowObsClient(info.req.headers, OBS_PORT) });
 
   obsWss.on('connection', (ws) => {
     console.log('[OBS Server] Nuevo cliente OBS Studio conectado.');
@@ -197,6 +171,7 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
 
@@ -212,18 +187,7 @@ function createWindow() {
   mainWindow.setAlwaysOnTop(true, 'screen-saver');
   mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
-  // Manejador automático de captura de pantalla para clips en vivo (sin diálogos molestos)
-  try {
-    session.defaultSession.setDisplayMediaRequestHandler((_request, callback) => {
-      desktopCapturer.getSources({ types: ['screen'] }).then((sources) => {
-        if (sources && sources.length > 0) {
-          callback({ video: sources[0] });
-        }
-      }).catch(() => {});
-    });
-  } catch (e) {}
-
-  mainWindow.loadFile('overlay.html');
+  mainWindow.loadFile(path.join(__dirname, 'overlay.html'));
 
   // Iniciar servidor local OBS
   startObsServer();
@@ -341,15 +305,15 @@ function connectPlatforms(requests) {
 }
 
 // Eventos de control de ventana y sistema
-ipcMain.on('minimize-window', () => {
+onTrusted('minimize-window', () => {
   if (mainWindow) mainWindow.minimize();
 });
 
-ipcMain.on('close-window', () => {
+onTrusted('close-window', () => {
   if (mainWindow) mainWindow.close();
 });
 
-ipcMain.on('connect-request', (event, requests) => {
+onTrusted('connect-request', (event, requests) => {
   try {
     connectPlatforms(requests);
   } catch (err) {
@@ -357,23 +321,23 @@ ipcMain.on('connect-request', (event, requests) => {
   }
 });
 
-ipcMain.on('disconnect-all', () => {
+onTrusted('disconnect-all', () => {
   disconnectAll();
 });
 
 // Mensaje fijado (Pin) sincronizado con OBS
-ipcMain.on('pin-message', (_event, pinnedData) => {
+onTrusted('pin-message', (_event, pinnedData) => {
   currentPinnedMessage = pinnedData || null;
   broadcastToObs('pin', currentPinnedMessage);
 });
 
 // Auto-actualizador IPC
-ipcMain.on('restart-and-install', () => {
+onTrusted('restart-and-install', () => {
   const updater = getAutoUpdater();
   updater.quitAndInstall();
 });
 
-ipcMain.on('check-for-updates', () => {
+onTrusted('check-for-updates', () => {
   if (app.isPackaged) {
     const updater = getAutoUpdater();
     updater.checkForUpdates().catch((err) => {
@@ -396,7 +360,7 @@ function getConfigFilePath() {
   return path.join(app.getPath('userData'), 'multichat_config.json');
 }
 
-ipcMain.on('save-config-file', (_event, config) => {
+onTrusted('save-config-file', (_event, config) => {
   try {
     const filePath = getConfigFilePath();
     const dir = path.dirname(filePath);
@@ -405,13 +369,15 @@ ipcMain.on('save-config-file', (_event, config) => {
     }
     fs.writeFileSync(filePath, JSON.stringify(config, null, 2), 'utf8');
     console.log('[main] Configuración guardada en archivo permanente:', filePath);
+    capturePolicy.enabled = config.options?.clipEnabled !== false;
+    if (!capturePolicy.enabled) screenFrameBuffer.length = 0;
     broadcastToObs('config', config.options || {});
   } catch (err) {
     console.error('[main] Error guardando config en disco:', err);
   }
 });
 
-ipcMain.handle('load-config-file', () => {
+handleTrusted('load-config-file', () => {
   try {
     const filePath = getConfigFilePath();
     if (fs.existsSync(filePath)) {
@@ -424,7 +390,7 @@ ipcMain.handle('load-config-file', () => {
   return null;
 });
 
-ipcMain.handle('get-app-version', () => {
+handleTrusted('get-app-version', () => {
   return app.getVersion();
 });
 
@@ -434,8 +400,9 @@ const MAX_SCREEN_FRAMES = 45; // Búfer de hasta 45 segundos
 
 function startScreenFrameRecorder() {
   setInterval(async () => {
+    if (!desktopCapturer || !capturePolicy.shouldCapture) return;
+    capturePolicy.busy = true;
     try {
-      if (!desktopCapturer) return;
       const sources = await desktopCapturer.getSources({
         types: ['screen'],
         thumbnailSize: { width: 1280, height: 720 }
@@ -450,10 +417,12 @@ function startScreenFrameRecorder() {
         }
       }
     } catch (e) {}
+    finally { capturePolicy.busy = false; }
   }, 1000);
 }
 
-ipcMain.handle('create-clip', async (_event, params) => {
+
+handleTrusted('create-clip', async (_event, params) => {
   const clipParams = {
     ...(params || {}),
     screenFrames: [...screenFrameBuffer],
@@ -466,7 +435,7 @@ ipcMain.handle('create-clip', async (_event, params) => {
   return result;
 });
 
-ipcMain.handle('get-desktop-sources', async () => {
+handleTrusted('get-desktop-sources', async () => {
   try {
     return await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 0, height: 0 } });
   } catch (e) {
@@ -475,7 +444,7 @@ ipcMain.handle('get-desktop-sources', async () => {
   }
 });
 
-ipcMain.handle('save-recorded-clip', async (_event, { buffer, streamerName, requestedBy, platform, durationSeconds }) => {
+handleTrusted('save-recorded-clip', async (_event, { buffer, streamerName, requestedBy, platform, durationSeconds }) => {
   const result = await clipper.saveBufferAndUpload({
     rawBuffer: Buffer.from(buffer),
     streamerName,
@@ -490,20 +459,20 @@ ipcMain.handle('save-recorded-clip', async (_event, { buffer, streamerName, requ
   return result;
 });
 
-ipcMain.on('open-clips-folder', () => {
+onTrusted('open-clips-folder', () => {
   shell.openPath(clipper.getClipsDirectory());
 });
 
-ipcMain.on('open-external-url', (_event, url) => {
-  if (url) shell.openExternal(url);
+onTrusted('open-external-url', (_event, url) => {
+  if (typeof url === 'string' && /^https?:\/\//i.test(url)) shell.openExternal(url);
 });
 
 function checkMusicSender(event) {
   if (!mainWindow || event.sender.id !== mainWindow.webContents.id || event.senderFrame?.url !== pathToFileURL(path.join(__dirname, 'overlay.html')).href || !musicService) throw new Error('Música no está disponible en esta ventana.');
 }
-ipcMain.handle('music-get-state', event => { checkMusicSender(event); return musicService.state(); });
-ipcMain.handle('music-action', async (event, type, data) => { checkMusicSender(event); return musicService.action(type, data); });
-ipcMain.handle('music-open-extension', async event => {
+handleTrusted('music-get-state', event => { checkMusicSender(event); return musicService.state(); });
+handleTrusted('music-action', async (event, type, data) => { checkMusicSender(event); return musicService.action(type, data); });
+handleTrusted('music-open-extension', async event => {
   checkMusicSender(event);
   const source = app.isPackaged ? path.join(process.resourcesPath, 'spotify-bridge') : path.join(__dirname, 'browser-extension');
   const target = path.join(app.getPath('userData'), 'spotify-bridge');
@@ -514,6 +483,8 @@ ipcMain.handle('music-open-extension', async event => {
 });
 
 app.whenReady().then(() => {
+  try { capturePolicy.enabled = JSON.parse(fs.readFileSync(getConfigFilePath(), 'utf8')).options?.clipEnabled !== false; } catch {}
+  session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => callback(false));
   musicService = new MusicService({ directory: app.getPath('userData'), safeStorage, openExternal: url => shell.openExternal(url), onChange: state => safeSend('music-state', state) });
   musicService.start().catch(error => musicService.report(error));
   createWindow();
@@ -530,6 +501,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('will-quit', () => {
+  piper.cancel();
   musicService?.close();
   disconnectAll();
   globalShortcut.unregisterAll();

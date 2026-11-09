@@ -10,6 +10,8 @@ function setFollowAlertsEnabled(enabled) {
 
 function triggerFollowAlert(data) {
   if (!alertsEnabled) return;
+  if (alertQueue.length >= 20) return;
+  data = { ...data, platform: window.SafeContent.platform(data.platform) };
   alertQueue.push(data);
   processQueue();
 }
@@ -35,11 +37,12 @@ function processQueue() {
 
   // Avatar
   let avatarHtml;
-  if (data.avatarUrl) {
-    avatarHtml = `<img src="${data.avatarUrl}" alt="${data.nickname || 'Avatar'}" />`;
+  const avatarUrl = window.SafeContent.mediaUrl(data.avatarUrl);
+  if (avatarUrl) {
+    avatarHtml = `<img src="${window.SafeContent.escape(avatarUrl)}" alt="" referrerpolicy="no-referrer" />`;
   } else {
     const initial = (data.nickname || data.userId || '★').charAt(0).toUpperCase();
-    avatarHtml = `<div class="avatar-fallback" style="background:var(--${data.platform || 'accent'},#888)">${initial}</div>`;
+    avatarHtml = `<div class="avatar-fallback" style="background:var(--${data.platform || 'accent'},#888)">${window.SafeContent.escape(initial)}</div>`;
   }
 
   const platformLabel = ({ tiktok: 'TikTok', twitch: 'Twitch', kick: 'Kick', youtube: 'YouTube' })[data.platform] || 'tu canal';

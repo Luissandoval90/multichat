@@ -65,6 +65,7 @@ async function resolveChannel(slug) {
     channelId: data.id || (data.user && data.user.id),
     profilePic: data.user?.profile_pic || null,
     viewers: data.livestream?.viewer_count || 0,
+    live: Boolean(data.livestream),
   };
 }
 
@@ -91,6 +92,7 @@ function connect(slug, callbacks, options = {}) {
     try {
       const data = await fetchJson(`https://kick.com/api/v2/channels/${encodeURIComponent(slug)}`);
       const viewers = data?.livestream?.viewer_count || 0;
+      callbacks.onStatus({ connected: true, live: Boolean(data?.livestream) });
       if (callbacks.onViewers) {
         callbacks.onViewers({ platform: 'kick', viewers });
       }
@@ -148,7 +150,7 @@ function connect(slug, callbacks, options = {}) {
 
       if (msg.event === 'pusher_internal:subscription_succeeded') {
         reconnectAttempt = 0;
-        callbacks.onStatus({ connected: true });
+        callbacks.onStatus({ connected: true, live: channelInfo.live });
         return;
       }
 
@@ -169,6 +171,7 @@ function connect(slug, callbacks, options = {}) {
         const { text, emotes } = parseKickEmotes(data.content || '');
         callbacks.onChat({
           platform: 'kick',
+          messageId: data.id,
           userId: String(data.sender?.id || data.sender?.username),
           nickname: data.sender?.username,
           comment: text,

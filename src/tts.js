@@ -8,6 +8,72 @@ let ttsSkipUrls = true;
 let selectedVoiceURI = '';
 let synth = window.speechSynthesis || null;
 let availableVoices = [];
+const PIPER_VOICE = { voiceURI: 'piper:es_MX-claude-high', name: 'Claude · Español de México · Piper', lang: 'es-MX', localService: true };
+let speechQueue = [], speechGeneration = 0, playingAudio = null, releaseAudio = null;
+
+function cancelSpeech() {
+  speechGeneration++;
+  speechQueue = [];
+  synth?.cancel();
+  playingAudio?.pause();
+  releaseAudio?.();
+  playingAudio = null;
+  releaseAudio = null;
+  window.overlayAPI?.cancelSpeech?.();
+}
+
+function voiceStatus(message = '') {
+  const status = document.getElementById('tts-status');
+  if (status) status.textContent = message;
+}
+
+async function drainSpeech(generation) {
+  while (generation === speechGeneration && speechQueue.length) {
+    const job = speechQueue.shift();
+    try {
+      const result = await window.overlayAPI.synthesizeSpeech(job);
+      if (generation !== speechGeneration) return;
+      const audio = new Audio('data:audio/wav;base64,' + result.audio);
+      playingAudio = audio;
+      audio.volume = ttsVolume;
+      await new Promise((resolve, reject) => {
+        releaseAudio = resolve;
+        audio.onended = resolve;
+        audio.onerror = () => reject(new Error('No se pudo reproducir la voz.'));
+        audio.play().catch(reject);
+      });
+      if (generation === speechGeneration) { playingAudio = null; releaseAudio = null; }
+    } catch (error) {
+      if (generation === speechGeneration) voiceStatus(error.message || 'No se pudo leer el mensaje.');
+    }
+  }
+}
+
+function speakText(text) {
+  voiceStatus();
+  if (selectedVoiceURI === PIPER_VOICE.voiceURI || !selectedVoiceURI) {
+    if (!window.overlayAPI?.synthesizeSpeech) { voiceStatus('La voz Claude está disponible en la aplicación de escritorio.'); return; }
+    // Keep a busy chat from accumulating minutes of delayed speech.
+    if (speechQueue.length >= 10) return;
+    const wasIdle = !playingAudio && speechQueue.length === 0 && !piperBusy;
+    speechQueue.push({ text: text.slice(0, 400), voice: PIPER_VOICE.voiceURI, rate: ttsRate });
+    if (wasIdle) {
+      const generation = speechGeneration;
+      piperBusy = true;
+      drainSpeech(generation).finally(() => { if (generation === speechGeneration) piperBusy = false; });
+    }
+    return;
+  }
+  if (!synth) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = 'es-MX';
+  utterance.volume = ttsVolume;
+  utterance.rate = ttsRate;
+  const voice = getSelectedVoice();
+  if (voice) { utterance.voice = voice; utterance.lang = voice.lang; }
+  synth.speak(utterance);
+}
+let piperBusy = false;
 
 // Activación de TTS por plataforma individual
 let ttsPlatforms = {
@@ -18,26 +84,22 @@ let ttsPlatforms = {
 };
 
 function initVoices(callback) {
-  if (!synth) return;
-
   function load() {
-    availableVoices = synth.getVoices() || [];
+    availableVoices = [PIPER_VOICE, ...(synth?.getVoices() || [])];
     if (callback && availableVoices.length > 0) {
       callback(availableVoices);
     }
   }
 
   load();
-  if (synth.onvoiceschanged !== undefined) {
+  if (synth && synth.onvoiceschanged !== undefined) {
     synth.onvoiceschanged = load;
   }
 }
 
 function setTtsEnabled(enabled) {
   ttsEnabled = !!enabled;
-  if (!ttsEnabled && synth) {
-    synth.cancel();
-  }
+  if (!ttsEnabled) { cancelSpeech(); piperBusy = false; }
 }
 
 function setPlatformTts(platform, enabled) {
@@ -53,11 +115,13 @@ function setTtsPlatformsConfig(platformsConfig) {
 }
 
 function setVoiceURI(uri) {
+  if (selectedVoiceURI !== uri) { cancelSpeech(); piperBusy = false; }
   selectedVoiceURI = uri || '';
 }
 
 function setTtsVolume(vol) {
-  ttsVolume = Math.max(0, Math.min(1, Number(vol) || 0.85));
+  ttsVolume = Number.isFinite(Number(vol)) ? Math.max(0, Math.min(1, Number(vol))) : 0.85;
+  if (playingAudio) playingAudio.volume = ttsVolume;
 }
 
 function setTtsRate(rate) {
@@ -85,18 +149,8 @@ function getSelectedVoice() {
 }
 
 function testVoice(textToSpeak) {
-  if (!synth) return;
-  synth.cancel();
-
-  const text = textToSpeak || 'Hola, esta es una prueba de voz para tu chat en vivo.';
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.volume = ttsVolume;
-  utterance.rate = ttsRate;
-
-  const voice = getSelectedVoice();
-  if (voice) utterance.voice = voice;
-
-  synth.speak(utterance);
+  cancelSpeech(); piperBusy = false;
+  speakText(textToSpeak || 'Hola, soy Claude. Hablo español de México. ¡Bienvenidos al chat! ¿Qué canción quieren escuchar?');
 }
 
 function cleanCommentForTts(text) {
@@ -115,7 +169,7 @@ function cleanCommentForTts(text) {
 }
 
 function speakMessage({ nickname, comment, platform }) {
-  if (!ttsEnabled || !synth || !comment) return;
+  if (!ttsEnabled || !comment) return;
 
   // Verificar si TTS está habilitado para esta plataforma
   if (platform && ttsPlatforms[platform] === false) {
@@ -131,14 +185,7 @@ function speakMessage({ nickname, comment, platform }) {
   const textToRead = ttsIncludeNickname ? `${userNick} dice: ${truncated}` : truncated;
 
   try {
-    const utterance = new SpeechSynthesisUtterance(textToRead);
-    utterance.volume = ttsVolume;
-    utterance.rate = ttsRate;
-
-    const voice = getSelectedVoice();
-    if (voice) utterance.voice = voice;
-
-    synth.speak(utterance);
+    speakText(textToRead);
   } catch (err) {
     console.warn('[TTS] Error leyendo mensaje:', err);
   }

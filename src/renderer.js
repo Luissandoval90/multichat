@@ -20,126 +20,13 @@ function iconMarkup(platform) {
   return PLATFORM_ICONS[platform] || '';
 }
 
-// ==========================================================================
-// Base de Datos Masiva y Traductor Universal de Regalos de TikTok
-// ==========================================================================
-const TIKTOK_GIFTS_DICTIONARY = {
-  'Rose': { es: 'Rosa', icon: '🌹', defaultDiamonds: 1 },
-  'TikTok': { es: 'Logo TikTok', icon: '🎵', defaultDiamonds: 1 },
-  'Ice Cream Cone': { es: 'Helado de Cono', icon: '🍦', defaultDiamonds: 1 },
-  'Heart Me': { es: 'Corazón Fan', icon: '🧡', defaultDiamonds: 1 },
-  'GG': { es: 'Buena Partida (GG)', icon: '🎮', defaultDiamonds: 1 },
-  'Finger Heart': { es: 'Corazón Coreano', icon: '🫰', defaultDiamonds: 5 },
-  'Panda': { es: 'Osito Panda', icon: '🐼', defaultDiamonds: 5 },
-  'Mic': { es: 'Micrófono', icon: '🎤', defaultDiamonds: 5 },
-  'Hi': { es: 'Saludito', icon: '👋', defaultDiamonds: 5 },
-  'Coffee': { es: 'Taza de Café', icon: '☕', defaultDiamonds: 10 },
-  'Lollipop': { es: 'Paleta Dulce', icon: '🍭', defaultDiamonds: 10 },
-  'Gamepad': { es: 'Mando Gamer', icon: '🎮', defaultDiamonds: 10 },
-  'Mini Crown': { es: 'Mini Corona', icon: '👑', defaultDiamonds: 10 },
-  'Love Bang': { es: 'Explosión de Amor', icon: '💥', defaultDiamonds: 25 },
-  'Doughnut': { es: 'Dona Glaseada', icon: '🍩', defaultDiamonds: 30 },
-  'Donut': { es: 'Dona Glaseada', icon: '🍩', defaultDiamonds: 30 },
-  'Perfume': { es: 'Perfume Elegante', icon: '🧴', defaultDiamonds: 20 },
-  'Teddy Bear': { es: 'Oso de Peluche', icon: '🧸', defaultDiamonds: 100 },
-  'Paper Crane': { es: 'Grulla de Papel', icon: '🕊️', defaultDiamonds: 99 },
-  'Little Crown': { es: 'Corona Pequeña', icon: '👑', defaultDiamonds: 99 },
-  'Cap': { es: 'Gorra Deportiva', icon: '🧢', defaultDiamonds: 99 },
-  'Hat': { es: 'Sombrero', icon: '🎩', defaultDiamonds: 99 },
-  'Confetti': { es: 'Lluvia de Confeti', icon: '🎉', defaultDiamonds: 100 },
-  'Flowers': { es: 'Ramo de Flores', icon: '💐', defaultDiamonds: 100 },
-  'Butterfly': { es: 'Mariposa Brillante', icon: '🦋', defaultDiamonds: 169 },
-  'Sunglasses': { es: 'Gafas de Sol', icon: '😎', defaultDiamonds: 199 },
-  'Goggles': { es: 'Gafas de Buceo', icon: '🥽', defaultDiamonds: 199 },
-  'Kiss': { es: 'Beso Apasionado', icon: '💋', defaultDiamonds: 150 },
-  'Love Balloon': { es: 'Globo de Amor', icon: '🎈', defaultDiamonds: 199 },
-  'Magic Wand': { es: 'Varita Mágica', icon: '🪄', defaultDiamonds: 399 },
-  'Swan': { es: 'Cisne Elegante', icon: '🦢', defaultDiamonds: 699 },
-  'Train': { es: 'Tren Expreso', icon: '🚂', defaultDiamonds: 899 },
-  'Fireworks': { es: 'Fuegos Artificiales', icon: '🎆', defaultDiamonds: 1088 },
-  'Firework': { es: 'Fuegos Artificiales', icon: '🎆', defaultDiamonds: 1088 },
-  'Mirror': { es: 'Espejo Mágico', icon: '🪞', defaultDiamonds: 1000 },
-  'Money Gun': { es: 'Pistola de Billetes', icon: '💸', defaultDiamonds: 500 },
-  'Whale Diving': { es: 'Ballena Saltando', icon: '🐋', defaultDiamonds: 2150 },
-  'Whale': { es: 'Ballena Gigante', icon: '🐳', defaultDiamonds: 2150 },
-  'Motorcycle': { es: 'Moto de Carreras', icon: '🏍️', defaultDiamonds: 2988 },
-  'Car': { es: 'Auto de Lujo', icon: '🚗', defaultDiamonds: 3000 },
-  'Sports Car': { es: 'Auto Deportivo', icon: '🏎️', defaultDiamonds: 7000 },
-  'Supercar': { es: 'Superdeportivo', icon: '🏎️', defaultDiamonds: 7000 },
-  'Yacht': { es: 'Super Yate', icon: '🛥️', defaultDiamonds: 9888 },
-  'Private Jet': { es: 'Jet Privado', icon: '✈️', defaultDiamonds: 4888 },
-  'Falcon': { es: 'Halcón Dorado', icon: '🦅', defaultDiamonds: 10999 },
-  'Planet': { es: 'Planeta Cósmico', icon: '🪐', defaultDiamonds: 15000 },
-  'Rocket': { es: 'Cohete Espacial', icon: '🚀', defaultDiamonds: 20000 },
-  'Dragon': { es: 'Dragón Legendario', icon: '🐉', defaultDiamonds: 26999 },
-  'Golden Dragon': { es: 'Dragón Dorado', icon: '🐉', defaultDiamonds: 26999 },
-  'Lion': { es: 'León Rugiente', icon: '🦁', defaultDiamonds: 29999 },
-  'Leon': { es: 'León Rugiente', icon: '🦁', defaultDiamonds: 29999 },
-  'Castle': { es: 'Castillo de Cuento', icon: '🏰', defaultDiamonds: 20000 },
-  'Pegasus': { es: 'Pegaso Místico', icon: '🦄', defaultDiamonds: 27999 },
-  'Phoenix': { es: 'Fénix Inmortal', icon: '🔥', defaultDiamonds: 25999 },
-  'TikTok Universe': { es: 'Universo TikTok', icon: '🌌', defaultDiamonds: 34999 },
-  'Universe': { es: 'Universo TikTok', icon: '🌌', defaultDiamonds: 34999 },
-  'TikTok Stars': { es: 'Estrellas TikTok', icon: '⭐', defaultDiamonds: 39999 },
-  'Zeus': { es: 'Dios Zeus', icon: '⚡', defaultDiamonds: 34000 },
-  'Poseidon': { es: 'Dios Poseidón', icon: '🔱', defaultDiamonds: 30000 },
-};
-
-const WORD_TRANSLATIONS = {
-  'heart': 'Corazón', 'love': 'Amor', 'rose': 'Rosa', 'flower': 'Flor',
-  'crown': 'Corona', 'star': 'Estrella', 'cat': 'Gatito', 'dog': 'Perrito',
-  'bear': 'Oso', 'panda': 'Panda', 'lion': 'León', 'tiger': 'Tigre',
-  'dragon': 'Dragón', 'car': 'Auto', 'bike': 'Moto', 'plane': 'Avión',
-  'rocket': 'Cohete', 'whale': 'Ballena', 'dolphin': 'Delfín', 'shark': 'Tiburón',
-  'bird': 'Pájaro', 'eagle': 'Águila', 'falcon': 'Halcón', 'castle': 'Castillo',
-  'diamond': 'Diamante', 'gold': 'Oro', 'magic': 'Mágico', 'fire': 'Fuego',
-  'firework': 'Fuegos Artificiales', 'coffee': 'Café', 'cake': 'Pastel',
-  'ice cream': 'Helado', 'donut': 'Dona', 'pizza': 'Pizza', 'burger': 'Hamburguesa',
-  'balloon': 'Globo', 'confetti': 'Confeti', 'kiss': 'Beso', 'universe': 'Universo',
-  'galaxy': 'Galaxia', 'planet': 'Planeta', 'rainbow': 'Arcoíris', 'lightning': 'Rayo',
-};
-
-function translateGiftName(rawName) {
-  if (!rawName) return 'Regalo 🎁';
-  const clean = rawName.trim();
-  if (TIKTOK_GIFTS_DICTIONARY[clean]) {
-    const item = TIKTOK_GIFTS_DICTIONARY[clean];
-    return `${item.es} ${item.icon}`;
-  }
-
-  let words = clean.split(/\s+/);
-  let translatedWords = words.map(w => {
-    const low = w.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return WORD_TRANSLATIONS[low] || w;
-  });
-
-  return translatedWords.join(' ');
-}
-
-function formatGiftData(data) {
-  const rawName = (data.giftName || '').trim();
-  const dictMatch = TIKTOK_GIFTS_DICTIONARY[rawName] || null;
-  const translatedName = translateGiftName(rawName);
-
-  const diamondsPerUnit = data.diamondCount || (dictMatch ? dictMatch.defaultDiamonds : 0);
-  const totalDiamonds = diamondsPerUnit * (data.repeatCount || 1);
-  const isEpic = totalDiamonds >= 100 || (data.repeatCount && data.repeatCount >= 10) || rawName.toLowerCase().includes('lion') || rawName.toLowerCase().includes('universe') || rawName.toLowerCase().includes('dragon');
-
-  return {
-    translatedName,
-    totalDiamonds,
-    isEpic,
-    imageUrl: data.giftImageUrl || null,
-  };
-}
+function formatGiftData(data) { return window.ChatPresentation.gift(data); }
 
 // Elementos DOM
 const chatContainer = document.getElementById('chat-container');
-const statusBar = document.getElementById('status-bar');
 const setupPanel = document.getElementById('setup-panel');
 const statsBar = document.getElementById('stats-bar');
 const connectBtn = document.getElementById('connect-btn');
-const liveDot = document.getElementById('live-dot');
 const editBtn = document.getElementById('edit-btn');
 const toggleHudBtn = document.getElementById('toggle-hud-btn');
 const testAlertBtn = document.getElementById('test-alert-btn');
@@ -195,9 +82,11 @@ let totalLikes = 0;
 let updateCountdownInterval = null;
 
 const MAX_MESSAGES = 160;
+const chatTools = window.ChatTools.create({ container: chatContainer, maxMessages: MAX_MESSAGES });
 const TRIM_BATCH = 30;
 let pendingScroll = false;
 let currentConfig = null;
+let applyingConfig = false;
 
 // ==========================================================================
 // 1. Mensajes Fijados (Pin Message Logic)
@@ -292,58 +181,6 @@ if (window.overlayAPI && window.overlayAPI.onClipCreated) {
   window.overlayAPI.onClipCreated((data) => {
     showClipNotification(data);
   });
-}
-
-let screenStream = null;
-let mediaRecorder = null;
-let recordedChunks = [];
-
-async function initScreenRollingBuffer() {
-  try {
-    if (navigator.mediaDevices && navigator.mediaDevices.getDisplayMedia) {
-      screenStream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          frameRate: 30,
-          width: 1280,
-          height: 720
-        },
-        audio: false
-      });
-    } else if (window.overlayAPI && window.overlayAPI.getDesktopSources) {
-      const sources = await window.overlayAPI.getDesktopSources();
-      if (sources && sources.length > 0) {
-        screenStream = await navigator.mediaDevices.getUserMedia({
-          audio: false,
-          video: {
-            mandatory: {
-              chromeMediaSource: 'desktop',
-              chromeMediaSourceId: sources[0].id,
-              maxWidth: 1280,
-              maxHeight: 720,
-              maxFrameRate: 30
-            }
-          }
-        });
-      }
-    }
-
-    if (!screenStream) return;
-
-    recordedChunks = [];
-    mediaRecorder = new MediaRecorder(screenStream, { mimeType: 'video/webm' });
-    mediaRecorder.ondataavailable = (e) => {
-      if (e.data && e.data.size > 0) {
-        recordedChunks.push(e.data);
-        if (recordedChunks.length > 45) {
-          recordedChunks.shift();
-        }
-      }
-    };
-    mediaRecorder.start(1000);
-    console.log('[Renderer] Búfer de captura de pantalla real activo (30s-45s).');
-  } catch(e) {
-    console.log('[Renderer] Captura de pantalla status:', e.message);
-  }
 }
 
 async function triggerClipCreation(requestedBy = 'Streamer', sourcePlatform = null) {
@@ -450,15 +287,16 @@ function initUI() {
   });
 
   function autoSaveAllConfig() {
+    if (applyingConfig) return;
     const cfg = gatherConfigFromUI();
     currentConfig = cfg;
     window.AppStorage.saveConfig(cfg);
   }
 
   // Guardado instantáneo global en cualquier entrada de texto, pegado o cambio
-  ['input', 'change', 'blur', 'keyup', 'paste'].forEach(evtType => {
+  ['input', 'change', 'blur'].forEach(evtType => {
     document.addEventListener(evtType, (e) => {
-      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
+      if (e.target?.closest('#setup-panel') && (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA')) {
         autoSaveAllConfig();
       }
     });
@@ -615,7 +453,7 @@ function initUI() {
   });
 
   btnTestVoice.addEventListener('click', () => {
-    window.AppTTS.testVoice('Hola, probando la voz seleccionada para el chat.');
+    window.AppTTS.testVoice('Hola, hablo español de México.');
   });
 
   ttsVolSlider.addEventListener('input', (e) => {
@@ -663,10 +501,7 @@ function initUI() {
     }
   }
 
-  // Iniciar búfer de grabación continua de pantalla para clips en vivo
-  setTimeout(() => {
-    initScreenRollingBuffer();
-  }, 1000);
+
 }
 
 function setAppTheme(theme) {
@@ -686,7 +521,7 @@ function setAppTheme(theme) {
   themeBtns.forEach(b => {
     b.classList.toggle('active', b.getAttribute('data-theme') === normalizedTheme);
   });
-  if (currentConfig && currentConfig.options) {
+  if (currentConfig && currentConfig.options && !applyingConfig) {
     currentConfig.options.theme = normalizedTheme;
     window.AppStorage.saveConfig(currentConfig);
   }
@@ -707,7 +542,7 @@ function setAppFont(font) {
     b.classList.toggle('active', b.getAttribute('data-font') === normalizedFont);
   });
 
-  if (currentConfig && currentConfig.options) {
+  if (currentConfig && currentConfig.options && !applyingConfig) {
     currentConfig.options.fontFamily = normalizedFont;
     window.AppStorage.saveConfig(currentConfig);
   }
@@ -748,13 +583,15 @@ window.overlayAPI.onUpdateStatus((data) => {
 });
 
 function populateVoiceSelect() {
-  const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+  const voices = window.AppTTS.getAvailableVoices();
   if (!voices || voices.length === 0) return;
 
   const currentSelected = ttsVoiceSelect.value || (currentConfig && currentConfig.options.ttsVoice) || '';
   ttsVoiceSelect.innerHTML = '';
 
   const sortedVoices = [...voices].sort((a, b) => {
+    if (a.voiceURI.startsWith('piper:')) return -1;
+    if (b.voiceURI.startsWith('piper:')) return 1;
     const aEs = a.lang.startsWith('es');
     const bEs = b.lang.startsWith('es');
     if (aEs && !bEs) return -1;
@@ -765,8 +602,7 @@ function populateVoiceSelect() {
   sortedVoices.forEach(v => {
     const opt = document.createElement('option');
     opt.value = v.voiceURI || v.name;
-    const isEs = v.lang.startsWith('es') ? '🇪🇸 ' : '';
-    opt.textContent = `${isEs}${v.name} (${v.lang})`;
+    opt.textContent = v.voiceURI.startsWith('piper:') ? v.name : `${v.name} (${v.lang})`;
     if (currentSelected && (v.voiceURI === currentSelected || v.name === currentSelected)) {
       opt.selected = true;
     }
@@ -782,6 +618,8 @@ function populateVoiceSelect() {
 
 function applyConfigToUI(config) {
   if (!config) return;
+  applyingConfig = true;
+  try {
 
   PLATFORMS.forEach(p => {
     const pData = config.platforms?.[p] || {};
@@ -800,7 +638,7 @@ function applyConfigToUI(config) {
   });
 
   const keyInput = document.getElementById('input-tiktok-key');
-  if (keyInput) keyInput.value = config.platforms?.tiktok?.apiKey || '';
+  if (keyInput) keyInput.value = config.platforms?.tiktok?.eulerApiKey || '';
 
   const cidInput = document.getElementById('input-twitch-client-id');
   if (cidInput) cidInput.value = config.platforms?.twitch?.clientId || '';
@@ -832,7 +670,7 @@ function applyConfigToUI(config) {
   window.AppTTS.setIncludeNickname(ttsIncludeNickCheck.checked);
   window.AppTTS.setSkipUrls(ttsSkipUrlsCheck.checked);
 
-  if (config.options.ttsVolume) {
+  if (config.options.ttsVolume !== undefined) {
     const volPct = Math.round(config.options.ttsVolume * 100);
     ttsVolSlider.value = volPct;
     ttsVolVal.textContent = volPct + '%';
@@ -886,6 +724,7 @@ function applyConfigToUI(config) {
   window.AudioAlerts.setSoundEnabled(config.options.soundAlerts);
   window.FollowAlerts.setFollowAlertsEnabled(config.options.followAlerts);
   window.AppTTS.setTtsEnabled(isTtsOn);
+  } finally { applyingConfig = false; }
 }
 
 function gatherConfigFromUI() {
@@ -937,7 +776,7 @@ function gatherConfigFromUI() {
   });
 
   const tiktokKeyInput = document.getElementById('input-tiktok-key');
-  config.platforms.tiktok.apiKey = tiktokKeyInput ? tiktokKeyInput.value.trim() : (currentConfig?.platforms?.tiktok?.apiKey || '');
+  config.platforms.tiktok.eulerApiKey = tiktokKeyInput ? tiktokKeyInput.value.trim() : (currentConfig?.platforms?.tiktok?.eulerApiKey || '');
 
   const twitchCidInput = document.getElementById('input-twitch-client-id');
   const twitchSecInput = document.getElementById('input-twitch-client-secret');
@@ -964,8 +803,8 @@ function handleConnect(isAuto = false) {
 
       const req = { platform: p, handle: cleanHandle };
 
-      if (p === 'tiktok' && pData.apiKey) {
-        req.options = { tiktoolApiKey: pData.apiKey };
+      if (p === 'tiktok' && pData.eulerApiKey) {
+        req.options = { eulerApiKey: pData.eulerApiKey };
       }
       if (p === 'twitch' && pData.clientId && pData.clientSecret) {
         req.options = { twitchClientId: pData.clientId, twitchClientSecret: pData.clientSecret };
@@ -989,17 +828,9 @@ function handleConnect(isAuto = false) {
 
   connectBtn.disabled = true;
   connectBtn.textContent = 'Conectando…';
-  statusBar.innerHTML = '';
-  Object.keys(statusLines).forEach(k => delete statusLines[k]);
-
-  const connectingText = 'Conectando a ' + requests.map(r => PLATFORM_META[r.platform].label).join(' + ') + '…';
-  const lastMsg = chatContainer.lastElementChild;
-  if (lastMsg && lastMsg.classList.contains('system') && lastMsg.textContent.includes('Conectando a')) {
-    const textEl = lastMsg.querySelector('.system-text') || lastMsg;
-    textEl.textContent = connectingText;
-  } else {
-    addSimpleMessage(connectingText, 'system');
-  }
+  Object.keys(statusLines).forEach(key => delete statusLines[key]);
+  connectionTransitions.states.clear();
+  showConnectionToast('general', 'Conectando a ' + requests.map(request => PLATFORM_META[request.platform].label).join(' + ') + '…', 'connecting');
 
   window.overlayAPI.connect(requests);
   setupPanel.classList.add('hidden');
@@ -1008,60 +839,37 @@ function handleConnect(isAuto = false) {
 // ==========================================================================
 // 4. Barra HUD y Estadísticas en Tiempo Real
 // ==========================================================================
-function ensureStatusLine(platform) {
-  if (statusLines[platform]) return statusLines[platform];
-  const meta = PLATFORM_META[platform] || { label: platform, className: platform };
-  const badge = document.createElement('div');
-  badge.className = 'status-badge connecting';
-  badge.innerHTML = `${iconMarkup(platform)}<span>${meta.label}: Conectando…</span>`;
-  statusBar.appendChild(badge);
-  statusLines[platform] = badge;
-  return badge;
+const connectionTransitions = new window.ChatPresentation.ConnectionTransitions();
+const connectionTimers = new Map();
+function showConnectionToast(platform, text, kind) {
+  const container = document.getElementById('connection-notices');
+  const previous = container.querySelector('[data-platform="' + platform + '"]');
+  previous?.remove();
+  clearTimeout(connectionTimers.get(platform));
+  const notice = document.createElement('div');
+  notice.className = 'connection-toast state-' + kind;
+  notice.dataset.platform = platform;
+  notice.innerHTML = iconMarkup(platform) + '<span>' + escapeHtml(text) + '</span>';
+  container.appendChild(notice);
+  connectionTimers.set(platform, setTimeout(() => { notice.remove(); connectionTimers.delete(platform); }, 4500));
 }
-
-window.overlayAPI.onPlatformStatus((data) => {
+window.overlayAPI.onPlatformStatus(data => {
   connectBtn.disabled = false;
   connectBtn.textContent = 'Guardar y Conectar';
-
-  if (data.platform === 'general') {
-    addSimpleMessage(data.error || 'Error de conexión', 'system');
-    return;
-  }
-
-  const badge = ensureStatusLine(data.platform);
-  const meta = PLATFORM_META[data.platform] || { label: data.platform };
-
-  if (data.connected) {
-    badge.className = 'status-badge connected';
-    badge.innerHTML = `${iconMarkup(data.platform)}<span>${meta.label}: En vivo</span>`;
-  } else {
-    badge.className = 'status-badge error';
-    const cleanError = (data.error || 'Desconectado').replace(new RegExp(`^${meta.label}:\\s*`, 'i'), '');
-    badge.innerHTML = `${iconMarkup(data.platform)}<span>${meta.label}: ${cleanError}</span>`;
-    viewersMap.set(data.platform, 0);
-    updateViewersDisplay();
-  }
-
-  updateLiveDot();
+  if (data.platform === 'general') { showConnectionToast('general', data.error || 'Error de conexión', 'disconnected'); return; }
+  const platform = window.SafeContent.platform(data.platform);
+  if (platform === 'unknown') return;
+  statusLines[platform] = { connected: Boolean(data.connected), live: data.live };
+  if (!data.connected || data.live === false) viewersMap.set(platform, 0);
+  updateViewersDisplay();
+  const change = connectionTransitions.update(data);
+  if (!change) return;
+  document.querySelector('#connection-notices [data-platform="general"]')?.remove();
+  const label = PLATFORM_META[platform].label;
+  const messages = { live: label + ' está en vivo', chat: label + ': chat conectado', offline: label + ' no está en directo', disconnected: label + ': ' + (data.error || 'Conexión perdida') };
+  showConnectionToast(platform, messages[change.kind], change.kind);
+  if (change.sound) window.AudioAlerts.playConnectionLostSound();
 });
-
-function updateLiveDot() {
-  const connectedBadges = Array.from(statusBar.querySelectorAll('.status-badge.connected'));
-  const anyConnected = connectedBadges.length > 0;
-  if (liveDot) liveDot.classList.toggle('live', anyConnected);
-  const liveStatusText = document.getElementById('live-status-text');
-  if (liveStatusText) {
-    if (anyConnected) {
-      liveStatusText.textContent = `En vivo (${connectedBadges.length})`;
-      liveStatusText.style.color = '#c2d4b8';
-      liveStatusText.style.fontWeight = '700';
-    } else {
-      liveStatusText.textContent = 'Desconectado';
-      liveStatusText.style.color = 'var(--text-sub)';
-      liveStatusText.style.fontWeight = '500';
-    }
-  }
-}
 
 function formatNumber(num) {
   if (!num || num < 0 || isNaN(num)) return '0';
@@ -1075,7 +883,7 @@ function updateViewersDisplay() {
   let html = '';
 
   PLATFORMS.forEach(platform => {
-    const isConnected = statusLines[platform] && statusLines[platform].classList.contains('connected');
+    const isConnected = statusLines[platform]?.connected;
     const count = viewersMap.get(platform) || 0;
     
     if (isConnected || count > 0) {
@@ -1117,12 +925,7 @@ window.overlayAPI.onLikeMessage((data) => {
 // 5. Renderizado de Mensajes, Pin Buttons y Comandos SFX
 // ==========================================================================
 function scheduleScroll() {
-  if (pendingScroll) return;
-  pendingScroll = true;
-  requestAnimationFrame(() => {
-    chatContainer.scrollTop = chatContainer.scrollHeight;
-    pendingScroll = false;
-  });
+  chatTools.scroll();
 }
 
 function trimIfNeeded() {
@@ -1136,10 +939,7 @@ function trimIfNeeded() {
 }
 
 function addMessageNode(node) {
-  const isNearBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 90;
-  chatContainer.appendChild(node);
-  trimIfNeeded();
-  if (isNearBottom) scheduleScroll();
+  chatTools.append(node);
 }
 
 function addSimpleMessage(html, cls) {
@@ -1150,21 +950,24 @@ function addSimpleMessage(html, cls) {
 }
 
 function platformTag(platform) {
+  platform = window.SafeContent.platform(platform);
   const meta = PLATFORM_META[platform] || { label: platform, className: platform };
-  return `<span class="platform-tag ${meta.className}">${iconMarkup(platform)}${meta.label}</span>`;
+  return `<span class="platform-tag ${meta.className}" title="${meta.label}" aria-label="${meta.label}">${iconMarkup(platform)}<span class="platform-name">${meta.label}</span></span>`;
 }
 
 function avatarHtml(data) {
-  if (data.avatarUrl) {
-    return `<img class="avatar" src="${data.avatarUrl}" alt="" loading="lazy" />`;
+  const url = window.SafeContent.mediaUrl(data.avatarUrl);
+  if (url) {
+    return `<img class="avatar" src="${escapeAttr(url)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />`;
   }
   const initial = (data.nickname || data.userId || '?').charAt(0).toUpperCase();
   const meta = PLATFORM_META[data.platform] || { className: 'accent' };
-  return `<span class="avatar placeholder" style="background:var(--${meta.className}, #888)">${initial}</span>`;
+  return `<span class="avatar placeholder" style="background:var(--${meta.className}, #888)">${escapeHtml(initial)}</span>`;
 }
 
 // Chat
 window.overlayAPI.onChatMessage((data) => {
+  data = { ...data, platform: window.SafeContent.platform(data.platform), comment: String(data.comment || '').slice(0, 4000), nickname: String(data.nickname || data.userId || 'Usuario').slice(0, 160) };
   // Detectar comando !clip en cualquier red social y para cualquier espectador
   const optClipEnabled = document.getElementById('opt-clip-enabled');
   const commentText = (data.comment || '').trim();
@@ -1182,7 +985,10 @@ window.overlayAPI.onChatMessage((data) => {
   const userKey = `${data.platform}:${data.userId || data.nickname}`;
 
   if (data._avatarUpdate) {
+    data.avatarUrl = window.SafeContent.mediaUrl(data.avatarUrl);
+    if (!data.avatarUrl) return;
     avatarCacheMap.set(userKey, data.avatarUrl);
+    if (avatarCacheMap.size > 500) avatarCacheMap.delete(avatarCacheMap.keys().next().value);
     const pendingImgs = chatContainer.querySelectorAll(`img.avatar-pending[data-user-key="${cssEscape(userKey)}"]`);
     pendingImgs.forEach(img => {
       img.src = data.avatarUrl;
@@ -1191,21 +997,23 @@ window.overlayAPI.onChatMessage((data) => {
     return;
   }
 
+  if (!chatTools.history.accept(data)) return;
+
   window.AppTTS.speakMessage(data);
 
   const commentHtml = buildCommentHtml(data.comment, data.emotes).replace(/^: /, '');
   const div = document.createElement('div');
   div.className = `msg platform-${data.platform}`;
 
-  const nickColor = data.color || null;
+  const nickColor = window.SafeContent.color(data.color);
   const nickStyle = nickColor ? ` style="color:${escapeAttr(nickColor)}"` : '';
 
-  const knownAvatar = data.avatarUrl || avatarCacheMap.get(userKey);
+  const knownAvatar = window.SafeContent.mediaUrl(data.avatarUrl || avatarCacheMap.get(userKey));
   const avatar = knownAvatar
-    ? `<img class="avatar" src="${knownAvatar}" alt="" loading="lazy" />`
+    ? `<img class="avatar" src="${escapeAttr(knownAvatar)}" alt="" loading="lazy" decoding="async" referrerpolicy="no-referrer" />`
     : avatarHtml(data).replace('class="avatar placeholder"', `class="avatar placeholder avatar-pending" data-user-key="${escapeAttr(userKey)}"`);
 
-  div.innerHTML = `${avatar}<span class="body"><span class="message-header">${platformTag(data.platform)}<span class="nick"${nickStyle}>${escapeHtml(data.nickname || data.userId)}</span></span><span class="message-text">${commentHtml}</span></span>`;
+  div.innerHTML = `${avatar}<span class="body"><span class="message-header">${platformTag(data.platform)}${window.ChatPresentation.badgeMarkup(data)}<span class="nick"${nickStyle}>${escapeHtml(data.nickname || data.userId)}</span></span><span class="message-text">${commentHtml}</span></span>`;
 
   // Botón para Fijar Mensaje (Pin)
   const pinBtn = document.createElement('button');
@@ -1231,9 +1039,9 @@ window.overlayAPI.onFollowMessage((data) => {
 // Share
 window.overlayAPI.onShareMessage((data) => {
   const userKey = `${data.platform}:${data.userId || data.nickname}`;
-  const knownAvatar = data.avatarUrl || avatarCacheMap.get(userKey);
+  const knownAvatar = window.SafeContent.mediaUrl(data.avatarUrl || avatarCacheMap.get(userKey));
   const avatar = knownAvatar
-    ? `<img class="avatar" src="${knownAvatar}" alt="" loading="lazy" />`
+    ? `<img class="avatar" src="${escapeAttr(knownAvatar)}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
     : avatarHtml(data);
 
   const div = document.createElement('div');
@@ -1244,7 +1052,7 @@ window.overlayAPI.onShareMessage((data) => {
 
 // Join
 window.overlayAPI.onJoinMessage((data) => {
-  window.ChatPresence.renderJoin(data, chatContainer, platformTag, addMessageNode);
+  window.ChatPresence.renderJoin(data, chatTools.target, platformTag, addMessageNode);
 });
 
 // Regalos en Español con Imágenes HD y Diamantes
@@ -1254,28 +1062,27 @@ window.overlayAPI.onGiftMessage((data) => {
   }
 
   const giftDetails = formatGiftData(data);
-  const repeatMarkup = data.repeatCount > 1 ? `<span class="repeat-badge">x${data.repeatCount}</span>` : '';
-  const diamondMarkup = giftDetails.totalDiamonds > 0 ? `<span class="diamond-badge">💎 ${giftDetails.totalDiamonds}</span>` : '';
+  const repeatMarkup = giftDetails.count > 1 ? `<span class="repeat-badge">x${giftDetails.count}</span>` : '';
+  const diamondMarkup = giftDetails.totalDiamonds > 0 ? `<span class="diamond-badge">💎 ${giftDetails.totalDiamonds}</span>` : giftDetails.amount ? `<span class="amount-badge">${escapeHtml(giftDetails.amount)}</span>` : '';
 
   const giftImageMarkup = giftDetails.imageUrl
-    ? `<img class="gift-icon" src="${giftDetails.imageUrl}" alt="" loading="lazy" />`
-    : '<span style="font-size:22px">🎁</span>';
+    ? `<img class="gift-icon" src="${escapeAttr(window.SafeContent.mediaUrl(giftDetails.imageUrl))}" alt="" loading="lazy" referrerpolicy="no-referrer" />`
+    : '';
 
   const div = document.createElement('div');
-  div.className = `msg gift platform-${data.platform}${giftDetails.isEpic ? ' epic' : ''}`;
+  div.className = `msg gift platform-${window.SafeContent.platform(data.platform)}`;
   div.innerHTML = `
-    <div class="gift-preview-box">${giftImageMarkup}</div>
+    ${giftImageMarkup ? `<div class="gift-preview-box">${giftImageMarkup}</div>` : ''}
     <div class="gift-info">
       <div class="gift-title-row">
         ${platformTag(data.platform)}
         <b>${escapeHtml(data.nickname || data.userId)}</b>
         <span style="color:#d1d5db; font-size:11px;">envió</span>
-        <span class="gift-name-tag">${escapeHtml(giftDetails.translatedName)}</span>
+        <span class="gift-name-tag">${escapeHtml(giftDetails.name)}</span>
         ${repeatMarkup}
       </div>
-      <div class="gift-meta-row">
-        ${diamondMarkup}
-      </div>
+      ${diamondMarkup ? `<div class="gift-meta-row">${diamondMarkup}</div>` : ''}
+      ${data.comment ? `<div class="gift-comment">${escapeHtml(String(data.comment).slice(0, 1000))}</div>` : ''}
     </div>
   `;
 
@@ -1289,7 +1096,7 @@ window.overlayAPI.onGiftMessage((data) => {
     e.stopPropagation();
     setPinnedMessage({
       ...data,
-      comment: `Envió ${giftDetails.translatedName} ${data.repeatCount > 1 ? 'x' + data.repeatCount : ''} ${giftDetails.totalDiamonds > 0 ? '(💎 ' + giftDetails.totalDiamonds + ')' : ''}`,
+      comment: `Envió ${giftDetails.name} ${giftDetails.count > 1 ? 'x' + giftDetails.count : ''} ${giftDetails.totalDiamonds > 0 ? '(💎 ' + giftDetails.totalDiamonds + ')' : ''}`,
     });
   });
   div.appendChild(pinBtn);
@@ -1321,13 +1128,11 @@ window.overlayAPI.onClickThroughChanged((active) => {
 
 // Utilidades
 function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str || '';
-  return div.innerHTML;
+  return window.SafeContent.escape(str);
 }
 
 function escapeAttr(str) {
-  return String(str || '').replace(/"/g, '&quot;');
+  return window.SafeContent.escape(str);
 }
 
 function cssEscape(str) {
@@ -1341,14 +1146,16 @@ function buildCommentHtml(comment, emotes) {
     return text ? ': ' + escapeHtml(text) : '';
   }
 
-  const sorted = [...emotes].sort((a, b) => a.index - b.index);
+  const sorted = [...emotes].slice(0, 50).sort((a, b) => a.index - b.index);
   let result = text ? ': ' : ' ';
   let cursor = 0;
 
   for (const e of sorted) {
+    const url = window.SafeContent.mediaUrl(e.url);
+    if (!url) continue;
     const pos = Math.max(0, Math.min(e.index, text.length));
     result += escapeHtml(text.slice(cursor, pos));
-    result += `<img class="emote" src="${e.url}" alt="${e.alt || 'emote'}" loading="lazy" />`;
+    result += `<img class="emote" src="${escapeAttr(url)}" alt="${escapeAttr(e.alt || 'emote')}" loading="lazy" decoding="async" referrerpolicy="no-referrer" />`;
     cursor = e.length ? pos + e.length : pos;
   }
   result += escapeHtml(text.slice(cursor));

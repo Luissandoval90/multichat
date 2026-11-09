@@ -23,7 +23,27 @@ function setSoundEnabled(enabled) {
 }
 
 function setSoundVolume(vol) {
-  soundVolume = Math.max(0, Math.min(1, Number(vol) || 0.7));
+  soundVolume = Number.isFinite(Number(vol)) ? Math.max(0, Math.min(1, Number(vol))) : 0.7;
+}
+
+// A short descending tone for an offline stream or a lost connection.
+function playConnectionLostSound() {
+  if (!soundEnabled || soundVolume === 0) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  try {
+    const now = ctx.currentTime;
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(660, now);
+    oscillator.frequency.exponentialRampToValueAtTime(330, now + 0.28);
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.linearRampToValueAtTime(0.2 * soundVolume, now + 0.025);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    oscillator.connect(gain); gain.connect(ctx.destination);
+    oscillator.start(now); oscillator.stop(now + 0.42);
+  } catch (error) { console.warn('[Audio] No se pudo reproducir la alerta de conexión.'); }
 }
 
 // Alerta de Nuevo Seguidor (Campanada suave)
@@ -125,6 +145,7 @@ function playClipSound() {
 }
 
 window.AudioAlerts = {
+  playConnectionLostSound,
   setSoundEnabled,
   setSoundVolume,
   playFollowSound,

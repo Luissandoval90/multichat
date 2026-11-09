@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' https: data:; media-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>MultiChat</title>
   <link rel="icon" type="image/png" href="multichat.png" />
@@ -23,7 +24,7 @@
         <div class="update-banner-title">
           <svg class="icon-inline" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09zM12 15l-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6.05 11a22.35 22.35 0 0 1-3.95 2z"/></svg>
           <span>Nueva actualización disponible</span>
-          <span id="update-version-tag" class="badge-version">v2.6.2</span>
+          <span id="update-version-tag" class="badge-version">v3.1.0</span>
         </div>
         <div class="update-timer-text" id="update-timer-text">Reiniciando en 10s...</div>
       </div>
@@ -41,27 +42,11 @@
 
     <!-- Barra de Título (Titlebar Glass Pro) -->
     <div id="titlebar">
-      <div class="brand">
-        <div class="brand-logo-wrapper">
-          <svg class="brand-mark" aria-hidden="true" viewBox="0 0 24 24"><path d="M5 4h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H9l-6 4V6a2 2 0 0 1 2-2Z"/><path d="M7 9h10M7 13h6"/></svg>
-          
-        </div>
-        <div class="brand-text-col">
-          <span class="brand-name">MultiChat</span>
-          <div class="live-status-row">
-            <span class="dot" id="live-dot"></span>
-            <span class="live-status-label" id="live-status-text">Desconectado</span>
-          </div>
-        </div>
-      </div>
+      <div class="brand"><img class="brand-logo" src="multichat.png" alt="MultiChat" title="MultiChat" draggable="false" /></div>
 
       <div class="controls">
-        <button id="toggle-hud-btn" class="ctrl-btn" aria-label="Mostrar u ocultar estadísticas" title="Mostrar u ocultar estadísticas">
-          <svg viewBox="0 0 24 24"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
-        </button>
-        <button id="test-alert-btn" class="ctrl-btn" aria-label="Probar alerta de seguidor" title="Probar alerta de seguidor">
-          <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </button>
+
+
         <button id="edit-btn" class="ctrl-btn" aria-label="Ajustes" title="Ajustes">
           <svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
         </button>
@@ -135,10 +120,10 @@
             <input type="text" id="input-tiktok" aria-label="Canal de tiktok" placeholder="@usuario" disabled />
           </div>
           <div class="sub-config hidden" id="sub-tiktok">
-            <input type="password" id="input-tiktok-key" aria-label="Clave de tik.tools" placeholder="Clave de tik.tools" />
-            <a href="https://tik.tools/login" target="_blank" class="link-hint">
+            <input type="password" id="input-tiktok-key" aria-label="Clave de Euler Stream" placeholder="Clave de Euler Stream" autocomplete="off" />
+            <a href="https://www.eulerstream.com/dashboard" target="_blank" class="link-hint">
               <svg viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-              Obtener clave en tik.tools
+              Obtener clave en Euler Stream
             </a>
           </div>
         </div>
@@ -297,17 +282,19 @@
         <div class="config-group" id="tts-voice-options-group">
           <div class="config-group-title">
             <svg viewBox="0 0 24 24"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
-            <span>Voz de Windows</span>
+            <span>Voz de lectura</span>
           </div>
           <div class="select-with-btn">
-            <select class="tts-select" id="tts-voice-select" aria-label="Voz de Windows">
-              <option value="">Cargando voces de Windows…</option>
+            <select class="tts-select" id="tts-voice-select" aria-label="Voz de lectura">
+              <option value="">Cargando voces…</option>
             </select>
             <button type="button" class="btn-test" id="btn-test-voice" aria-label="Escuchar muestra" title="Escuchar muestra">
               <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               <span>Probar</span>
             </button>
           </div>
+          <p class="hint-text">Claude habla español de México y funciona sin internet.</p>
+          <p class="hint-text" id="tts-status" role="status" aria-live="polite"></p>
 
           <div class="config-group-title" style="margin-top: 6px;">
             <svg viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
@@ -487,7 +474,7 @@
           <div class="version-banner">
             <div>
               <div style="font-size:13px; font-weight:800; color:#fff;">MultiChat</div>
-              <div id="app-version-label" class="badge-version-pill">v2.6.2</div>
+              <div id="app-version-label" class="badge-version-pill">v3.1.0</div>
             </div>
             <button type="button" class="btn-check-updates" id="btn-check-updates">
               <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -506,6 +493,7 @@
           </div>
           <div class="notifications-log-box" id="notifications-log">Navegación lateral y ajustes organizados por sección.<br>Mensajes con mayor legibilidad y distintivos discretos por plataforma.<br>Controles de conexión siempre visibles.</div>
         </div>
+        <div class="button-row"><button type="button" id="toggle-hud-btn" class="btn-test">Mostrar estadísticas</button><button type="button" id="test-alert-btn" class="btn-test">Probar alerta</button></div>
         <details class="shortcut-help"><summary>Atajos de teclado</summary><dl><dt><kbd>Ctrl + Alt + T</kbd></dt><dd>Pasar clics al juego</dd><dt><kbd>Ctrl + Alt + ↑ ↓</kbd></dt><dd>Ajustar opacidad</dd><dt><kbd>Ctrl + Alt + ← →</kbd></dt><dd>Mover la ventana</dd></dl></details>
       </div>
 
@@ -546,7 +534,7 @@
     </div>
 
     <!-- Barra de Estado de Conexión -->
-    <div id="status-bar"></div>
+    <div id="connection-notices" aria-live="polite" aria-atomic="false"></div>
 
     <!-- Alerta Flotante de Clip Creado -->
     <div id="clip-notification-container" class="hidden"></div>
@@ -560,11 +548,14 @@
   </div>
 
   <!-- Scripts modulares -->
+  <script src="src/safe-content.js"></script>
   <script src="src/audio.js"></script>
   <script src="src/storage.js"></script>
   <script src="src/tts.js"></script>
   <script src="src/alerts.js"></script>
   <script src="src/chat-presence.js"></script>
+  <script src="src/chat-tools.js"></script>
+  <script src="src/chat-presentation.js"></script>
   <script src="src/renderer.js"></script>
   <script src="src/music-ui.js"></script>
 </body>
