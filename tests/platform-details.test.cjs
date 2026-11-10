@@ -26,6 +26,30 @@ test('Twitch moderator badges are forwarded without per-viewer avatar API reques
   assert.equal(adapter.requests, 0);
   connection.disconnect();
 });
+
+test('Twitch polls audience with an existing authorized session and stops after disconnect', async () => {
+  const adapter = load('twitch'); const counts = []; let polls = 0;
+  const connection = adapter.connect('Example', { onStatus() {}, onViewers: data => counts.push(data) }, {
+    getViewerData: async channel => { assert.equal(channel, 'example'); polls++; return { data: [{ viewer_count: 27 }] }; }
+  });
+  adapter.client.emit('connected');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(counts.at(-1)?.viewers, 27);
+  connection.disconnect();
+  adapter.client.emit('connected');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(polls, 1);
+});
+
+test('Twitch reports unavailable audience instead of a fabricated zero without credentials', async () => {
+  const adapter = load('twitch'); const counts = [];
+  const connection = adapter.connect('example', { onStatus() {}, onViewers: data => counts.push(data) });
+  adapter.client.emit('connected');
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(counts.at(-1)?.viewers, null);
+  assert.match(counts.at(-1)?.reason || '', /Conecta Twitch/);
+  connection.disconnect();
+});
 test('YouTube retains real role flags, badge images, Super Stickers and actual amounts', async () => {
   const adapter = load('youtube'); const messages = [], gifts = [];
   const connection = adapter.connect('@example', { onChat: data => messages.push(data), onGift: data => gifts.push(data), onStatus() {} });

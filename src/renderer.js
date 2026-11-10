@@ -51,6 +51,8 @@ const ttsVolVal = document.getElementById('tts-vol-val');
 const ttsRateVal = document.getElementById('tts-rate-val');
 const ttsIncludeNickCheck = document.getElementById('tts-opt-include-nick');
 const ttsSkipUrlsCheck = document.getElementById('tts-opt-skip-urls');
+const ttsSkipBotsCheck = document.getElementById('tts-opt-skip-bots');
+const ttsBotNamesInput = document.getElementById('tts-bot-names');
 
 // OBS Modo
 const obsUrlInput = document.getElementById('obs-url-input');
@@ -344,6 +346,9 @@ function initUI() {
   document.getElementById('close-btn').addEventListener('click', () => window.overlayAPI.close());
   document.getElementById('minimize-btn').addEventListener('click', () => window.overlayAPI.minimize());
   editBtn.addEventListener('click', () => setupPanel.classList.toggle('hidden'));
+  document.getElementById('lock-btn').addEventListener('click', () => {
+    window.overlayAPI.setClickThrough(document.getElementById('lock-btn').getAttribute('aria-pressed') !== 'true');
+  });
 
   toggleHudBtn.addEventListener('click', () => {
     statsBar.classList.toggle('hidden');
@@ -443,6 +448,11 @@ function initUI() {
   ttsIncludeNickCheck.addEventListener('change', (e) => {
     window.AppTTS.setIncludeNickname(e.target.checked);
   });
+  ttsSkipBotsCheck.addEventListener('change', event => {
+    window.AppTTS.setSkipBots(event.target.checked);
+    ttsBotNamesInput.disabled = !event.target.checked;
+  });
+  ttsBotNamesInput.addEventListener('input', () => window.AppTTS.setBotNames(ttsBotNamesInput.value));
 
   ttsSkipUrlsCheck.addEventListener('change', (e) => {
     window.AppTTS.setSkipUrls(e.target.checked);
@@ -453,7 +463,7 @@ function initUI() {
   });
 
   btnTestVoice.addEventListener('click', () => {
-    window.AppTTS.testVoice('Hola, hablo español de México.');
+    window.AppTTS.testVoice(ttsIncludeNickCheck.checked ? 'Ana dice: Hola, bienvenidos.' : 'Hola, bienvenidos.');
   });
 
   ttsVolSlider.addEventListener('input', (e) => {
@@ -666,9 +676,14 @@ function applyConfigToUI(config) {
   ttsOptCheck.checked = isTtsOn;
   ttsIncludeNickCheck.checked = config.options.ttsIncludeNickname !== false;
   ttsSkipUrlsCheck.checked = config.options.ttsSkipUrls !== false;
+  ttsSkipBotsCheck.checked = config.options.ttsSkipBots !== false;
+  ttsBotNamesInput.value = String(config.options.ttsBotNames || '');
+  ttsBotNamesInput.disabled = !ttsSkipBotsCheck.checked;
 
   window.AppTTS.setIncludeNickname(ttsIncludeNickCheck.checked);
   window.AppTTS.setSkipUrls(ttsSkipUrlsCheck.checked);
+  window.AppTTS.setSkipBots(ttsSkipBotsCheck.checked);
+  window.AppTTS.setBotNames(ttsBotNamesInput.value);
 
   if (config.options.ttsVolume !== undefined) {
     const volPct = Math.round(config.options.ttsVolume * 100);
@@ -751,6 +766,8 @@ function gatherConfigFromUI() {
       ttsEnabled: ttsOptCheck.checked,
       ttsIncludeNickname: ttsIncludeNickCheck.checked,
       ttsSkipUrls: ttsSkipUrlsCheck.checked,
+      ttsSkipBots: ttsSkipBotsCheck.checked,
+      ttsBotNames: ttsBotNamesInput.value.trim(),
       ttsVoice: ttsVoiceSelect.value || '',
       ttsVolume: parseInt(ttsVolSlider.value, 10) / 100,
       ttsRate: parseInt(ttsRateSlider.value, 10) / 100,
@@ -860,7 +877,8 @@ window.overlayAPI.onPlatformStatus(data => {
   const platform = window.SafeContent.platform(data.platform);
   if (platform === 'unknown') return;
   statusLines[platform] = { connected: Boolean(data.connected), live: data.live };
-  if (!data.connected || data.live === false) viewersMap.set(platform, 0);
+  if (!data.connected) viewersMap.delete(platform);
+  else if (data.live === false) viewersMap.set(platform, 0);
   updateViewersDisplay();
   const change = connectionTransitions.update(data);
   if (!change) return;
@@ -880,26 +898,32 @@ function formatNumber(num) {
 
 function updateViewersDisplay() {
   let total = 0;
+  let missing = false;
   let html = '';
 
   PLATFORMS.forEach(platform => {
     const isConnected = statusLines[platform]?.connected;
-    const count = viewersMap.get(platform) || 0;
+    const count = viewersMap.get(platform);
+    const known = Number.isInteger(count) && count >= 0;
     
     if (isConnected || count > 0) {
-      total += count;
+      if (known) total += count;
+      else missing = true;
       const meta = PLATFORM_META[platform] || { color: '#888' };
-      html += `<span class="platform-pill" style="color:${meta.color}">${iconMarkup(platform)}${formatNumber(count)}</span>`;
+      const reason = statusLines[platform]?.viewerReason || (platform === 'twitch' ? 'Conecta Twitch en Música para ver espectadores' : 'Esperando audiencia');
+      html += `<span class="platform-pill" title="${escapeHtml(known ? meta.label + ': ' + count + ' espectadores' : reason)}" style="color:${meta.color}">${iconMarkup(platform)}${known ? formatNumber(count) : '—' + (platform === 'twitch' ? ' · Conecta Twitch' : '')}</span>`;
     }
   });
 
-  totalViewersEl.textContent = formatNumber(total);
+  totalViewersEl.textContent = missing ? (total > 0 ? formatNumber(total) + '+' : '—') : formatNumber(total);
+  totalViewersEl.title = missing ? 'Audiencia incompleta: falta consultar alguna plataforma' : total + ' espectadores';
   platformViewersContainer.innerHTML = html;
 }
 
 window.overlayAPI.onViewersUpdate((data) => {
   if (data.platform) {
-    const count = Math.max(0, parseInt(data.viewers, 10) || 0);
+    const count = typeof data.viewers === 'number' && Number.isInteger(data.viewers) && data.viewers >= 0 ? data.viewers : null;
+    if (statusLines[data.platform]) statusLines[data.platform].viewerReason = data.reason || '';
     viewersMap.set(data.platform, count);
     updateViewersDisplay();
   }
@@ -1123,7 +1147,13 @@ window.overlayAPI.onAdjustBgOpacity((delta) => {
 });
 
 window.overlayAPI.onClickThroughChanged((active) => {
-  document.body.style.outline = active ? '1px dashed rgba(255,255,255,0.3)' : 'none';
+  document.body.classList.toggle('game-locked', active);
+  const button = document.getElementById('lock-btn');
+  button.setAttribute('aria-pressed', String(active));
+  button.classList.toggle('active-toggle', active);
+  button.querySelector('span').textContent = active ? 'Bloqueado' : 'Bloquear';
+  button.title = active ? 'Ctrl + Alt + T para desbloquear' : 'Bloquear para jugar · Ctrl + Alt + T';
+  document.getElementById('game-lock-notice').hidden = !active;
 });
 
 // Utilidades

@@ -22,6 +22,19 @@ let musicService = null;
 
 let mainWindow = null;
 let clickThrough = false;
+function setClickThrough(active) {
+  if (!mainWindow || mainWindow.isDestroyed() || typeof active !== 'boolean') return;
+  if (active && !globalShortcut.isRegistered('Control+Alt+T')) {
+    safeSend('platform-status', { platform: 'general', error: 'No se pudo reservar Ctrl + Alt + T. Cierra la otra aplicación que usa ese atajo antes de bloquear.' });
+    return;
+  }
+  clickThrough = active;
+  mainWindow.setIgnoreMouseEvents(active);
+  mainWindow.setFocusable(!active);
+  mainWindow.setResizable(!active);
+  safeSend('click-through-changed', active);
+}
+onTrusted('set-click-through', (_event, active) => setClickThrough(active));
 const activeConnections = {};
 
 // OBS Server state
@@ -199,9 +212,7 @@ function createWindow() {
 
   // Atajos de teclado globales
   globalShortcut.register('Control+Alt+T', () => {
-    clickThrough = !clickThrough;
-    mainWindow.setIgnoreMouseEvents(clickThrough, { forward: true });
-    mainWindow.webContents.send('click-through-changed', clickThrough);
+    setClickThrough(!clickThrough);
   });
 
   globalShortcut.register('Control+Alt+Up', () => {
@@ -298,7 +309,13 @@ function connectPlatforms(requests) {
         broadcastToObs('share', data);
       },
       onViewers: (data) => safeSend('viewers-update', data),
-    }, options || {});
+    }, platform === 'twitch' ? {
+      ...(options || {}),
+      getViewerData: async channel => {
+        if (!musicService?.config?.accessToken) throw new Error('Conecta Twitch en Música para ver espectadores');
+        return musicService.client.request('streams?user_login=' + encodeURIComponent(channel));
+      },
+    } : options || {});
   }
 
   safeSend('platforms-selected', requestedKeys);

@@ -1,5 +1,13 @@
 # MultiChat
 
+Versión 3.1.4: botón Bloquear para jugar. El bloqueo pasa los clics al juego, desactiva el foco, el arrastre y el cambio de tamaño. Ctrl + Alt + T permite desbloquear desde el juego. El estado se indica en la ventana y se inicia desbloqueado al abrir la aplicación.
+
+Versión 3.1.3: audiencia de Twitch mediante la cuenta autorizada en Música o credenciales de aplicación, con actualización cada 30 segundos. Si no hay datos, aparece un guion y una indicación para conectar Twitch; el total indica cuando está incompleto. Los errores de consulta dejan de mostrarse como cero.
+
+Versión 3.1.2: la lectura omite emojis y emotes identificados por la plataforma, sin alterar el chat ni consultar servicios externos. Los mensajes de solo emotes quedan en silencio. Además, la voz omite por defecto Nightbot, StreamElements, Streamlabs, Moobot, Fossabot, Wizebot y BotRix, además de mensajes identificados explícitamente como bots. En Voz se pueden indicar bots adicionales por nombre o identificador, separados por comas. El filtro solo afecta a la lectura; los mensajes siguen apareciendo en el chat y no se hacen consultas externas para reconocer bots.
+
+«Leer nombre del usuario» permite elegir entre «Ana dice: hola» y «hola». El botón Probar respeta esa elección. Al cambiarla se descarta la lectura pendiente para aplicar el ajuste de inmediato. Ambas preferencias y la lista de bots se guardan automáticamente.
+
 Versión 3.1.0: vista compacta sin barra de búsqueda, filtros ni controles de pausa. Cabecera con el logo original y ajustes, minimizar y cerrar. Los estados de conexión se muestran en avisos de 4,5 segundos; un directo terminado o una conexión perdida produce una alerta sonora una sola vez por cambio de estado, respetando los ajustes de sonido.
 
 Insignias de roles e imágenes originales recibidas por cada conexión; las insignias globales de creador, moderador y VIP de Twitch se incluyen localmente. No se consulta un catálogo de insignias por mensaje y se eliminan las búsquedas de avatares por usuario de Twitch. Los regalos conservan nombre, imagen, sticker e importe originales cuando el evento los entrega; no se inventan imágenes ni valores ni se activa el catálogo de pago de Euler.
@@ -8,7 +16,7 @@ Twitch anónimo confirma el acceso al chat, que puede seguir conectado con el ca
 
 Versión 3.0.0: actualiza Electron y las dependencias (0 avisos conocidos en npm audit durante esta revisión), endurece los mensajes y el acceso local de OBS, añade búsqueda con acentos, filtro por plataforma, pausa con contador, vuelta al directo y limpieza de vista. El historial visible, los avatares y las colas tienen límites. La captura de clips se detiene al desactivarla y evita duplicarse.
 
-Para abrir la revisión local: dist/3.1.0. Las pruebas incluyen chat, contenido malicioso, OBS, control de acceso IPC, restauración de ajustes, Piper, Spotify y Twitch. Se corrige que la inicialización pudiera sobrescribir ajustes del disco antes de cargarlos. npm audit revisa dependencias npm conocidas; no equivale a una garantía de ausencia de fallos.
+Para abrir la revisión local: dist/3.1.4. Las pruebas incluyen chat, contenido malicioso, OBS, control de acceso IPC, restauración de ajustes, Piper, Spotify y Twitch. Se corrige que la inicialización pudiera sobrescribir ajustes del disco antes de cargarlos. npm audit revisa dependencias npm conocidas; no equivale a una garantía de ausencia de fallos.
 
 Versión 2.8.0: voz Piper Claude, español de México, incluida en la aplicación. Funciona sin internet, claves ni cuotas. En Voz, selecciona Claude y pulsa Probar; activa Leer mensajes para el chat. Se mantienen las voces de Windows, filtros por plataforma, volumen y velocidad. Consulta [PIPER.md](PIPER.md) para preparar y compilar el motor local.
 
@@ -32,7 +40,7 @@ La interfaz de escritorio usa navegación lateral, controles en escala de grises
 
 Para abrir el proyecto: `npm start`. Para comprobar la interfaz sin conectar cuentas ni grabar la pantalla: `npm test`. Las capturas de revisión se generan con `npm test -- --screenshots`.
 
-La compilación de esta revisión se encuentra en `dist/3.1.0`. Para volver a generarla sin publicar: `npm run dist -- --publish never --config.directories.output=dist/3.1.0`.
+La compilación de esta revisión se encuentra en `dist/3.1.4`. Para volver a generarla sin publicar: `npm run dist -- --publish never --config.directories.output=dist/3.1.4`.
 
 
 App de escritorio (Electron) para streamers y creadores de contenido que unifica en **una sola ventana transparente siempre visible** el chat y eventos en vivo de **TikTok, Twitch, Kick y YouTube** simultáneamente.

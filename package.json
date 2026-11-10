@@ -1,6 +1,6 @@
 {
   "name": "multi-chat-overlay",
-  "version": "3.1.0",
+  "version": "3.1.4",
   "description": "Overlay profesional de chat en vivo con clips, alertas y sincronización OBS para TikTok, Twitch, Kick y YouTube",
   "main": "main.js",
   "author": "Luis Sandoval",

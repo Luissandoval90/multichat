@@ -24,6 +24,8 @@ const DEFAULT_CONFIG = {
     ttsRate: 1.05,
     ttsIncludeNickname: true,
     ttsSkipUrls: true,
+    ttsSkipBots: true,
+    ttsBotNames: '',
     ttsPlatforms: {
       tiktok: true,
       twitch: true,

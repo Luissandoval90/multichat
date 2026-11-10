@@ -62,20 +62,39 @@ function connect(channel, callbacks, options = {}) {
   const cleanChannel = channel.toLowerCase().replace(/^#/, '');
   let viewerPollTimer = null;
   let stopped = false;
+  let polling = false;
+
+  function unavailable(reason) {
+    if (!stopped) callbacks.onViewers?.({ platform: 'twitch', viewers: null, reason });
+  }
 
   async function pollViewers() {
-    if (stopped || !hasCredentials) return;
+    if (stopped || polling) return;
+    polling = true;
     try {
-      const token = await getAppAccessToken(options.twitchClientId, options.twitchClientSecret);
-      const data = await httpsRequestJson(`https://api.twitch.tv/helix/streams?user_login=${encodeURIComponent(cleanChannel)}`, {
-        headers: { 'Client-Id': options.twitchClientId, 'Authorization': `Bearer ${token}` },
-      });
-      const viewers = data?.data?.[0]?.viewer_count || 0;
+      let data;
+      if (hasCredentials) {
+        const token = await getAppAccessToken(options.twitchClientId, options.twitchClientSecret);
+        data = await httpsRequestJson(`https://api.twitch.tv/helix/streams?user_login=${encodeURIComponent(cleanChannel)}`, {
+          headers: { 'Client-Id': options.twitchClientId, 'Authorization': `Bearer ${token}` },
+        });
+      } else if (options.getViewerData) {
+        data = await options.getViewerData(cleanChannel);
+      } else {
+        unavailable('Conecta Twitch en Música para ver espectadores');
+        return;
+      }
+      if (stopped) return;
+      if (!Array.isArray(data?.data)) throw new Error('Respuesta de audiencia inválida');
+      const viewers = data.data.length ? data.data[0].viewer_count : 0;
+      if (!Number.isInteger(viewers) || viewers < 0) throw new Error('Respuesta de audiencia inválida');
       callbacks.onStatus({ connected: true, live: Boolean(data?.data?.length) });
       if (callbacks.onViewers) {
         callbacks.onViewers({ platform: 'twitch', viewers });
       }
-    } catch (e) {}
+    } catch (e) {
+      unavailable(e.message || 'No se pudo consultar la audiencia de Twitch');
+    } finally { polling = false; }
   }
 
   const client = new tmi.Client({
@@ -85,14 +104,15 @@ function connect(channel, callbacks, options = {}) {
   });
 
   client.on('connected', () => {
+    if (stopped) return;
     callbacks.onStatus({ connected: true });
-    if (hasCredentials) {
-      pollViewers();
-      viewerPollTimer = setInterval(pollViewers, 30000);
-    }
+    if (viewerPollTimer) clearInterval(viewerPollTimer);
+    pollViewers();
+    viewerPollTimer = setInterval(pollViewers, 30000);
   });
 
   client.on('disconnected', (reason) => {
+    if (viewerPollTimer) { clearInterval(viewerPollTimer); viewerPollTimer = null; }
     callbacks.onStatus({ connected: false, error: 'Twitch desconectado: ' + (reason || 'reintentando…') });
   });
 
@@ -118,10 +138,12 @@ function connect(channel, callbacks, options = {}) {
 
     emitChatWithAvatar(tags.username, {
       platform: 'twitch',
+      username: tags.username,
       messageId: tags.id,
       userId: tags['user-id'] || tags.username,
       nickname: tags['display-name'] || tags.username,
       comment: message,
+      isEmoteOnly: tags['emote-only'] === '1' || tags['emote-only'] === true,
       avatarUrl: null,
       color: tags.color || null,
       emotes,

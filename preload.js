@@ -48,6 +48,7 @@ contextBridge.exposeInMainWorld('overlayAPI', {
   saveRecordedClip: (params) => ipcRenderer.invoke('save-recorded-clip', params),
 
   // Atajos globales y ventana
+  setClickThrough: active => ipcRenderer.send('set-click-through', active),
   onClickThroughChanged: (callback) => ipcRenderer.on('click-through-changed', (_event, data) => callback(data)),
   onAdjustBgOpacity: (callback) => ipcRenderer.on('adjust-bg-opacity', (_event, delta) => callback(delta)),
 });

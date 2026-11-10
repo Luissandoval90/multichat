@@ -5,6 +5,35 @@ let ttsVolume = 0.85;
 let ttsRate = 1.05;
 let ttsIncludeNickname = true;
 let ttsSkipUrls = true;
+let ttsSkipBots = true;
+const commonBotNames = new Set(['nightbot', 'streamelements', 'streamlabs', 'moobot', 'fossabot', 'wizebot', 'botrix']);
+let customBotNames = new Set();
+
+function normalizeBotName(value) {
+  return String(value || '').normalize('NFKC').trim().replace(/^@/, '').toLowerCase();
+}
+
+function setSkipBots(value) {
+  const next = value !== false;
+  if (next !== ttsSkipBots) { cancelSpeech(); piperBusy = false; }
+  ttsSkipBots = next;
+}
+
+function setBotNames(value) {
+  const names = (Array.isArray(value) ? value : String(value || '').slice(0, 2000).split(/[,;\r\n]+/)).slice(0, 100).map(normalizeBotName).filter(Boolean);
+  const next = new Set(names);
+  if ([...next].sort().join(',') !== [...customBotNames].sort().join(',')) { cancelSpeech(); piperBusy = false; }
+  customBotNames = next;
+}
+
+function isBotMessage(data) {
+  if (!ttsSkipBots) return false;
+  if (data.isBot === true) return true;
+  return [data.username, data.login, data.userLogin, data.userId, data.nickname].some(value => {
+    const name = normalizeBotName(value);
+    return commonBotNames.has(name) || customBotNames.has(name);
+  });
+}
 let selectedVoiceURI = '';
 let synth = window.speechSynthesis || null;
 let availableVoices = [];
@@ -129,6 +158,7 @@ function setTtsRate(rate) {
 }
 
 function setIncludeNickname(val) {
+  if (ttsIncludeNickname !== !!val) { cancelSpeech(); piperBusy = false; }
   ttsIncludeNickname = !!val;
 }
 
@@ -153,9 +183,31 @@ function testVoice(textToSpeak) {
   speakText(textToSpeak || 'Hola, soy Claude. Hablo español de México. ¡Bienvenidos al chat! ¿Qué canción quieren escuchar?');
 }
 
-function cleanCommentForTts(text) {
+const speechGraphemes = new Intl.Segmenter('es', { granularity: 'grapheme' });
+const emojiGrapheme = /[\p{Extended_Pictographic}\p{Regional_Indicator}\p{Emoji_Presentation}\u20e3]/u;
+
+function removeSpeechEmojis(text) {
+  return Array.from(speechGraphemes.segment(String(text || '')), ({ segment }) =>
+    emojiGrapheme.test(segment) ? ' ' : segment
+  ).join('').replace(/\s+/g, ' ').trim();
+}
+
+function cleanCommentForTts(text, emotes) {
   if (!text) return '';
-  let cleaned = text.trim();
+  let cleaned = String(text);
+  // Only text-replacing emotes have a length. Image insertions must keep adjacent text.
+  const ranges = (Array.isArray(emotes) ? emotes : []).slice(0, 100)
+    .filter(e => e && Number.isInteger(e.index) && Number.isInteger(e.length) &&
+      e.index >= 0 && e.length > 0 && e.index + e.length <= cleaned.length)
+    .sort((a, b) => a.index - b.index);
+  let cursor = 0;
+  let plain = '';
+  for (const range of ranges) {
+    if (range.index > cursor) plain += cleaned.slice(cursor, range.index);
+    plain += ' ';
+    cursor = Math.max(cursor, range.index + range.length);
+  }
+  cleaned = removeSpeechEmojis(plain + cleaned.slice(cursor)).replace(/ +([,.;:!?])/g, '$1');
 
   // Omitir enlaces web si está activado
   if (ttsSkipUrls) {
@@ -165,23 +217,24 @@ function cleanCommentForTts(text) {
   // Filtrar comandos de bots si empiezan con !, /, ., ?, #
   if (/^[!/.?#]/.test(cleaned)) return '';
 
-  return cleaned;
+  return /[\p{L}\p{N}]/u.test(cleaned) ? cleaned : '';
 }
 
-function speakMessage({ nickname, comment, platform }) {
-  if (!ttsEnabled || !comment) return;
+function speakMessage(data = {}) {
+  const { nickname, comment, platform } = data;
+  if (!ttsEnabled || !comment || data.isEmoteOnly === true || isBotMessage(data)) return;
 
   // Verificar si TTS está habilitado para esta plataforma
   if (platform && ttsPlatforms[platform] === false) {
     return;
   }
 
-  const cleanComment = cleanCommentForTts(comment);
+  const cleanComment = cleanCommentForTts(comment, data.emotes);
   if (!cleanComment) return;
 
   // Limitar longitud para evitar spam
   const truncated = cleanComment.length > 120 ? cleanComment.slice(0, 120) + '...' : cleanComment;
-  const userNick = nickname || 'Usuario';
+  const userNick = removeSpeechEmojis(nickname) || 'Usuario';
   const textToRead = ttsIncludeNickname ? `${userNick} dice: ${truncated}` : truncated;
 
   try {
@@ -200,6 +253,8 @@ window.AppTTS = {
   setTtsVolume,
   setTtsRate,
   setIncludeNickname,
+  setSkipBots,
+  setBotNames,
   setSkipUrls,
   testVoice,
   speakMessage,
